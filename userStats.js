@@ -94,7 +94,6 @@ bot.onText(/^\/start/i, function (message) {
 	connection.query('SELECT SUM(message_count) As cnt FROM stats', function (err, rows) {
 		if (err) throw err;
 		bot.sendMessage(message.chat.id, "<b>Welcome to User Stats Tracker Bot!</b>\n\nAdd this bot to groups to store messages count <b>globally</b>, last message date and last username for each user, then use <i>inline mode</i> with username or account id to view user informations.\n\nMore than " + formatNumber(Math.round(rows[0].cnt/1000)*1000) + " messages counted - <a href='https://storebot.me/bot/userstatstrackerbot'>Vote on Storebot</a>", no_preview);
-		
 	});
 });
 
