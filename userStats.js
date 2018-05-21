@@ -72,9 +72,41 @@ process.on('SIGTERM', function() {
 	process.exit();
 });
 
+var validLang = ["en", "it"];
+var lang_main_1 = [];
+var lang_main_2 = [];
+var lang_stats_userinfo = [];
+var lang_stats_usernotfound = [];
+var lang_stats_notfound = [];
+var lang_stats_userfound = [];
+var lang_stats_username = [];
+var lang_stats_msgcount = [];
+var lang_stats_creation = [];
+var lang_stats_update = [];
+
+lang_main_1["en"] = "<b>Welcome to User Stats Tracker Bot!</b>\n\nAdd this bot to groups to store messages count <b>globally</b>, last message date and last username for each user, then use <i>inline mode</i> with username or account id to view user informations.\n\nMore than ";
+lang_main_1["it"] = "<b>Benvenuto nell'User Stats Tracker Bot!</b>\n\nAggiungi questo bot ai tuoi gruppi per contare messaggi in modo <b>globale</b>, la data dell'ultimo messaggio e l'ultimo username utilizzato dall'utente, poi con l'<i>inline mode</i> puoi visualizzare queste informazioni inserendo l'username o l'account id.\n\nPiù di ";
+lang_main_2["en"] = " messages counted - <a href='https://storebot.me/bot/userstatstrackerbot'>Vote on Storebot</a>";
+lang_main_2["it"] = " messaggi inviati - <a href='https://storebot.me/bot/userstatstrackerbot'>Vota sullo Storebot</a>";
+lang_stats_userinfo["en"] = "Send user informations";
+lang_stats_userinfo["it"] = "Invia informazioni utente";
+lang_stats_usernotfound["en"] = "User not found";
+lang_stats_usernotfound["it"] = "Utente non trovato";
+lang_stats_notfound["en"] = "not found";
+lang_stats_notfound["it"] = "non trovato";
+lang_stats_userfound["en"] = "User found";
+lang_stats_userfound["it"] = "Utente trovato";
+lang_stats_username["en"] = "Username";
+lang_stats_username["it"] = "Nome utente";
+lang_stats_msgcount["en"] = "Messages count";
+lang_stats_msgcount["it"] = "Numero messaggi";
+lang_stats_creation["en"] = "Creation date";
+lang_stats_creation["it"] = "Data creazione";
+lang_stats_update["en"] = "Last update date";
+lang_stats_update["it"] = "Ultimo aggiornamento";
+
 bot.on('message', function (message) {
 	if (message.text != undefined){
-		//console.log(getNow("en") + " " + message.from.username);
 		if (message.chat.id < 0){
 			var user = null;
 			if (message.from.username != undefined)
@@ -91,9 +123,16 @@ bot.onText(/^\/start/i, function (message) {
 		parse_mode: "HTML",
 		disable_web_page_preview: true
 	};
+	
+	var lang = "en";
+	if (message.from.language_code != undefined){
+		if (validLang.indexOf(message.from.language_code) != -1)
+			lang = message.from.language_code;
+	}
+	
 	connection.query('SELECT SUM(message_count) As cnt FROM stats', function (err, rows) {
 		if (err) throw err;
-		bot.sendMessage(message.chat.id, "<b>Welcome to User Stats Tracker Bot!</b>\n\nAdd this bot to groups to store messages count <b>globally</b>, last message date and last username for each user, then use <i>inline mode</i> with username or account id to view user informations.\n\nMore than " + formatNumber(Math.round(rows[0].cnt/1000)*1000) + " messages counted - <a href='https://storebot.me/bot/userstatstrackerbot'>Vote on Storebot</a>", no_preview);
+		bot.sendMessage(message.chat.id, lang_main_1[lang] + String(formatNumber(Math.round(rows[0].cnt/1000)*1000)) + lang_main_2[lang], no_preview);
 	});
 });
 
@@ -105,16 +144,22 @@ bot.on("inline_query", function (query) {
 	if ((data == "") || (reg.test(data) == false))
 		return;
 	
-	connection.query('SELECT account_id, last_username, message_count, creation_date, update_date FROM stats WHERE last_username = "' + data + '" OR account_id = ' + data, function (err, rows) {
+	var lang = "en";
+	if (query.from.language_code != undefined){
+		if (validLang.indexOf(query.from.language_code) != -1)
+			lang = query.from.language_code;
+	}
+	
+	connection.query('SELECT account_id, last_username, message_count, creation_date, update_date FROM stats WHERE last_username = "' + data + '" OR account_id = "' + data + '"', function (err, rows) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
 			bot.answerInlineQuery(query.id, [{
 				id: '0',
 				type: 'article',
-				title: 'Send User Informations',
-				description: "User NOT found",
-				message_text: data + " not found"
+				title: lang_stats_userinfo[lang],
+				description: lang_stats_usernotfound[lang],
+				message_text: data + " " + lang_stats_notfound[lang]
 			}]);
 			return;
 		}
@@ -122,12 +167,12 @@ bot.on("inline_query", function (query) {
 		bot.answerInlineQuery(query.id, [{
 			id: '0',
 			type: 'article',
-			title: 'Send User Informations',
-			description: "User found",
-			message_text: 	"<b>Username:</b> " + rows[0].last_username + " (" + rows[0].account_id + ")\n" +
-							"<b>Messages count:</b> " + formatNumber(rows[0].message_count) + "\n" +
-							"<b>Creation date:</b> " + toDate("en", new Date(rows[0].creation_date)) + "\n" +
-							"<b>Last update date:</b> " + toDate("en", new Date(rows[0].update_date)),
+			title: lang_stats_userinfo[lang],
+			description: lang_stats_userfound[lang],
+			message_text: 	"<b>" + lang_stats_username[lang] + ":</b> " + rows[0].last_username + " (" + rows[0].account_id + ")\n" +
+							"<b>" + lang_stats_msgcount[lang] + ":</b> " + formatNumber(rows[0].message_count) + "\n" +
+							"<b>" + lang_stats_creation[lang] + ":</b> " + toDate("en", new Date(rows[0].creation_date)) + "\n" +
+							"<b>" + lang_stats_update[lang] + ":</b> " + toDate("en", new Date(rows[0].update_date)),
 			parse_mode: "HTML"
 		}]);
 	});

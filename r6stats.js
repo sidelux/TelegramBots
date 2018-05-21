@@ -23,6 +23,8 @@ var humanizeDuration = require('humanize-duration')
 var request = require("request");
 var plotly = require('plotly')('redfenix45','3mcGka93rW2Ex7KJnrPd');
 var Schedule = require('node-schedule');
+var Parser = require('rss-parser');
+var striptags = require('striptags');
 
 console.log('Connecting bot...');
 
@@ -73,6 +75,11 @@ var html = {
 	parse_mode: "HTML"
 };
 
+var no_preview = {
+	parse_mode: "HTML",
+	disable_web_page_preview: true
+};
+
 var validLang = ["en", "it"];
 var validParam = ["ranked_wins", "ranked_losses", "ranked_kills", "ranked_deaths", "ranked_kd"];
 var lang_main = [];
@@ -97,6 +104,8 @@ var lang_autotrack_invalid = [];
 var lang_autotrack_enabled = [];
 var lang_autotrack_disabled = [];
 var lang_autotrack_disable = [];
+var lang_news_readall = [];
+var lang_news_date = [];
 
 var lang_username = [];
 var lang_platform = [];
@@ -186,6 +195,10 @@ lang_autotrack_disabled["it"] = "Autotrack disabilitato con successo.";
 lang_autotrack_disabled["en"] = "Autotrack successfully disabled.";
 lang_autotrack_disable["it"] = "Disabilita l'autotrack prima di modificare questa impostazione.";
 lang_autotrack_disable["en"] = "Disable autotrack before change this setting.";
+lang_news_readall["it"] = "Leggi notizia completa";
+lang_news_readall["en"] = "Read full article";
+lang_news_date["it"] = "Pubblicato alle ";
+lang_news_date["en"] = "Published at ";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -302,11 +315,6 @@ bot.onText(/^\/start/i, function (message) {
 			}
 		}
 
-		var no_preview = {
-			parse_mode: "HTML",
-			disable_web_page_preview: true
-		};
-
 		bot.sendMessage(message.chat.id, lang_main[lang] + "\n\n" + extra + lang_storebot[lang], no_preview);
 	});
 });
@@ -380,9 +388,9 @@ bot.onText(/^\/setusername (.+)|^\/setusername/i, function (message, match) {
 			bot.sendMessage(message.chat.id, "Use /start before use /setusername");
 			return;
 		}
-		
+
 		var lang = rows[0].lang;
-		
+
 		if (rows[0].autotrack == 1){
 			bot.sendMessage(message.chat.id, lang_autotrack_disable[lang]);
 			return;
@@ -408,9 +416,9 @@ bot.onText(/^\/setplatform (.+)|^\/setplatform/i, function (message, match) {
 			bot.sendMessage(message.chat.id, "Use /start before use /setplatform");
 			return;
 		}
-		
+
 		var lang = rows[0].lang;
-		
+
 		if (rows[0].autotrack == 1){
 			bot.sendMessage(message.chat.id, lang_autotrack_disable[lang]);
 			return;
@@ -452,16 +460,24 @@ bot.onText(/^\/status (.+)|^\/status/i, function (message, match) {
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
 			return;
 		}
-		
-		var url = "";
+
+		var lang_complex = "";
+		if (lang == "it")
+			lang_complex = "it-it";
+		else if (lang == "en")
+			lang_complex = "en-us";
+
+		var platform_complex = 0;
 		if (platform == "uplay"){
-			url = "https://support.ubi.com/it-it/Games/2559?platform=9";
+			platform_complex = 9;
 		}else if (platform == "ps4"){
-			url = "https://support.ubi.com/it-it/Games/2559?platform=47";
+			platform_complex = 47;
 		}else if (platform == "xone"){
-			url = "https://support.ubi.com/it-it/Games/2559?platform=43";
+			platform_complex = 43;
 		}
 
+		console.log("Request server status from " + message.from.username);
+		var url = "https://support.ubi.com/" + lang_complex + "/Games/2559?platform=" + platform_complex;
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			request({
 				uri: url,
@@ -477,6 +493,52 @@ bot.onText(/^\/status (.+)|^\/status/i, function (message, match) {
 	});
 });
 
+bot.onText(/^\/news/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.chat.id, "Use /start before use /news");
+			return;
+		}
+
+		var lang = rows[0].lang;
+
+		var lang_complex = "";
+		var cookie = "";
+		if (lang == "it"){
+			lang_complex = "it-it";
+			cookie = "italian";
+		} else if (lang == "en"){
+			lang_complex = "en-us";
+			cookie = "english";
+		}
+
+		console.log("Request news from " + message.from.username);
+		var url = "https://steamcommunity.com/games/359550/rss/";
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			
+			var parser = new Parser({
+			  headers: {'Cookie': 'Steam_Language=' + cookie},
+			});
+			
+			(async () => {
+				let feed = await parser.parseURL(url);
+				var text = "";
+				var d = "";
+				var readall = "";
+				feed.items.forEach(function(item, index, array) {
+					d = new Date(item.pubDate);
+					if (item.content.length > 500)
+						readall = "- <a href='" + item.link + "'>" + lang_news_readall[lang] + "</a>";
+					text += "<b>" + item.title + "</b>\n\n" + stripContent(item.content) + "\n\n<i>" + lang_news_date[lang] + toDate(lang, d) + "</i> " + readall + "\n\n";
+					if (index === 4)
+						bot.sendMessage(message.chat.id, text, no_preview);
+				});
+			})();
+		});
+	});
+});
+
 bot.onText(/^\/graph (.+)|^\/graph/i, function (message, match) {
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -486,21 +548,21 @@ bot.onText(/^\/graph (.+)|^\/graph/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
-		
+
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
 			return;
 		}
-		
+
 		var default_username = rows[0].default_username;
-		
+
 		if (rows[0].default_platform == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
 			return;
 		}
-		
+
 		var default_platform = rows[0].default_platform;
-		
+
 		var errMsg = lang_graph_no_param[lang] + validParam.join(", ")
 		if (match[1] == undefined){
 			bot.sendMessage(message.chat.id, errMsg);
@@ -510,24 +572,24 @@ bot.onText(/^\/graph (.+)|^\/graph/i, function (message, match) {
 			bot.sendMessage(message.chat.id, errMsg);
 			return;
 		}
-		
+
 		var param = match[1];
-		
+
 		connection.query("SELECT insert_date, " + param + " FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "'", function (err, rows) {
 			if (err) throw err;
-			
+
 			if (Object.keys(rows).length <= 1){
 				bot.sendMessage(message.chat.id, lang_graph_no_data[lang]);
 				return;
 			}
-			
+
 			var arrX = [];
 			var arrY = [];
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				arrX.push(rows[i].insert_date);
 				arrY.push(eval("rows[i]." + param));
 			}
-	
+
 			var trace1 = {
 				x: arrX,
 				y: arrY,
@@ -559,26 +621,26 @@ bot.onText(/^\/autotrack (.+)|^\/autotrack/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
-		
+
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
 			return;
 		}
-		
+
 		var default_username = rows[0].default_username;
-		
+
 		if (rows[0].default_platform == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
 			return;
 		}
-		
+
 		var default_platform = rows[0].default_platform;
-	
+
 		if (match[1] == undefined){
 			bot.sendMessage(message.chat.id, lang_autotrack[lang]);
 			return;
 		}
-		
+
 		if (match[1] == "enable"){
 			connection.query("UPDATE user SET autotrack = 1 WHERE account_id = " + message.from.id, function (err, rows) {
 				if (err) throw err;
@@ -604,30 +666,37 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
-		if (match[1] == undefined){
+		var split = match[1].split(" ");
+
+		if (split[0] == undefined){
 			if (rows[0].default_username != null)
-				match[1] = rows[0].default_username;
+				split[0] = rows[0].default_username;
 			else{
 				bot.sendMessage(message.chat.id, lang_invalid_user[lang]);
 				return;
 			}
 		}
 
-		var platform = "uplay";
-		if (rows[0].default_platform != null)
-			platform = rows[0].default_platform;
+		if (split[1] == undefined){
+			if (rows[0].default_platform != null)
+				split[1] = rows[0].default_platform;
+			else {
+				split[1] = "uplay";
+			}
+		}
 
-		var username = match[1];
+		var username = split[0];
+		var platform = split[1];
 
 		console.log("Request user data for " + username + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(username, platform, false).then(response => {
-				connection.query('SELECT ranked_wins FROM player_history WHERE platform = "' + response.player.platform + '" AND ubisoft_id = "' + response.player.ubisoft_id + '" ORDER BY id DESC', function (err, rows) {
+				connection.query('SELECT ranked_playtime, casual_playtime FROM player_history WHERE platform = "' + response.player.platform + '" AND ubisoft_id = "' + response.player.ubisoft_id + '" ORDER BY id DESC', function (err, rows) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0){
 						saveData(response);
-					}else if (rows[0].ranked_wins < response.player.stats.ranked.wins){
+					}else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime)){
 						saveData(response);
 					}
 
@@ -716,13 +785,13 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 							bot.sendMessage(message.chat.id, text, html);
 							console.log("User data served for " + username + " on " + platform);
 						}).catch(error => {
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang], html);
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
 							console.log("User data operators not found for " + username + " on " + platform);
 						});
 					});
 				});
 			}).catch(error => {
-				bot.sendMessage(message.chat.id, lang_user_not_found[lang], html);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
 				console.log("User data not found for " + username + " on " + platform);
 			});
 		});
@@ -816,7 +885,7 @@ bot.onText(/^\/execute_autotrack/i, function (message, match) {
 function autoTrack(){
 	connection.query('SELECT default_username, default_platform FROM user WHERE autotrack = 1', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length > 0)
 			rows.forEach(setAutoTrack);
 	});
@@ -825,7 +894,7 @@ function autoTrack(){
 function setAutoTrack(element, index, array) {
 	var username = element.default_username;
 	var platform = element.default_platform;
-	
+
 	r6.stats(username, platform, false).then(response => {
 		connection.query('SELECT ranked_wins FROM player_history WHERE platform = "' + response.player.platform + '" AND username = "' + response.player.username + '" ORDER BY id DESC', function (err, rows) {
 			if (err) throw err;
@@ -833,7 +902,7 @@ function setAutoTrack(element, index, array) {
 			if (Object.keys(rows).length == 0){
 				saveData(response);
 				console.log("Autotrack for " + username + " on " + platform + " saved (new)");
-			}else if (rows[0].ranked_wins < response.player.stats.ranked.wins){
+			}else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime)){
 				saveData(response);
 				console.log("Autotrack for " + username + " on " + platform + " saved (update)");
 			}else{
@@ -843,6 +912,24 @@ function setAutoTrack(element, index, array) {
 	}).catch(error => {
 		console.log("Autotrack for " + username + " on " + platform + " not found");
 	});
+};
+
+function stripContent(text){
+	text = striptags(text, ["b","i","br","li"]);
+	text = text.replaceAll("(<br>)","\n");
+	text = text.replaceAll("(<li>)","\n- ");
+	text = text.replaceAll("(</li>)","");
+	
+	// sempre per ultima
+	text = text.replaceAll("((\\n\\n\\n))","\n\n");
+	if (text.length > 500)
+		text = text.substr(0, 500) + "...";
+	return text.trim();
+}
+
+String.prototype.replaceAll = function (search, replacement) {
+	var target = this;
+	return target.replace(new RegExp(search, 'g'), replacement);
 };
 
 function compare(val1, val2, format = "", lang = "en", inverted = 0){
@@ -881,10 +968,8 @@ function compare(val1, val2, format = "", lang = "en", inverted = 0){
 }
 
 function formatNumber(num) {
-
 	if (num < 0)
 		num = Math.abs(num)+2147483647;	// fix per il negativo passi
-
 	return ("" + num).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, function ($1) {
 		return $1 + "."
 	});
@@ -897,6 +982,26 @@ function toTime(seconds, lang = "en", onlyHours = false) {
 		return humanizeDuration(seconds*1000, { language: lang });
 }
 
+function toDate(lang, date) {
+	var d = new Date(date);
+	if (typeof date == "object")
+		d = date;
+	if (lang == "it") {
+		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else if (lang == "en") {
+		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else {
+		var datetime = "Format not specified";
+	}
+	return datetime;
+}
+
 function jsUcfirst(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function addZero(i) {
+	if (i < 10)
+		i = "0" + i;
+	return i;
 }
