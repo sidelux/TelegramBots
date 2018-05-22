@@ -12,26 +12,69 @@ process.on('unhandledRejection', function (error, p) {
 var config = require('./config.js');
 var TelegramBot = require('node-telegram-bot-api');
 var mysql = require('mysql');
-
 var express = require('express');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var bodyParser = require('body-parser');
-var rainbowSixApi = require('rainbowsix-api-node');
 var humanizeDuration = require('humanize-duration')
 var request = require("request");
 var plotly = require('plotly')('redfenix45','3mcGka93rW2Ex7KJnrPd');
 var Schedule = require('node-schedule');
 var Parser = require('rss-parser');
+var request = require('request');
 var striptags = require('striptags');
+
+class RainbowSixApi {
+	constructor() {}
+
+	stats(username, platform, operators) {
+		return new Promise((resolve, reject) => {
+			if(!username || typeof username !== 'string') 
+				return reject(new TypeError('Invalid username'));
+			operators = operators || false;
+			if(typeof operators !== 'boolean') 
+				return reject(new TypeError('Operators has to be a boolean'));
+			if(typeof platform !== 'string' || !platform) 
+				return reject(new TypeError('Invalid platform, platform types can be: uplay, xone, ps4'));
+			let endpoint = `https://api.r6stats.com/api/v1/players/${username.toString()}/?platform=${platform}`;
+			if(operators) {
+				endpoint = `https://api.r6stats.com/api/v1/players/${username}/operators/?platform=${platform}`;
+			}
+			request.get(endpoint, (error, response, body) => {
+				if(!error && response.statusCode == '200') {
+					return resolve(JSON.parse(body));
+				} else {
+					return reject(JSON.parse(body));
+				}
+			})
+		})
+	}
+
+	profile(username, platform) {
+		return new Promise((resolve, reject) => {
+			if(!username || typeof username !== 'string') 
+				return reject(new TypeError('Invalid username'));
+			if(typeof platform !== 'string' || !platform) 
+				return reject(new TypeError('Invalid platform, platform types can be: uplay, xone, ps4'));
+			let endpoint = `https://api.r6stats.com/api/v1/users/${username}/profile/?platform=${platform}`;
+			request.get(endpoint, (error, response, body) => {
+				if(!error && response.statusCode == '200') {
+					return resolve(JSON.parse(body));
+				} else {
+					return reject(JSON.parse(body));
+				}
+			})
+		})
+	}
+};
 
 console.log('Connecting bot...');
 
 var token = config.r6token;
 var bot = new TelegramBot(token);
 var app = express();
-var r6 = new rainbowSixApi();
+var r6 = new RainbowSixApi();
 
 var path = "/rsix/bot" + token;
 var port = 25004;
@@ -81,7 +124,7 @@ var no_preview = {
 };
 
 var validLang = ["en", "it"];
-var validParam = ["ranked_wins", "ranked_losses", "ranked_kills", "ranked_deaths", "ranked_kd"];
+var validParam = ["casual_kd", "ranked_kd", "ranked_wlr", "casual_wlr"];
 var lang_main = [];
 var lang_storebot = [];
 var lang_changed = [];
@@ -106,6 +149,9 @@ var lang_autotrack_disabled = [];
 var lang_autotrack_disable = [];
 var lang_news_readall = [];
 var lang_news_date = [];
+var lang_operator_no_name = [];
+var lang_operator_not_found = [];
+var lang_help = [];
 
 var lang_username = [];
 var lang_platform = [];
@@ -151,8 +197,30 @@ var lang_title_casual = [];
 var lang_title_general = [];
 var lang_title_operators = [];
 
-lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>!\n\nUsa '/stats username piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti.";
-lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>!\n\nUse '/stats username platform' to print player infos, to other commands write '/' and show hints.";
+var lang_inline_total_kills = [];
+var lang_inline_total_deaths = [];
+var lang_inline_total_wins = [];
+var lang_inline_total_losses = [];
+var lang_inline_ranked_kd = [];
+var lang_inline_casual_kd = [];
+var lang_inline_ranked_playtime = [];
+var lang_inline_casual_playtime = [];
+var lang_inline_userinfo = [];
+var lang_inline_userfound = [];
+var lang_inline_infos = [];
+
+var lang_operator_title = [];
+var lang_operator_plays = [];
+var lang_operator_wins = [];
+var lang_operator_losses = [];
+var lang_operator_kills = [];
+var lang_operator_deaths = [];
+var lang_operator_playtime = [];
+var lang_operator_specials = [];
+var lang_operator_extra = [];
+
+lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>!\n\nUsa '/stats username piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
+lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>!\n\nUse '/stats username platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_storebot["it"] = "<a href='https://storebot.me/bot/r6siegestatsbot'>Vota sullo Storebot</a>";
 lang_storebot["en"] = "<a href='https://storebot.me/bot/r6siegestatsbot'>Vote on Storebot</a>";
 lang_changed["it"] = "Lingua modificata!";
@@ -199,6 +267,38 @@ lang_news_readall["it"] = "Leggi notizia completa";
 lang_news_readall["en"] = "Read full article";
 lang_news_date["it"] = "Pubblicato alle ";
 lang_news_date["en"] = "Published at ";
+lang_operator_no_name["it"] = "Nome operatore non specificato.";
+lang_operator_no_name["en"] = "Operator name not specified.";
+lang_operator_not_found["it"] = "Operatore non trovato.";
+lang_operator_not_found["en"] = "Operator not found.";
+lang_help["it"] = 	"*Guida ai comandi:*\n" +
+					"> '/stats <username> <piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
+					"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
+					"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
+					"> '/compare <username1> <username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
+					"> '/graph <parametro>' - Genera un grafico per il parametro specificato, necessita dell'attivazione dell'/autotrack (vedi sotto).\n" +
+					"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
+					"> '/news' - Permette di visualizzare le ultime 5 news ufficiali del gioco reperite da Steam.\n" +
+					"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
+					"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
+					"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
+					"> '/autotrack <enable/disable>' - Attiva il salvataggio automatico dei dati del giocatore per poterne generare i grafici.\n" +
+					"\n*Come funziona l'autotrack?*\n" +
+					"L'autrack del personaggio sostanzialmente lancia automaticamente il comando /stats a mezzanotte di ogni notte, così da salvare i dati nel nostro database e poterli utilizzare per disegnare i grafici. Per avviare l'operazione è necessario eseguire i seguenti passi:\n1. _/start_ per avviare il bot e creare l'utente\n2. _/setusername_ e _/setplatform_ per salvare i dati necessari\n3. _/autotrack enable_ per avviare il processo.\n\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
+lang_help["en"] = 	"*Commands tutorial:*\n" +
+					"> '/stats <username> <platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
+					"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
+					"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
+					"> '/compare <username1> <username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
+					"> '/graph <parameter>' - Generate a graph using parameter specified, needs /autotrack activation (see below).\n" +
+					"> '/status <platform>' - Allow to print official server status of the game.\n" +
+					"> '/news' - Allow to print latest 5 official news of the game wrote by Steam.\n" +
+					"> '/lang <language>' - Change bot language.\n" +
+					"> '/setusername <username>' - Change default username to use some functions.\n" +
+					"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
+					"> '/autotrack <enable/disable>' - Enable automatic save of user stats to generate graphs.\n" +
+					"\n*How autotrack works?*\n" +
+					"Simply, user autotrack automatically execute /stats command at midnight, so the datas can be stored in out database and you can use it to write graphs. To start operation you should follow this steps:\n1. _/start_ to start bot and create user\n2. _/setusername_ and _/setplatform_ to save necessary datas\n3. _/autotrack enable_ to start the process.\n\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -219,7 +319,7 @@ lang_ranked_kills["it"] = "Uccisioni";
 lang_ranked_kills["en"] = "Kills";
 lang_ranked_deaths["it"] = "Morti";
 lang_ranked_deaths["en"] = "Deaths";
-lang_ranked_kd["it"] = "K/D";
+lang_ranked_kd["it"] = "U/M";
 lang_ranked_kd["en"] = "K/D";
 lang_ranked_playtime["it"] = "Tempo di gioco";
 lang_ranked_playtime["en"] = "Playtime";
@@ -234,7 +334,7 @@ lang_casual_kills["it"] = "Uccisioni";
 lang_casual_kills["en"] = "Kills";
 lang_casual_deaths["it"] = "Morti";
 lang_casual_deaths["en"] = "Deaths";
-lang_casual_kd["it"] = "K/D";
+lang_casual_kd["it"] = "U/M";
 lang_casual_kd["en"] = "K/D";
 lang_casual_playtime["it"] = "Tempo di gioco";
 lang_casual_playtime["en"] = "Playtime";
@@ -284,8 +384,50 @@ lang_title_general["en"] = "General";
 lang_title_operators["it"] = "Operatori";
 lang_title_operators["en"] = "Operators";
 
+lang_inline_total_kills["it"] = "Uccisioni totali";
+lang_inline_total_kills["en"] = "Total kills";
+lang_inline_total_deaths["it"] = "Morti totali";
+lang_inline_total_deaths["en"] = "Total deaths";
+lang_inline_total_wins["it"] = "Vittorie totali";
+lang_inline_total_wins["en"] = "Total wins";
+lang_inline_total_losses["it"] = "Sconfitte totali";
+lang_inline_total_losses["en"] = "Total losses";
+lang_inline_userinfo["it"] = "Informazioni giocatore";
+lang_inline_userinfo["en"] = "Player info";
+lang_inline_userfound["it"] = "Giocatore trovato";
+lang_inline_userfound["en"] = "Player found";
+lang_inline_ranked_kd["it"] = "U/M Classificate";
+lang_inline_ranked_kd["en"] = "K/D Ranked";
+lang_inline_casual_kd["it"] = "U/M Libere";
+lang_inline_casual_kd["en"] = "K/D Casual";
+lang_inline_ranked_playtime["it"] = "Tempo di gioco classificate";
+lang_inline_ranked_playtime["en"] = "Ranked playtime";
+lang_inline_casual_playtime["it"] = "Tempo di gioco libere";
+lang_inline_casual_playtime["en"] = "Casual playtime";
+lang_inline_infos["it"] = "Per ulteriori informazioni usa /stats!";
+lang_inline_infos["en"] = "To see more informations use /stats!";
+
+lang_operator_title["it"] = "Operatore";
+lang_operator_title["en"] = "Operator";
+lang_operator_plays["it"] = "Partite";
+lang_operator_plays["en"] = "Plays";
+lang_operator_wins["it"] = "Vittore";
+lang_operator_wins["en"] = "Wins";
+lang_operator_losses["it"] = "Sconfitte";
+lang_operator_losses["en"] = "Losses";
+lang_operator_kills["it"] = "Uccisioni";
+lang_operator_kills["en"] = "Kills";
+lang_operator_deaths["it"] = "Morti";
+lang_operator_deaths["en"] = "Deaths";
+lang_operator_playtime["it"] = "Tempo di gioco";
+lang_operator_playtime["en"] = "Playtime";
+lang_operator_specials["it"] = "Abilità";
+lang_operator_specials["en"] = "Special";
+lang_operator_extra["it"] = "\nPuoi visualizzare i dettagli di un operatore utilizzando '/operator nome_operatore'.";
+lang_operator_extra["en"] = "\nYou can show detail of one operator using '/operator operator_name'.";
+
 var j = Schedule.scheduleJob('00 00 * * *', function () {
-	console.log("Autotrack called from job");
+	console.log(getNow("it") + " Autotrack called from job");
 	autoTrack();
 });
 
@@ -301,7 +443,7 @@ bot.onText(/^\/start/i, function (message) {
 		if (Object.keys(rows).length == 0){
 			connection.query("INSERT INTO user (account_id, lang) VALUES (" + message.from.id + ", '" + lang + "')", function (err, rows) {
 				if (err) throw err;
-				console.log("New user " + message.from.username + " (" + message.from.id + " - " + lang + ")");
+				console.log(getNow("it") + " New user " + message.from.username + " (" + message.from.id + " - " + lang + ")");
 			});
 		}else{
 			lang = rows[0].lang;
@@ -316,6 +458,82 @@ bot.onText(/^\/start/i, function (message) {
 		}
 
 		bot.sendMessage(message.chat.id, lang_main[lang] + "\n\n" + extra + lang_storebot[lang], no_preview);
+	});
+});
+
+bot.on("inline_query", function (query) {
+	var data = query.query;
+
+	if (data == "")
+		return;
+
+	if (data.length < 4)
+		return;
+
+	var lang = "en";
+	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + query.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			rows[0].default_platform = "uplay";
+			if (query.from.language_code != undefined){
+				if (validLang.indexOf(query.from.language_code) != -1)
+					lang = query.from.language_code;
+			}
+		}else{
+			lang = rows[0].lang;
+		}
+
+		var split = data.split(" ");
+		if (split[1] == undefined){
+			if (rows[0].default_platform != null)
+				split[1] = rows[0].default_platform;
+			else {
+				split[1] = "uplay";
+			}
+		}
+
+		var username = split[0];
+		var platform = split[1];
+
+		console.log(getNow("it") + " User data request inline for " + username + " on " + platform);
+		r6.stats(username, platform, false).then(response => {
+			connection.query('SELECT ranked_playtime, casual_playtime FROM player_history WHERE platform = "' + response.player.platform + '" AND ubisoft_id = "' + response.player.ubisoft_id + '" ORDER BY id DESC', function (err, rows) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0){
+					saveData(response);
+				}else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime)){
+					saveData(response);
+				}
+
+				bot.answerInlineQuery(query.id, [{
+					id: '0',
+					type: 'article',
+					title: lang_inline_userinfo[lang],
+					description: lang_inline_userfound[lang],
+					message_text: 	"<b>" + response.player.username + "</b> (Lv " + response.player.stats.progression.level + " - " + jsUcfirst(response.player.platform) + ")\n" +
+					"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + response.player.stats.ranked.kd + "\n" +
+					"<b>" + lang_inline_ranked_playtime[lang] + "</b>: " + toTime(response.player.stats.ranked.playtime, lang, true) + "\n" +
+					"<b>" + lang_inline_casual_kd[lang] + "</b>: " + response.player.stats.casual.kd + "\n" +
+					"<b>" + lang_inline_casual_playtime[lang] + "</b>: " + toTime(response.player.stats.casual.playtime, lang, true) + "\n" +
+					"<b>" + lang_inline_total_kills[lang] + "</b>: " + formatNumber(response.player.stats.ranked.kills + response.player.stats.casual.kills) + "\n" +
+					"<b>" + lang_inline_total_deaths[lang] + "</b>: " + formatNumber(response.player.stats.ranked.deaths + response.player.stats.casual.deaths) + "\n" +
+					"<b>" + lang_inline_total_wins[lang] + "</b>: " + formatNumber(response.player.stats.ranked.wins + response.player.stats.casual.wins) + "\n" +
+					"<b>" + lang_inline_total_losses[lang] + "</b>: " + formatNumber(response.player.stats.ranked.losses + response.player.stats.casual.losses) + "\n\n" + lang_inline_infos[lang],
+					parse_mode: "HTML"
+				}]);
+			});
+		}).catch(error => {
+			bot.answerInlineQuery(query.id, [{
+				id: '0',
+				type: 'article',
+				title: lang_inline_userinfo[lang],
+				description: lang_user_not_found[lang],
+				message_text: lang_user_not_found[lang],
+				parse_mode: "HTML"
+			}]);
+			//console.log(getNow("it") + " User data not found inline for " + username + " on " + platform);
+		});
 	});
 });
 
@@ -351,7 +569,7 @@ function saveData(response){
 					 response.player.stats.overall.penetration_kills + ',' +
 					 response.player.stats.overall.assists + ', NOW())', function (err, rows) {
 		if (err) throw err;
-		console.log("Saved user data for " + response.player.username);
+		console.log(getNow("it") + " Saved user data for " + response.player.username);
 	});
 }
 
@@ -505,22 +723,19 @@ bot.onText(/^\/news/i, function (message, match) {
 
 		var lang_complex = "";
 		var cookie = "";
-		if (lang == "it"){
-			lang_complex = "it-it";
+		if (lang == "it")
 			cookie = "italian";
-		} else if (lang == "en"){
-			lang_complex = "en-us";
+		else if (lang == "en")
 			cookie = "english";
-		}
 
-		console.log("Request news from " + message.from.username);
+		console.log(getNow("it") + " Request news in " + cookie + " from " + message.from.username);
 		var url = "https://steamcommunity.com/games/359550/rss/";
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			
+
 			var parser = new Parser({
-			  headers: {'Cookie': 'Steam_Language=' + cookie},
+				headers: {'Cookie': 'Steam_Language=' + cookie},
 			});
-			
+
 			(async () => {
 				let feed = await parser.parseURL(url);
 				var text = "";
@@ -575,6 +790,7 @@ bot.onText(/^\/graph (.+)|^\/graph/i, function (message, match) {
 
 		var param = match[1];
 
+		console.log(getNow("it") + " Request graph for " + param + " from " + message.from.username);
 		connection.query("SELECT insert_date, " + param + " FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "'", function (err, rows) {
 			if (err) throw err;
 
@@ -666,10 +882,18 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
-		var split = match[1].split(" ");
+		var split = [];
+		if (match[1] == undefined){
+			split[0] = undefined;
+			split[1] = undefined;
+		}else{
+			split = match[1].split(" ");
+		}
 
 		if (split[0] == undefined){
-			if (rows[0].default_username != null)
+			if (message.reply_to_message != undefined)
+				split[0] = message.reply_to_message.from.username;
+			else if (rows[0].default_username != null)
 				split[0] = rows[0].default_username;
 			else{
 				bot.sendMessage(message.chat.id, lang_invalid_user[lang]);
@@ -688,7 +912,7 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 		var username = split[0];
 		var platform = split[1];
 
-		console.log("Request user data for " + username + " on " + platform);
+		console.log(getNow("it") + " Request user data for " + username + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(username, platform, false).then(response => {
 				connection.query('SELECT ranked_playtime, casual_playtime FROM player_history WHERE platform = "' + response.player.platform + '" AND ubisoft_id = "' + response.player.ubisoft_id + '" ORDER BY id DESC', function (err, rows) {
@@ -701,7 +925,7 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 					}
 
 					var text = "<b>" + lang_username[lang] + "</b>: " + response.player.username + "\n" +
-						"<b>" + lang_platform[lang] + "</b>: " + response.player.platform + "\n" +
+						"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response.player.platform) + "\n" +
 						"<b>" + lang_level[lang] + "</b>: " + response.player.stats.progression.level + "\n" +
 						"<b>" + lang_xp[lang] + "</b>: " + formatNumber(response.player.stats.progression.xp) + "\n" +
 						"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
@@ -783,23 +1007,23 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 								"<b>" + lang_op_playtime[lang] + "</b>: " + most_playtime_name + " (" + toTime(most_playtime, lang, true) + ")";
 
 							bot.sendMessage(message.chat.id, text, html);
-							console.log("User data served for " + username + " on " + platform);
+							console.log(getNow("it") + " User data served for " + username + " on " + platform);
 						}).catch(error => {
 							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
-							console.log("User data operators not found for " + username + " on " + platform);
+							console.log(getNow("it") + " User data operators not found for " + username + " on " + platform);
 						});
 					});
 				});
 			}).catch(error => {
 				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
-				console.log("User data not found for " + username + " on " + platform);
+				console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 			});
 		});
 	});
 });
 
 bot.onText(/^\/compare (.+) (.+)|^\/compare/i, function (message, match) {
-	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			bot.sendMessage(message.chat.id, "Use /start before use /compare");
@@ -815,12 +1039,15 @@ bot.onText(/^\/compare (.+) (.+)|^\/compare/i, function (message, match) {
 			bot.sendMessage(message.chat.id, lang_invalid_user_2[lang]);
 			return;
 		}
+		
+		var platform = "uplay";
+		if (rows[0].default_platform != null)
+			platform = rows[0].default_platform;
 
 		var username1 = match[1];
 		var username2 = match[2];
-		var platform = "uplay";
 
-		console.log("Request user compare for " + username1 + " and " + username2 + " on " + platform);
+		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(username1, platform, false).then(response1 => {
 
@@ -828,7 +1055,7 @@ bot.onText(/^\/compare (.+) (.+)|^\/compare/i, function (message, match) {
 					r6.stats(username2, platform, false).then(response2 => {
 
 						var text = "<i>" + response1.player.username + " vs " + response2.player.username + "</i>\n" +
-							"<b>" + lang_platform[lang] + "</b>: " + response1.player.platform + " - " + response2.player.platform + "\n" +
+							"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response1.player.platform) + " - " + jsUcfirst(response2.player.platform) + "\n" +
 							"<b>" + lang_level[lang] + "</b>: " + compare(response1.player.stats.progression.level, response2.player.stats.progression.level) + "\n" +
 							"<b>" + lang_xp[lang] + "</b>: " + compare(response1.player.stats.progression.xp, response2.player.stats.progression.xp, "number") + "\n" +
 							"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
@@ -864,20 +1091,176 @@ bot.onText(/^\/compare (.+) (.+)|^\/compare/i, function (message, match) {
 
 					}).catch(error => {
 						bot.sendMessage(message.chat.id, "<b>" + error.errors[0].title + "</b>\n" +  error.errors[0].detail, html);
-						console.log("User data not found for " + username2 + " on " + platform);
+						console.log(getNow("it") + " User data not found for " + username2 + " on " + platform);
 					});
 				});
 			}).catch(error => {
 				bot.sendMessage(message.chat.id, "<b>" + error.errors[0].title + "</b>\n" +  error.errors[0].detail, html);
-				console.log("User data not found for " + username1 + " on " + platform);
+				console.log(getNow("it") + " User data not found for " + username1 + " on " + platform);
 			});
 		});
 	});
 });
 
+bot.onText(/^\/operators (.+)|^\/operators/i, function (message, match) {
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.chat.id, "Use /start before use /operators");
+			return;
+		}
+
+		var lang = rows[0].lang;
+
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			return;
+		}
+
+		var default_username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			return;
+		}
+
+		var default_platform = rows[0].default_platform;
+
+		console.log(getNow("it") + " Request operators data for " + default_username + " on " + default_platform);
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			r6.stats(default_username, default_platform, true).then(response => {
+				var text = "<b>" + lang_operator_title[lang] + " - " + lang_operator_plays[lang] + " - " + lang_operator_wins[lang] + " - " + lang_operator_losses[lang] + " - " + lang_operator_kills[lang] + " - " + lang_operator_deaths[lang] + " - " + lang_operator_playtime[lang] + " - " + lang_operator_specials[lang] + "</b>\n";
+				var operators_num = Object.keys(response.operator_records).length;		
+				for (i = 0; i < operators_num; i++){
+					text += "<b>" + response.operator_records[i].operator.name + "</b> - " + formatNumber(response.operator_records[i].stats.played) + " - " + formatNumber(response.operator_records[i].stats.wins) + " - " + formatNumber(response.operator_records[i].stats.losses) + " - " + formatNumber(response.operator_records[i].stats.kills) + " - " + formatNumber(response.operator_records[i].stats.deaths) + " - " + toTime(response.operator_records[i].stats.playtime, lang, true);
+					
+					if (response.operator_records[i].stats.specials != undefined){
+						var specials = Object.keys(response.operator_records[i].stats.specials);
+						var sum = 0;
+						for (j = 0; j < specials.length; j++)
+							sum += parseInt(eval("response.operator_records[" + i + "].stats.specials." + specials[j]));
+						text += " - " + formatNumber(sum);
+					}
+					text += "\n";
+				}
+				bot.sendMessage(message.chat.id, text + lang_operator_extra[lang], html);
+			}).catch(error => {
+				console.log(error);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+				console.log(getNow("it") + " Operators data not found for " + username + " on " + platform);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/operator (.+)|^\/operator$/i, function (message, match) {
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.chat.id, "Use /start before use /operator");
+			return;
+		}
+
+		var lang = rows[0].lang;
+
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			return;
+		}
+
+		var default_username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			return;
+		}
+
+		var default_platform = rows[0].default_platform;
+		
+		var operator_name;
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, lang_operator_no_name[lang]);
+			return;
+		}
+		operator_name = match[1];
+
+		console.log(getNow("it") + " Request operator data for " + operator_name + " from " + message.from.username);
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			r6.stats(default_username, default_platform, true).then(response => {
+				var name = "";
+				var played = 0;
+				var wins = 0;
+				var losses = 0;
+				var kills = 0;
+				var deaths = 0;
+				var playtime = 0;
+				var special_names = [];
+				var special_values = [];
+				var operators_num = Object.keys(response.operator_records).length;		
+				for (i = 0; i < operators_num; i++){
+					if (response.operator_records[i].operator.name.toLowerCase() == operator_name.toLowerCase()){
+						name = response.operator_records[i].operator.name;
+						played = response.operator_records[i].stats.played;
+						wins = response.operator_records[i].stats.wins;
+						losses = response.operator_records[i].stats.losses;
+						kills = response.operator_records[i].stats.kills;
+						deaths = response.operator_records[i].stats.deaths;
+						playtime = response.operator_records[i].stats.playtime;
+						
+						if (response.operator_records[i].stats.specials != undefined){
+							var specials = Object.keys(response.operator_records[i].stats.specials);
+							for (j = 0; j < specials.length; j++){
+								special_names.push(specials[j].replace("operatorpvp_", "").replace(response.operator_records[i].operator.name.toLowerCase() + "_", ""));
+								special_values.push(parseInt(eval("response.operator_records[" + i + "].stats.specials." + specials[j])));
+							}
+						}
+					}
+				}
+				
+				if (name == ""){
+					bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+					return;
+				}
+				
+				var text = 	"<b>" + lang_operator_title[lang] + "</b>: " + name + "\n" +
+							"<b>" + lang_operator_plays[lang] + "</b>: " + formatNumber(played) + "\n" +
+							"<b>" + lang_operator_wins[lang] + "</b>: " + formatNumber(wins) + "\n" +
+							"<b>" + lang_operator_losses[lang] + "</b>: " + formatNumber(losses) + "\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(kills) + "\n" +
+							"<b>" + lang_operator_deaths[lang] + "</b>: " + formatNumber(deaths) + "\n" +
+							"<b>" + lang_operator_playtime[lang] + "</b>: " + toTime(playtime, lang, true) + "\n";
+				for (j = 0; j < specials.length; j++){
+					text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
+				}
+				
+				bot.sendMessage(message.chat.id, text, html);
+			}).catch(error => {
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+				console.log(getNow("it") + " Operators data not found for " + operator_name + " from " + message.from.username);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/help/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.chat.id, "Use /start before use /help");
+			return;
+		}
+		
+		var mark = {
+			parse_mode: "Markdown"
+		};
+
+		bot.sendMessage(message.chat.id, lang_help[rows[0].lang], mark);
+	});
+});
+
 bot.onText(/^\/execute_autotrack/i, function (message, match) {
 	if (message.from.id == 20471035) {
-		console.log("Autotrack called manually");
+		console.log(getNow("it") + " Autotrack called manually");
 		autoTrack();
 	}
 });
@@ -901,16 +1284,16 @@ function setAutoTrack(element, index, array) {
 
 			if (Object.keys(rows).length == 0){
 				saveData(response);
-				console.log("Autotrack for " + username + " on " + platform + " saved (new)");
+				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (new)");
 			}else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime)){
 				saveData(response);
-				console.log("Autotrack for " + username + " on " + platform + " saved (update)");
+				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (update)");
 			}else{
-				console.log("Autotrack for " + username + " on " + platform + " skipped");
+				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " skipped");
 			}
 		});
 	}).catch(error => {
-		console.log("Autotrack for " + username + " on " + platform + " not found");
+		console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " not found");
 	});
 };
 
@@ -919,7 +1302,7 @@ function stripContent(text){
 	text = text.replaceAll("(<br>)","\n");
 	text = text.replaceAll("(<li>)","\n- ");
 	text = text.replaceAll("(</li>)","");
-	
+
 	// sempre per ultima
 	text = text.replaceAll("((\\n\\n\\n))","\n\n");
 	if (text.length > 500)
@@ -982,16 +1365,34 @@ function toTime(seconds, lang = "en", onlyHours = false) {
 		return humanizeDuration(seconds*1000, { language: lang });
 }
 
+function getNow(lang, obj) {
+	var d = new Date();
+	obj = typeof obj !== 'undefined' ? obj : false;
+	var datetime;
+	if (lang == "it") {
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else if (lang == "en") {
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else {
+		datetime = "Error";
+	}
+	if (obj == true) {
+		datetime = new Date(datetime);
+	}
+	return datetime;
+}
+
 function toDate(lang, date) {
 	var d = new Date(date);
 	if (typeof date == "object")
 		d = date;
+	var datetime;
 	if (lang == "it") {
-		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
-		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else {
-		var datetime = "Format not specified";
+		datetime = "Error";
 	}
 	return datetime;
 }

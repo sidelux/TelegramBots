@@ -150,6 +150,7 @@ bot.on("inline_query", function (query) {
 			lang = query.from.language_code;
 	}
 	
+	console.log(getNow("it") + " User data request inline for " + data);
 	connection.query('SELECT account_id, last_username, message_count, creation_date, update_date FROM stats WHERE last_username = "' + data + '" OR account_id = "' + data + '"', function (err, rows) {
 		if (err) throw err;
 
@@ -178,6 +179,23 @@ bot.on("inline_query", function (query) {
 	});
 });
 
+function getNow(lang, obj) {
+	var d = new Date();
+	obj = typeof obj !== 'undefined' ? obj : false;
+	var datetime;
+	if (lang == "it") {
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else if (lang == "en") {
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else {
+		datetime = "Error";
+	}
+	if (obj == true) {
+		datetime = new Date(datetime);
+	}
+	return datetime;
+}
+
 function toDate(lang, date) {
 	var d = new Date(date);
 	if (typeof date == "object")
@@ -188,7 +206,7 @@ function toDate(lang, date) {
 	} else if (lang == "db") {
 		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else {
-		datetime = "Format not specified";
+		datetime = "Error";
 	}
 	return datetime;
 }
