@@ -38,9 +38,8 @@ class RainbowSixApi {
 			if(typeof platform !== 'string' || !platform) 
 				return reject(new TypeError('Invalid platform, platform types can be: uplay, xone, ps4'));
 			let endpoint = `https://api.r6stats.com/api/v1/players/${username.toString()}/?platform=${platform}`;
-			if(operators) {
+			if(operators)
 				endpoint = `https://api.r6stats.com/api/v1/players/${username}/operators/?platform=${platform}`;
-			}
 			request.get(endpoint, (error, response, body) => {
 				if(!error && response.statusCode == '200') {
 					return resolve(JSON.parse(body));
@@ -219,8 +218,61 @@ var lang_operator_playtime = [];
 var lang_operator_specials = [];
 var lang_operator_extra = [];
 
-lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>!\n\nUsa '/stats username piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
-lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>!\n\nUse '/stats username platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
+var ability_operatorpvp_phoneshacked = [];
+var ability_operatorpvp_attackerdrone_diminishedrealitymode = [];
+var ability_operatorpvp_caltrop_enemy_affected = [];
+var ability_operatorpvp_cazador_assist_kill = [];
+var ability_operatorpvp_tagger_tagdevice_spot = [];
+var ability_operatorpvp_doc_selfrevive = [];
+var ability_operatorpvp_doc_hostagerevive = [];
+var ability_operatorpvp_doc_teammaterevive = [];
+var ability_operatorpvp_mute_gadgetjammed = [];
+var ability_operatorpvp_mute_jammerdeployed = [];
+var ability_operatorpvp_ash_bonfirekill = [];
+var ability_operatorpvp_ash_bonfirewallbreached = [];
+var ability_operatorpvp_blackbeard_gunshieldblockdamage = [];
+var ability_operatorpvp_valkyrie_camdeployed = [];
+var ability_operatorpvp_dazzler_gadget_detonate = [];
+var ability_operatorpvp_concussionmine_detonate = [];
+var ability_operatorpvp_black_mirror_gadget_deployed = [];
+var ability_operatorpvp_hibana_detonate_projectile = [];
+var ability_operatorpvp_echo_enemy_sonicburst_affected = [];
+var ability_operatorpvp_smoke_poisongaskill = [];
+var ability_operatorpvp_rush_adrenalinerush = [];
+var ability_operatorpvp_concussiongrenade_detonate = [];
+var ability_operatorpvp_bandit_batterykill = [];
+var ability_operatorpvp_caveira_interrogations = [];
+var ability_operatorpvp_fuze_clusterchargekill = [];
+var ability_operatorpvp_pulse_heartbeatspot = [];
+var ability_operatorpvp_pulse_heartbeatassist = [];
+var ability_operatorpvp_sledge_hammerhole = [];
+var ability_operatorpvp_sledge_hammerkill = [];
+var ability_operatorpvp_castle_kevlarbarricadedeployed = [];
+var ability_operatorpvp_glaz_sniperkill = [];
+var ability_operatorpvp_glaz_sniperpenetrationkill = [];
+var ability_operatorpvp_montagne_shieldblockdamage = [];
+var ability_operatorpvp_iq_gadgetspotbyef = [];
+var ability_operatorpvp_twitch_shockdronekill = [];
+var ability_operatorpvp_twitch_gadgetdestroybyshockdrone = [];
+var ability_operatorpvp_thermite_chargekill = [];
+var ability_operatorpvp_thermite_chargedeployed = [];
+var ability_operatorpvp_thermite_reinforcementbreached = [];
+var ability_operatorpvp_rook_armorboxdeployed = [];
+var ability_operatorpvp_rook_armortakenourself = [];
+var ability_operatorpvp_rook_armortakenteammate = [];
+var ability_operatorpvp_capitao_lethaldartkills = [];
+var ability_operatorpvp_buck_kill = [];
+var ability_operatorpvp_frost_dbno = [];
+var ability_operatorpvp_jager_gadgetdestroybycatcher = [];
+var ability_operatorpvp_thatcher_gadgetdestroywithemp = [];
+var ability_operatorpvp_blitz_flashedenemy = [];
+var ability_operatorpvp_blitz_flashshieldassist = [];
+var ability_operatorpvp_blitz_flashfollowupkills = [];
+var ability_operatorpvp_kapkan_boobytrapkill = [];
+var ability_operatorpvp_kapkan_boobytrapdeployed = [];
+
+lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
+lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_storebot["it"] = "<a href='https://storebot.me/bot/r6siegestatsbot'>Vota sullo Storebot</a>";
 lang_storebot["en"] = "<a href='https://storebot.me/bot/r6siegestatsbot'>Vote on Storebot</a>";
 lang_changed["it"] = "Lingua modificata!";
@@ -423,8 +475,113 @@ lang_operator_playtime["it"] = "Tempo di gioco";
 lang_operator_playtime["en"] = "Playtime";
 lang_operator_specials["it"] = "Abilità";
 lang_operator_specials["en"] = "Special";
-lang_operator_extra["it"] = "\nPuoi visualizzare i dettagli di un operatore utilizzando '/operator nome_operatore'.";
-lang_operator_extra["en"] = "\nYou can show detail of one operator using '/operator operator_name'.";
+lang_operator_extra["it"] = "\nPuoi visualizzare i dettagli di un operatore e le sue abilità speciali utilizzando '/operator nome_operatore'.";
+lang_operator_extra["en"] = "\nYou can show detail of one operator and his abilities using '/operator operator_name'.";
+
+ability_operatorpvp_phoneshacked["it"] = "Telefoni hackerati";
+ability_operatorpvp_phoneshacked["en"] = "Phones hacked";
+ability_operatorpvp_attackerdrone_diminishedrealitymode["it"] = "Droni disturbati";
+ability_operatorpvp_attackerdrone_diminishedrealitymode["en"] = "Confused drones";
+ability_operatorpvp_caltrop_enemy_affected["it"] = "Nemici avvelenati";
+ability_operatorpvp_caltrop_enemy_affected["en"] = "Poisoned enemies";
+ability_operatorpvp_cazador_assist_kill["it"] = "Assist individuazione";
+ability_operatorpvp_cazador_assist_kill["en"] = "Spot assits";
+ability_operatorpvp_tagger_tagdevice_spot["it"] = "Nemici individuato";
+ability_operatorpvp_tagger_tagdevice_spot["en"] = "Enemies spotted";
+ability_operatorpvp_doc_selfrevive["it"] = "Auto-rianimazioni";
+ability_operatorpvp_doc_selfrevive["en"] = "Self-revives";
+ability_operatorpvp_doc_hostagerevive["it"] = "Rianimazioni ostaggio";
+ability_operatorpvp_doc_hostagerevive["en"] = "Hostages revive";
+ability_operatorpvp_doc_teammaterevive["it"] = "Rianimazioni compagno";
+ability_operatorpvp_doc_teammaterevive["en"] = "Teammates revive";
+ability_operatorpvp_mute_gadgetjammed["it"] = "Gadget disturbati";
+ability_operatorpvp_mute_gadgetjammed["en"] = "Disturbed gadgets";
+ability_operatorpvp_mute_jammerdeployed["it"] = "Jammer posizionati";
+ability_operatorpvp_mute_jammerdeployed["en"] = "Jammers deployed";
+ability_operatorpvp_ash_bonfirekill["it"] = "Uccisioni con munizioni da irruzione";
+ability_operatorpvp_ash_bonfirekill["en"] = "Bonfire kills";
+ability_operatorpvp_ash_bonfirewallbreached["it"] = "Muri distrutti";
+ability_operatorpvp_ash_bonfirewallbreached["en"] = "Bonfire walls breached";
+ability_operatorpvp_blackbeard_gunshieldblockdamage["it"] = "Danno bloccato dallo scudo";
+ability_operatorpvp_blackbeard_gunshieldblockdamage["en"] = "Shield damage blocked";
+ability_operatorpvp_valkyrie_camdeployed["it"] = "Black eye piazzate";
+ability_operatorpvp_valkyrie_camdeployed["en"] = "Cams deployed";
+ability_operatorpvp_dazzler_gadget_detonate["it"] = "Granate stordenti esplose";
+ability_operatorpvp_dazzler_gadget_detonate["en"] = "Dazzlers detonated";
+ability_operatorpvp_concussionmine_detonate["it"] = "Mine a concussione esplose";
+ability_operatorpvp_concussionmine_detonate["en"] = "Concussion mines detonated";
+ability_operatorpvp_black_mirror_gadget_deployed["it"] = "Specchi neri posizionati";
+ability_operatorpvp_black_mirror_gadget_deployed["en"] = "Black mirrors deployed";
+ability_operatorpvp_hibana_detonate_projectile["it"] = "X-KAIROS esplose";
+ability_operatorpvp_hibana_detonate_projectile["en"] = "Projectiles detonated";
+ability_operatorpvp_echo_enemy_sonicburst_affected["it"] = "Nemici storditi";
+ability_operatorpvp_echo_enemy_sonicburst_affected["en"] = "Enemies stunned";
+ability_operatorpvp_smoke_poisongaskill["it"] = "Nemici avvelenati";
+ability_operatorpvp_smoke_poisongaskill["en"] = "Poisoned enemies";
+ability_operatorpvp_rush_adrenalinerush["it"] = "Iniezioni di adrenalina";
+ability_operatorpvp_rush_adrenalinerush["en"] = "Adrenaline rush";
+ability_operatorpvp_concussiongrenade_detonate["it"] = "Granate a concussione esplose";
+ability_operatorpvp_concussiongrenade_detonate["en"] = "Concussion granade detonated";
+ability_operatorpvp_bandit_batterykill["it"] = "Uccisioni con batteria";
+ability_operatorpvp_bandit_batterykill["en"] = "Battery kills";
+ability_operatorpvp_caveira_interrogations["it"] = "Interrogazioni";
+ability_operatorpvp_caveira_interrogations["en"] = "Interrogations";
+ability_operatorpvp_fuze_clusterchargekill["it"] = "Uccisioni con carica a grappolo";
+ability_operatorpvp_fuze_clusterchargekill["en"] = "Cluster charge kills";
+ability_operatorpvp_pulse_heartbeatspot["it"] = "Nemici individuati";
+ability_operatorpvp_pulse_heartbeatspot["en"] = "Enemies tagged";
+ability_operatorpvp_pulse_heartbeatassist["it"] = "Assist";
+ability_operatorpvp_pulse_heartbeatassist["en"] = "Assists";
+ability_operatorpvp_sledge_hammerhole["it"] = "Superfici distrutte con martello";
+ability_operatorpvp_sledge_hammerhole["en"] = "Hammer holes";
+ability_operatorpvp_sledge_hammerkill["it"] = "Uccisioni con martello";
+ability_operatorpvp_sledge_hammerkill["en"] = "Hammer kills";
+ability_operatorpvp_castle_kevlarbarricadedeployed["it"] = "Barricate piazzate";
+ability_operatorpvp_castle_kevlarbarricadedeployed["en"] = "Barricades deployed";
+ability_operatorpvp_glaz_sniperkill["it"] = "Uccisione da cecchino";
+ability_operatorpvp_glaz_sniperkill["en"] = "Sniper kills";
+ability_operatorpvp_glaz_sniperpenetrationkill["it"] = "Uccisioni da cecchino in penetrazione";
+ability_operatorpvp_glaz_sniperpenetrationkill["en"] = "Sniper penetration kills";
+ability_operatorpvp_montagne_shieldblockdamage["it"] = "Danno bloccato con lo scudo";
+ability_operatorpvp_montagne_shieldblockdamage["en"] = "Damage blocket with shield";
+ability_operatorpvp_iq_gadgetspotbyef["it"] = "Gadget individuati";
+ability_operatorpvp_iq_gadgetspotbyef["en"] = "Gadgets spotted";
+ability_operatorpvp_twitch_shockdronekill["it"] = "Uccisioni col drone";
+ability_operatorpvp_twitch_shockdronekill["en"] = "Drone kills";
+ability_operatorpvp_twitch_gadgetdestroybyshockdrone["it"] = "Gadget distrutti col drone";
+ability_operatorpvp_twitch_gadgetdestroybyshockdrone["en"] = "Gadgets destroyed by drone";
+ability_operatorpvp_thermite_chargekill["it"] = "Uccisioni con cariche";
+ability_operatorpvp_thermite_chargekill["en"] = "Charge kills";
+ability_operatorpvp_thermite_chargedeployed["it"] = "Cariche piazzate";
+ability_operatorpvp_thermite_chargedeployed["en"] = "Charges deployed";
+ability_operatorpvp_thermite_reinforcementbreached["it"] = "Rinforzi distrutti";
+ability_operatorpvp_thermite_reinforcementbreached["en"] = "Reinforcements breached";
+ability_operatorpvp_rook_armorboxdeployed["it"] = "Armature piazzate";
+ability_operatorpvp_rook_armorboxdeployed["en"] = "Armor boxes deployed";
+ability_operatorpvp_rook_armortakenourself["it"] = "Armature indossate";
+ability_operatorpvp_rook_armortakenourself["en"] = "Armors taken yourself";
+ability_operatorpvp_rook_armortakenteammate["it"] = "Armature indossate dai compagni";
+ability_operatorpvp_rook_armortakenteammate["en"] = "Armors taken teammate";
+ability_operatorpvp_capitao_lethaldartkills["it"] = "Uccisioni con dardi";
+ability_operatorpvp_capitao_lethaldartkills["en"] = "Dart kills";
+ability_operatorpvp_buck_kill["it"] = "Uccisioni con SK4-12";
+ability_operatorpvp_buck_kill["en"] = "SK4-12 kills";
+ability_operatorpvp_frost_dbno["it"] = "Uccisioni con trappole";
+ability_operatorpvp_frost_dbno["en"] = "Trap kills";
+ability_operatorpvp_jager_gadgetdestroybycatcher["it"] = "Gadget distrutti";
+ability_operatorpvp_jager_gadgetdestroybycatcher["en"] = "Gadgets destroyed";
+ability_operatorpvp_thatcher_gadgetdestroywithemp["it"] = "Gadget distrutti";
+ability_operatorpvp_thatcher_gadgetdestroywithemp["en"] = "Gadgets destroyed";
+ability_operatorpvp_blitz_flashedenemy["it"] = "Nemici accecati";
+ability_operatorpvp_blitz_flashedenemy["en"] = "Flashed enemies";
+ability_operatorpvp_blitz_flashshieldassist["it"] = "Assist accecamento";
+ability_operatorpvp_blitz_flashshieldassist["en"] = "Flashed enemy assists";
+ability_operatorpvp_blitz_flashfollowupkills["it"] = "Nemici uccisi dopo l'accecamento";
+ability_operatorpvp_blitz_flashfollowupkills["en"] = "Flashed enemy killed after flashing";
+ability_operatorpvp_kapkan_boobytrapkill["it"] = "Uccisioni con trappole";
+ability_operatorpvp_kapkan_boobytrapkill["en"] = "Trap kills";
+ability_operatorpvp_kapkan_boobytrapdeployed["it"] = "Trappole piazzate";
+ability_operatorpvp_kapkan_boobytrapdeployed["en"] = "Traps deployed";
 
 var j = Schedule.scheduleJob('00 00 * * *', function () {
 	console.log(getNow("it") + " Autotrack called from job");
@@ -886,9 +1043,8 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 		if (match[1] == undefined){
 			split[0] = undefined;
 			split[1] = undefined;
-		}else{
+		}else
 			split = match[1].split(" ");
-		}
 
 		if (split[0] == undefined){
 			if (message.reply_to_message != undefined)
@@ -904,9 +1060,8 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 		if (split[1] == undefined){
 			if (rows[0].default_platform != null)
 				split[1] = rows[0].default_platform;
-			else {
+			else
 				split[1] = "uplay";
-			}
 		}
 
 		var username = split[0];
@@ -918,11 +1073,10 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 				connection.query('SELECT ranked_playtime, casual_playtime FROM player_history WHERE platform = "' + response.player.platform + '" AND ubisoft_id = "' + response.player.ubisoft_id + '" ORDER BY id DESC', function (err, rows) {
 					if (err) throw err;
 
-					if (Object.keys(rows).length == 0){
+					if (Object.keys(rows).length == 0)
 						saveData(response);
-					}else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime)){
+					else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime))
 						saveData(response);
-					}
 
 					var text = "<b>" + lang_username[lang] + "</b>: " + response.player.username + "\n" +
 						"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response.player.platform) + "\n" +
@@ -1145,9 +1299,8 @@ bot.onText(/^\/operators (.+)|^\/operators/i, function (message, match) {
 				}
 				bot.sendMessage(message.chat.id, text + lang_operator_extra[lang], html);
 			}).catch(error => {
-				console.log(error);
-				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
-				console.log(getNow("it") + " Operators data not found for " + username + " on " + platform);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + default_platform + ")", html);
+				console.log(getNow("it") + " Operators data not found for " + default_username + " on " + default_platform);
 			});
 		});
 	});
@@ -1210,7 +1363,7 @@ bot.onText(/^\/operator (.+)|^\/operator$/i, function (message, match) {
 						if (response.operator_records[i].stats.specials != undefined){
 							var specials = Object.keys(response.operator_records[i].stats.specials);
 							for (j = 0; j < specials.length; j++){
-								special_names.push(specials[j].replace("operatorpvp_", "").replace(response.operator_records[i].operator.name.toLowerCase() + "_", ""));
+								special_names.push(eval("ability_" + specials[j] + "['" + lang + "']"));
 								special_values.push(parseInt(eval("response.operator_records[" + i + "].stats.specials." + specials[j])));
 							}
 						}
@@ -1235,7 +1388,7 @@ bot.onText(/^\/operator (.+)|^\/operator$/i, function (message, match) {
 				
 				bot.sendMessage(message.chat.id, text, html);
 			}).catch(error => {
-				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+				bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", html);
 				console.log(getNow("it") + " Operators data not found for " + operator_name + " from " + message.from.username);
 			});
 		});
