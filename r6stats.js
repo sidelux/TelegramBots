@@ -324,33 +324,33 @@ lang_operator_no_name["en"] = "Operator name not specified.";
 lang_operator_not_found["it"] = "Operatore non trovato.";
 lang_operator_not_found["en"] = "Operator not found.";
 lang_help["it"] = 	"*Guida ai comandi:*\n" +
-					"> '/stats <username> <piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
-					"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
-					"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
-					"> '/compare <username1> <username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
-					"> '/graph <parametro>' - Genera un grafico per il parametro specificato, necessita dell'attivazione dell'/autotrack (vedi sotto).\n" +
-					"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
-					"> '/news' - Permette di visualizzare le ultime 5 news ufficiali del gioco reperite da Steam.\n" +
-					"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
-					"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
-					"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
-					"> '/autotrack <enable/disable>' - Attiva il salvataggio automatico dei dati del giocatore per poterne generare i grafici.\n" +
-					"\n*Come funziona l'autotrack?*\n" +
-					"L'autrack del personaggio sostanzialmente lancia automaticamente il comando /stats a mezzanotte di ogni notte, così da salvare i dati nel nostro database e poterli utilizzare per disegnare i grafici. Per avviare l'operazione è necessario eseguire i seguenti passi:\n1. _/start_ per avviare il bot e creare l'utente\n2. _/setusername_ e _/setplatform_ per salvare i dati necessari\n3. _/autotrack enable_ per avviare il processo.\n\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
+	"> '/stats <username> <piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
+	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
+	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
+	"> '/compare <username1> <username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
+	"> '/graph <parametro>' - Genera un grafico per il parametro specificato, necessita dell'attivazione dell'/autotrack (vedi sotto).\n" +
+	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
+	"> '/news' - Permette di visualizzare le ultime 5 news ufficiali del gioco reperite da Steam.\n" +
+	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
+	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
+	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
+	"> '/autotrack <enable/disable>' - Attiva il salvataggio automatico dei dati del giocatore per poterne generare i grafici.\n" +
+	"\n*Come funziona l'autotrack?*\n" +
+	"L'autrack del personaggio sostanzialmente lancia automaticamente il comando /stats a mezzanotte di ogni notte, così da salvare i dati nel nostro database e poterli utilizzare per disegnare i grafici. Per avviare l'operazione è necessario eseguire i seguenti passi:\n1. _/start_ per avviare il bot e creare l'utente\n2. _/setusername_ e _/setplatform_ per salvare i dati necessari\n3. _/autotrack enable_ per avviare il processo.\n\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
-					"> '/stats <username> <platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
-					"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
-					"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
-					"> '/compare <username1> <username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
-					"> '/graph <parameter>' - Generate a graph using parameter specified, needs /autotrack activation (see below).\n" +
-					"> '/status <platform>' - Allow to print official server status of the game.\n" +
-					"> '/news' - Allow to print latest 5 official news of the game wrote by Steam.\n" +
-					"> '/lang <language>' - Change bot language.\n" +
-					"> '/setusername <username>' - Change default username to use some functions.\n" +
-					"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
-					"> '/autotrack <enable/disable>' - Enable automatic save of user stats to generate graphs.\n" +
-					"\n*How autotrack works?*\n" +
-					"Simply, user autotrack automatically execute /stats command at midnight, so the datas can be stored in out database and you can use it to write graphs. To start operation you should follow this steps:\n1. _/start_ to start bot and create user\n2. _/setusername_ and _/setplatform_ to save necessary datas\n3. _/autotrack enable_ to start the process.\n\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
+	"> '/stats <username> <platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
+	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
+	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
+	"> '/compare <username1> <username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
+	"> '/graph <parameter>' - Generate a graph using parameter specified, needs /autotrack activation (see below).\n" +
+	"> '/status <platform>' - Allow to print official server status of the game.\n" +
+	"> '/news' - Allow to print latest 5 official news of the game wrote by Steam.\n" +
+	"> '/lang <language>' - Change bot language.\n" +
+	"> '/setusername <username>' - Change default username to use some functions.\n" +
+	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
+	"> '/autotrack <enable/disable>' - Enable automatic save of user stats to generate graphs.\n" +
+	"\n*How autotrack works?*\n" +
+	"Simply, user autotrack automatically execute /stats command at midnight, so the datas can be stored in out database and you can use it to write graphs. To start operation you should follow this steps:\n1. _/start_ to start bot and create user\n2. _/setusername_ and _/setplatform_ to save necessary datas\n3. _/autotrack enable_ to start the process.\n\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -624,7 +624,7 @@ bot.on("inline_query", function (query) {
 	if (data == "")
 		return;
 
-	if (data.length < 4)
+	if (data.length < 6)
 		return;
 
 	var lang = "en";
@@ -1193,7 +1193,7 @@ bot.onText(/^\/compare (.+) (.+)|^\/compare/i, function (message, match) {
 			bot.sendMessage(message.chat.id, lang_invalid_user_2[lang]);
 			return;
 		}
-		
+
 		var platform = "uplay";
 		if (rows[0].default_platform != null)
 			platform = rows[0].default_platform;
@@ -1287,7 +1287,7 @@ bot.onText(/^\/operators (.+)|^\/operators/i, function (message, match) {
 				var operators_num = Object.keys(response.operator_records).length;		
 				for (i = 0; i < operators_num; i++){
 					text += "<b>" + response.operator_records[i].operator.name + "</b> - " + formatNumber(response.operator_records[i].stats.played) + " - " + formatNumber(response.operator_records[i].stats.wins) + " - " + formatNumber(response.operator_records[i].stats.losses) + " - " + formatNumber(response.operator_records[i].stats.kills) + " - " + formatNumber(response.operator_records[i].stats.deaths) + " - " + toTime(response.operator_records[i].stats.playtime, lang, true);
-					
+
 					if (response.operator_records[i].stats.specials != undefined){
 						var specials = Object.keys(response.operator_records[i].stats.specials);
 						var sum = 0;
@@ -1329,7 +1329,7 @@ bot.onText(/^\/operator (.+)|^\/operator$/i, function (message, match) {
 		}
 
 		var default_platform = rows[0].default_platform;
-		
+
 		var operator_name;
 		if (match[1] == undefined){
 			bot.sendMessage(message.chat.id, lang_operator_no_name[lang]);
@@ -1359,7 +1359,7 @@ bot.onText(/^\/operator (.+)|^\/operator$/i, function (message, match) {
 						kills = response.operator_records[i].stats.kills;
 						deaths = response.operator_records[i].stats.deaths;
 						playtime = response.operator_records[i].stats.playtime;
-						
+
 						if (response.operator_records[i].stats.specials != undefined){
 							var specials = Object.keys(response.operator_records[i].stats.specials);
 							for (j = 0; j < specials.length; j++){
@@ -1369,23 +1369,23 @@ bot.onText(/^\/operator (.+)|^\/operator$/i, function (message, match) {
 						}
 					}
 				}
-				
+
 				if (name == ""){
 					bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
 					return;
 				}
-				
+
 				var text = 	"<b>" + lang_operator_title[lang] + "</b>: " + name + "\n" +
-							"<b>" + lang_operator_plays[lang] + "</b>: " + formatNumber(played) + "\n" +
-							"<b>" + lang_operator_wins[lang] + "</b>: " + formatNumber(wins) + "\n" +
-							"<b>" + lang_operator_losses[lang] + "</b>: " + formatNumber(losses) + "\n" +
-							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(kills) + "\n" +
-							"<b>" + lang_operator_deaths[lang] + "</b>: " + formatNumber(deaths) + "\n" +
-							"<b>" + lang_operator_playtime[lang] + "</b>: " + toTime(playtime, lang, true) + "\n";
+					"<b>" + lang_operator_plays[lang] + "</b>: " + formatNumber(played) + "\n" +
+					"<b>" + lang_operator_wins[lang] + "</b>: " + formatNumber(wins) + "\n" +
+					"<b>" + lang_operator_losses[lang] + "</b>: " + formatNumber(losses) + "\n" +
+					"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(kills) + "\n" +
+					"<b>" + lang_operator_deaths[lang] + "</b>: " + formatNumber(deaths) + "\n" +
+					"<b>" + lang_operator_playtime[lang] + "</b>: " + toTime(playtime, lang, true) + "\n";
 				for (j = 0; j < specials.length; j++){
 					text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
 				}
-				
+
 				bot.sendMessage(message.chat.id, text, html);
 			}).catch(error => {
 				bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", html);
@@ -1402,7 +1402,7 @@ bot.onText(/^\/help/i, function (message, match) {
 			bot.sendMessage(message.chat.id, "Use /start before use /help");
 			return;
 		}
-		
+
 		var mark = {
 			parse_mode: "Markdown"
 		};
