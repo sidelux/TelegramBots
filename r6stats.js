@@ -146,6 +146,7 @@ var lang_news_date = [];
 var lang_operator_no_name = [];
 var lang_operator_not_found = [];
 var lang_help = [];
+var lang_new_user = [];
 
 var lang_username = [];
 var lang_platform = [];
@@ -332,6 +333,8 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
+lang_new_user["it"] = "Nuovo utente rilevato, salvare i dati iniziali potrebbe richiedere qualche minuto...";
+lang_new_user["en"] = "New user detected, save data at first time could be take some minutes...";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -1085,6 +1088,8 @@ bot.onText(/^\/stats (.+)|^\/stats/i, function (message, match) {
 					});
 					return;
 				}
+			}else{
+				bot.sendMessage(message.chat.id, lang_new_user[lang], html);
 			}
 
 			console.log(getNow("it") + " Request user data for " + username + " on " + platform);
