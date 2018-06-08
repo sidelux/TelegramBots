@@ -147,6 +147,7 @@ var lang_operator_no_name = [];
 var lang_operator_not_found = [];
 var lang_help = [];
 var lang_new_user = [];
+var lang_groups = [];
 
 var lang_username = [];
 var lang_platform = [];
@@ -316,7 +317,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/compare <username1> <username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
 	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
-	"> '/news' - Permette di visualizzare le ultime 5 news ufficiali del gioco reperite da Steam.\n" +
+	"> '/news <numero>' - Permette di visualizzare le ultime news ufficiali del gioco reperite da Steam.\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
@@ -328,13 +329,15 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/compare <username1> <username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
 	"> '/status <platform>' - Allow to print official server status of the game.\n" +
-	"> '/news' - Allow to print latest 5 official news of the game wrote by Steam.\n" +
+	"> '/news <number>' - Allow to print latest official news of the game wrote by Steam.\n" +
 	"> '/lang <language>' - Change bot language.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_new_user["it"] = "Nuovo utente rilevato, salvare i dati iniziali potrebbe richiedere qualche minuto...";
 lang_new_user["en"] = "New user detected, save data at first time could be take some minutes...";
+lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
+lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -570,6 +573,12 @@ ability_operatorpvp_kapkan_boobytrapdeployed["en"] = "Traps deployed";
 var j = Schedule.scheduleJob('00 00 * * *', function () {
 	console.log(getNow("it") + " Autotrack called from job");
 	autoTrack();
+});
+
+bot.on("message", function (message) {
+	if (message.sticker != undefined){
+		console.log(message.sticker);
+	}
 });
 
 bot.onText(/^\/start/i, function (message) {
@@ -890,6 +899,15 @@ bot.onText(/^\/news/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
+		
+		var num = 0;
+		if (message.text.indexOf(" ") != -1){
+			num = parseInt(message.text.substr(message.text.indexOf(" "), message.text.length));
+			if (num < 1)
+				num = 1;
+			if (num > 5)
+				num = 5;
+		}
 
 		var lang_complex = "";
 		var cookie = "";
@@ -898,7 +916,7 @@ bot.onText(/^\/news/i, function (message, match) {
 		else if (lang == "en")
 			cookie = "english";
 
-		console.log(getNow("it") + " Request news in " + cookie + " from " + message.from.username);
+		console.log(getNow("it") + " Request " + num + " news in " + cookie + " from " + message.from.username);
 		var url = "https://steamcommunity.com/games/359550/rss/";
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 
@@ -916,7 +934,12 @@ bot.onText(/^\/news/i, function (message, match) {
 					if (item.content.length > 500)
 						readall = "- <a href='" + item.link + "'>" + lang_news_readall[lang] + "</a>";
 					text += "<b>" + item.title + "</b>\n\n" + stripContent(item.content) + "\n\n<i>" + lang_news_date[lang] + toDate(lang, d) + "</i> " + readall + "\n\n";
-					if (index === 4)
+					if (num > 0){
+						if (index === (num-1)){
+							bot.sendMessage(message.chat.id, text, no_preview);
+							return;
+						}
+					} else if (index === 4)
 						bot.sendMessage(message.chat.id, text, no_preview);
 				});
 			})();
@@ -1443,6 +1466,22 @@ bot.onText(/^\/help/i, function (message, match) {
 		};
 
 		bot.sendMessage(message.chat.id, lang_help[rows[0].lang], mark);
+	});
+});
+
+bot.onText(/^\/groups/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.chat.id, "Use /start before use /groups");
+			return;
+		}
+
+		var mark = {
+			parse_mode: "HTML"
+		};
+
+		bot.sendMessage(message.chat.id, lang_groups[rows[0].lang], mark);
 	});
 });
 
