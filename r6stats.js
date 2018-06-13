@@ -52,36 +52,24 @@ class RainbowSixApi {
 								
 								var ubi_id = objStats.player.ubisoft_id;
 								
-								objStats.player.season_id = objSeason.players[ubi_id].season;
-								objStats.player.season_mmr = objSeason.players[ubi_id].mmr;
-								objStats.player.season_max_mmr = objSeason.players[ubi_id].max_mmr;
+								if (objSeason.players[ubi_id] == undefined){
+									objStats.player.season_id = 0;
+									objStats.player.season_mmr = 0;
+									objStats.player.season_max_mmr = 0;
+								}else {
+									objStats.player.season_id = objSeason.players[ubi_id].season;
+									objStats.player.season_mmr = objSeason.players[ubi_id].mmr;
+									objStats.player.season_max_mmr = objSeason.players[ubi_id].max_mmr;
+								}
 								
 								return resolve(objStats);
 							} else
 								return reject(JSON.parse(body));
-						})
-					}else{
+						});
+					}else
 						return resolve(objStats);
-					}
 				} else
-					return reject(JSON.parse(body));
-			})
-		})
-	}
-
-	profile(username, platform) {
-		return new Promise((resolve, reject) => {
-			if(!username || typeof username !== 'string') 
-				return reject(new TypeError('Invalid username'));
-			if(typeof platform !== 'string' || !platform) 
-				return reject(new TypeError('Invalid platform, platform types can be: uplay, xone, ps4'));
-			let endpoint = `https://api.r6stats.com/api/v1/users/${username}/profile/?platform=${platform}`;
-			request.get(endpoint, (error, response, body) => {
-				if(!error && response.statusCode == '200') {
-					return resolve(JSON.parse(body));
-				} else {
-					return reject(JSON.parse(body));
-				}
+					return reject(new TypeError('502 Bad Gateway'));
 			})
 		})
 	}
@@ -201,6 +189,7 @@ var lang_melee_kills = [];
 var lang_penetration_kills = [];
 var lang_assists = [];
 
+var lang_op_kd = [];
 var lang_op_plays = [];
 var lang_op_wins = [];
 var lang_op_losses = [];
@@ -211,6 +200,7 @@ var lang_op_playtime = [];
 var lang_title_ranked = [];
 var lang_title_casual = [];
 var lang_title_general = [];
+var lang_title_season = [];
 var lang_title_operators = [];
 
 var lang_inline_total_kills = [];
@@ -429,6 +419,8 @@ lang_penetration_kills["en"] = "Penetration kills";
 lang_assists["it"] = "Assist";
 lang_assists["en"] = "Assists";
 
+lang_op_kd["it"] = "Miglior rapporto U/M";
+lang_op_kd["en"] = "Best K/D ratio";
 lang_op_plays["it"] = "Più partite";
 lang_op_plays["en"] = "Most plays";
 lang_op_wins["it"] = "Più vittorie";
@@ -448,6 +440,8 @@ lang_title_casual["it"] = "Libere";
 lang_title_casual["en"] = "Casual";
 lang_title_general["it"] = "Generali";
 lang_title_general["en"] = "General";
+lang_title_season["it"] = "Stagione";
+lang_title_season["en"] = "Season";
 lang_title_operators["it"] = "Operatori";
 lang_title_operators["en"] = "Operators";
 
@@ -1251,7 +1245,7 @@ function getData(response, lang){
 		"<b>" + lang_melee_kills[lang] + "</b>: " + formatNumber(response.player.stats.overall.melee_kills) + "\n" +
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.player.stats.overall.penetration_kills) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.player.stats.overall.assists) + "\n" +
-		"\n" +
+		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
 		"<b>" + lang_season_id[lang] + "</b>: " + response.player.season_id + "\n" +
 		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.player.season_mmr) + "\n" +
 		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.player.season_max_mmr) + "\n";
@@ -1271,6 +1265,8 @@ function getOperators(response, lang){
 	var most_deaths_name = "";
 	var most_playtime = 0;
 	var most_playtime_name = "";
+	var most_kd = 0;
+	var most_kd_name = "";
 	for (i = 0; i < operators_num; i++){
 		if (response.operator_records[i].stats.played > most_played){
 			most_played = response.operator_records[i].stats.played;
@@ -1296,9 +1292,14 @@ function getOperators(response, lang){
 			most_playtime = response.operator_records[i].stats.playtime;
 			most_playtime_name = response.operator_records[i].operator.name;
 		}
+		if (response.operator_records[i].stats.kills/response.operator_records[i].stats.deaths > most_kd){
+			most_kd = response.operator_records[i].stats.kills/response.operator_records[i].stats.deaths;
+			most_kd_name = response.operator_records[i].operator.name;
+		}
 	}
 
 	return "\n<b>" + lang_title_operators[lang] + "</b>:\n" +
+		"<b>" + lang_op_kd[lang] + "</b>: " + most_kd_name + " (" + most_kd.toFixed(3) + ")\n" +
 		"<b>" + lang_op_plays[lang] + "</b>: " + most_played_name + " (" + formatNumber(most_played) + ")\n" +
 		"<b>" + lang_op_wins[lang] + "</b>: " + most_wins_name + " (" + formatNumber(most_wins) + ")\n" +
 		"<b>" + lang_op_losses[lang] + "</b>: " + most_losses_name + " (" + formatNumber(most_losses) + ")\n" +
@@ -1619,10 +1620,10 @@ function setAutoTrack(element, index, array) {
 
 			if (Object.keys(rows).length == 0){
 				saveData(response);
-				//console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (new)");
+				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (new)");
 			}else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime)){
 				saveData(response);
-				//console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (update)");
+				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (update)");
 			}else{
 				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " skipped");
 			}
