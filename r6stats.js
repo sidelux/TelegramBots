@@ -54,10 +54,12 @@ class RainbowSixApi {
 								
 								if (objSeason.players[ubi_id] == undefined){
 									objStats.player.season_id = 0;
+									objStats.player.season_rank = 0;
 									objStats.player.season_mmr = 0;
 									objStats.player.season_max_mmr = 0;
 								}else {
 									objStats.player.season_id = objSeason.players[ubi_id].season;
+									objStats.player.season_rank = objSeason.players[ubi_id].rank;
 									objStats.player.season_mmr = objSeason.players[ubi_id].mmr;
 									objStats.player.season_max_mmr = objSeason.players[ubi_id].max_mmr;
 								}
@@ -228,6 +230,7 @@ var lang_operator_specials = [];
 var lang_operator_extra = [];
 
 var lang_season_id = [];
+var lang_season_rank = [];
 var lang_season_mmr = [];
 var lang_season_max_mmr = [];
 
@@ -490,8 +493,11 @@ lang_operator_specials["it"] = "Abilità";
 lang_operator_specials["en"] = "Special";
 lang_operator_extra["it"] = "\nPuoi visualizzare i dettagli di un operatore e le sue abilità speciali utilizzando '/operator nome_operatore'.";
 lang_operator_extra["en"] = "\nYou can show detail of one operator and his abilities using '/operator operator_name'.";
+
 lang_season_id["it"] = "Stagione";
 lang_season_id["en"] = "Season";
+lang_season_rank["it"] = "Rango";
+lang_season_rank["en"] = "Rank";
 lang_season_mmr["it"] = "MMR";
 lang_season_mmr["en"] = "MMR";
 lang_season_max_mmr["it"] = "MMR massimo";
@@ -679,7 +685,7 @@ bot.on("inline_query", function (query) {
 
 		console.log(getNow("it") + " User data request inline for " + username + " on " + platform);
 
-		connection.query('SELECT username, level, platform, ranked_kd, ranked_playtime, casual_kd, casual_playtime, ranked_kills, ranked_deaths, casual_kills, casual_deaths, ranked_wins, ranked_losses, casual_wins, casual_losses, season_id, season_mmr, season_max_mmr, TIMESTAMPDIFF(HOUR, insert_date, NOW()) As diff FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC LIMIT 1', function (err, rows) {
+		connection.query('SELECT username, level, platform, ranked_kd, ranked_playtime, casual_kd, casual_playtime, ranked_kills, ranked_deaths, casual_kills, casual_deaths, ranked_wins, ranked_losses, casual_wins, casual_losses, season_id, season_rank, season_mmr, season_max_mmr, TIMESTAMPDIFF(HOUR, insert_date, NOW()) As diff FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC LIMIT 1', function (err, rows) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length > 0){
@@ -706,7 +712,9 @@ bot.on("inline_query", function (query) {
 					response.player.stats.ranked.losses = rows[0].ranked_losses;
 					response.player.stats.casual.wins = rows[0].casual_wins;
 					response.player.stats.casual.losses = rows[0].casual_losses;
+					
 					response.player.season_id = rows[0].season_id;
+					response.player.season_rank = rows[0].season_rank;
 					response.player.season_mmr = rows[0].season_mmr;
 					response.player.season_max_mmr = rows[0].season_max_mmr;
 
@@ -723,33 +731,6 @@ bot.on("inline_query", function (query) {
 				message_text: lang_user_not_ready[lang],
 				parse_mode: "HTML"
 			}]);
-
-			/*
-
-			r6.stats(username, platform, false).then(response => {
-				connection.query('SELECT ranked_playtime, casual_playtime FROM player_history WHERE platform = "' + response.player.platform + '" AND ubisoft_id = "' + response.player.ubisoft_id + '" ORDER BY id DESC', function (err, rows) {
-					if (err) throw err;
-
-					if (Object.keys(rows).length == 0){
-						saveData(response);
-					}else if ((rows[0].ranked_playtime < response.player.stats.ranked.playtime) || (rows[0].casual_playtime < response.player.stats.casual.playtime)){
-						saveData(response);
-					}
-
-					printInline(query.id, response, lang);
-				});
-			}).catch(error => {
-				bot.answerInlineQuery(query.id, [{
-					id: '0',
-					type: 'article',
-					title: lang_inline_userinfo[lang],
-					description: lang_user_not_found[lang],
-					message_text: lang_user_not_found[lang],
-					parse_mode: "HTML"
-				}]);
-				//console.log(getNow("it") + " User data not found inline for " + username + " on " + platform);
-			});
-			*/
 		});
 	});
 });
@@ -761,7 +742,7 @@ function printInline(query_id, response, lang){
 		title: lang_inline_userinfo[lang],
 		description: lang_inline_userfound[lang],
 		message_text: 	"<b>" + response.player.username + "</b> (Lv " + response.player.stats.progression.level + " - " + jsUcfirst(response.player.platform) + ")\n" +
-		"<b>" + lang_inline_season[lang] + "</b>: " + response.player.season_id + " (" + Math.round(response.player.season_mmr) + ")\n" + 
+		"<b>" + lang_inline_season[lang] + "</b>: " + numToRank(response.player.season_rank, lang) + " (" + Math.round(response.player.season_mmr) + ")\n" + 
 		"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + response.player.stats.ranked.kd + "\n" +
 		"<b>" + lang_inline_ranked_playtime[lang] + "</b>: " + toTime(response.player.stats.ranked.playtime, lang, true) + "\n" +
 		"<b>" + lang_inline_casual_kd[lang] + "</b>: " + response.player.stats.casual.kd + "\n" +
@@ -806,12 +787,33 @@ function saveData(response){
 					 response.player.stats.overall.penetration_kills + ',' +
 					 response.player.stats.overall.assists + ',' +
 					 response.player.season_id + ',' + 
+					 response.player.season_rank + ',' + 
 					 response.player.season_mmr + ',' +
 					 response.player.season_max_mmr + ',' +
 					 'NOW())', function (err, rows) {
 		if (err) throw err;
 		console.log(getNow("it") + " Saved user data for " + response.player.username);
 	});
+}
+
+function numToRank(num, lang){
+	var rankIt = [
+					"Rame IV", "Rame III", "Rame II", "Rame I",
+					"Bronzo IV", "Bronzo III", "Bronzo II", "Bronzo I",
+					"Argento IV", "Argento III", "Argento II", "Argento I",
+					"Platino III", "Platino II", "Platino I", "Diamante"
+				 ];
+	var rankEn = [
+					"Copper IV", "Copper III", "Copper II", "Copper I",
+					"Bronze IV", "Bronze III", "Bronze II", "Bronze I",
+					"Silver IV", "Silver III", "Silver II", "Silver I",
+					"Platinum III", "Platinum II", "Platinum I", "Diamond"
+				 ];
+	
+	if (lang == "it")
+		return rankIt[num];
+	else
+		return rankEn[num];
 }
 
 bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
@@ -1157,6 +1159,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?/i, function (message, match
 						response.player.stats.overall.assists = rows[0].assists;
 
 						response.player.season_id = rows[0].season_id;
+						response.player.season_rank = rows[0].season_rank;
 						response.player.season_mmr = rows[0].season_mmr;
 						response.player.season_max_mmr = rows[0].season_max_mmr;
 
@@ -1170,9 +1173,8 @@ bot.onText(/^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?/i, function (message, match
 						});
 						return;
 					}
-				}else{
+				}else
 					bot.sendMessage(message.chat.id, lang_new_user[lang], html);
-				}
 
 				console.log(getNow("it") + " Request user data for " + username + " on " + platform);
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -1247,6 +1249,7 @@ function getData(response, lang){
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.player.stats.overall.assists) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
 		"<b>" + lang_season_id[lang] + "</b>: " + response.player.season_id + "\n" +
+		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.player.season_rank, lang) + "\n" +
 		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.player.season_mmr) + "\n" +
 		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.player.season_max_mmr) + "\n";
 }
@@ -1308,12 +1311,6 @@ function getOperators(response, lang){
 		"<b>" + lang_op_playtime[lang] + "</b>: " + most_playtime_name + " (" + toTime(most_playtime, lang, true) + ")";
 }
 
-function getSeason(ubisoft_id, response, lang){
-	return "\n<b>" + lang_season_id[lang] + "</b>: " + eval("response.players['" + ubisoft_id + "'].season") + "\n" +
-		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(eval("response.players['" + ubisoft_id + "'].mmr")) + "\n" +
-		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(eval("response.players['" + ubisoft_id + "'].max_mmr")) + "\n";
-}
-
 bot.onText(/^\/compare(?:@\w+)? (.+) (.+)|^\/compare(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -1346,7 +1343,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+) (.+)|^\/compare(?:@\w+)?/i, function (messa
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username2, platform, false).then(response2 => {
 
-						var text = "<i>" + response1.player.username + " vs " + response2.player.username + "</i>\n" +
+						var text = "<i>" + response1.player.username + " vs " + response2.player.username + "</i>\n\n" +
 							"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response1.player.platform) + " - " + jsUcfirst(response2.player.platform) + "\n" +
 							"<b>" + lang_level[lang] + "</b>: " + compare(response1.player.stats.progression.level, response2.player.stats.progression.level) + "\n" +
 							"<b>" + lang_xp[lang] + "</b>: " + compare(response1.player.stats.progression.xp, response2.player.stats.progression.xp, "number") + "\n" +
@@ -1377,12 +1374,19 @@ bot.onText(/^\/compare(?:@\w+)? (.+) (.+)|^\/compare(?:@\w+)?/i, function (messa
 							"<b>" + lang_headshots[lang] + "</b>: " + compare(response1.player.stats.overall.headshots, response2.player.stats.overall.headshots, "number") + "\n" +
 							"<b>" + lang_melee_kills[lang] + "</b>: " + compare(response1.player.stats.overall.melee_kills, response2.player.stats.overall.melee_kills, "number") + "\n" +
 							"<b>" + lang_penetration_kills[lang] + "</b>: " + compare(response1.player.stats.overall.penetration_kills, response2.player.stats.overall.penetration_kills, "number") + "\n" +
-							"<b>" + lang_assists[lang] + "</b>: " + compare(response1.player.stats.overall.assists, response2.player.stats.overall.assists, "number");
+							"<b>" + lang_assists[lang] + "</b>: " + compare(response1.player.stats.overall.assists, response2.player.stats.overall.assists, "number") + "\n" +
+							"\n<b>" + lang_title_season[lang] + "</b>:\n" +
+							"<b>" + lang_season_id[lang] + "</b>: " + compare(response1.player.season_id, response2.player.season_id) + "\n" +
+							"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.player.season_mmr), Math.round(response2.player.season_mmr)) + "\n" +
+							"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.player.season_max_mmr), Math.round(response2.player.season_max_mmr));
 
 						bot.sendMessage(message.chat.id, text, html);
 
 					}).catch(error => {
-						bot.sendMessage(message.chat.id, "<b>" + error.errors[0].title + "</b>\n" +  error.errors[0].detail, html);
+						if (error.errors[0] != undefined)
+							bot.sendMessage(message.chat.id, "<b>" + error.errors[0].title + "</b>\n" +  error.errors[0].detail, html);
+						else
+							bot.sendMessage(message.chat.id, error, html);
 						console.log(getNow("it") + " User data not found for " + username2 + " on " + platform);
 					});
 				});
