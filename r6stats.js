@@ -45,13 +45,16 @@ class RainbowSixApi {
 					var objStats = JSON.parse(body);
 
 					if(!operators){
-						endpoint = `http://fenixweb.net/r6api/getUser.php?name=${username}&appcode=r6apitelegram`;
+						if (platform == "ps4")
+							platform = "psn";
+						else if (platform == "xone")
+							platform = "xbl";
+						endpoint = `http://fenixweb.net/r6api/getUser.php?name=${username}&platform=${platform}&appcode=r6apitelegram`;
 						request.get(endpoint, (error, response, body) => {
 							if(!error && response.statusCode == '200') {
 								var objSeason = JSON.parse(body);
 
 								var ubi_id = objStats.player.ubisoft_id;
-
 								if (objSeason.players[ubi_id] == undefined){
 									objStats.player.season_id = 0;
 									objStats.player.season_rank = 0;
@@ -184,7 +187,6 @@ var lang_suicides = [];
 var lang_reinforcements = [];
 var lang_barricades = [];
 var lang_steps = [];
-var lang_bullets_fired = [];
 var lang_bullets_hit = [];
 var lang_headshots = [];
 var lang_melee_kills = [];
@@ -229,7 +231,6 @@ var lang_operator_playtime = [];
 var lang_operator_specials = [];
 var lang_operator_extra = [];
 
-var lang_season_id = [];
 var lang_season_rank = [];
 var lang_season_mmr = [];
 var lang_season_max_mmr = [];
@@ -410,8 +411,6 @@ lang_barricades["it"] = "Barricate";
 lang_barricades["en"] = "Barricades";
 lang_steps["it"] = "Passi";
 lang_steps["en"] = "Steps";
-lang_bullets_fired["it"] = "Colpi sparati";
-lang_bullets_fired["en"] = "Bullets fired";
 lang_bullets_hit["it"] = "Colpi a segno";
 lang_bullets_hit["en"] = "Bullets hit";
 lang_headshots["it"] = "Colpi in testa";
@@ -495,8 +494,6 @@ lang_operator_specials["en"] = "Special";
 lang_operator_extra["it"] = "\nPuoi visualizzare i dettagli di un operatore e le sue abilità speciali utilizzando '/operator nome_operatore'.";
 lang_operator_extra["en"] = "\nYou can show detail of one operator and his abilities using '/operator operator_name'.";
 
-lang_season_id["it"] = "Stagione";
-lang_season_id["en"] = "Season";
 lang_season_rank["it"] = "Rango";
 lang_season_rank["en"] = "Rank";
 lang_season_mmr["it"] = "MMR";
@@ -647,18 +644,18 @@ bot.onText(/^\/start/i, function (message) {
 					default_text = lang_default[lang] + rows[0].default_platform + "\n";
 			}
 		}
-		
+
 		connection.query("SELECT COUNT(1) As cnt FROM user UNION SELECT COUNT(1) As cnt FROM player_history", function (err, rows) {
 			if (err) throw err;
-		
+
 			var stats_text = "\n" + lang_storebot[lang];
 			stats_text = stats_text.replace("%n", formatNumber(rows[0].cnt));
 			stats_text = stats_text.replace("%s", formatNumber(rows[1].cnt));
-			
+
 			fs.stat("r6stats.js", function(err, stats){
 				var time = new Date(stats.mtime);
 				var time_text = "\n<i>" + lang_time[lang] + " " + toDate(lang, time) + "</i>";
-				
+
 				bot.sendMessage(message.chat.id, lang_main[lang] + "\n\n" + default_text + stats_text + time_text, no_preview);
 			});
 		});
@@ -703,38 +700,36 @@ bot.on("inline_query", function (query) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length > 0){
-				if (rows[0].diff <= 48){
-					var response = {};
-					response.player = {};
-					response.player.stats = {};
-					response.player.stats.progression = {};
-					response.player.stats.ranked = {};
-					response.player.stats.casual = {};
+				var response = {};
+				response.player = {};
+				response.player.stats = {};
+				response.player.stats.progression = {};
+				response.player.stats.ranked = {};
+				response.player.stats.casual = {};
 
-					response.player.username = rows[0].username;
-					response.player.stats.progression.level = rows[0].level;
-					response.player.platform = rows[0].platform;
-					response.player.stats.ranked.kd = rows[0].ranked_kd;
-					response.player.stats.ranked.playtime = rows[0].ranked_playtime;
-					response.player.stats.casual.kd = rows[0].casual_kd;
-					response.player.stats.casual.playtime = rows[0].casual_playtime;
-					response.player.stats.ranked.kills = rows[0].ranked_kills;
-					response.player.stats.ranked.deaths = rows[0].ranked_deaths;
-					response.player.stats.casual.kills = rows[0].casual_kills;
-					response.player.stats.casual.deaths = rows[0].casual_deaths;
-					response.player.stats.ranked.wins = rows[0].ranked_wins;
-					response.player.stats.ranked.losses = rows[0].ranked_losses;
-					response.player.stats.casual.wins = rows[0].casual_wins;
-					response.player.stats.casual.losses = rows[0].casual_losses;
+				response.player.username = rows[0].username;
+				response.player.stats.progression.level = rows[0].level;
+				response.player.platform = rows[0].platform;
+				response.player.stats.ranked.kd = rows[0].ranked_kd;
+				response.player.stats.ranked.playtime = rows[0].ranked_playtime;
+				response.player.stats.casual.kd = rows[0].casual_kd;
+				response.player.stats.casual.playtime = rows[0].casual_playtime;
+				response.player.stats.ranked.kills = rows[0].ranked_kills;
+				response.player.stats.ranked.deaths = rows[0].ranked_deaths;
+				response.player.stats.casual.kills = rows[0].casual_kills;
+				response.player.stats.casual.deaths = rows[0].casual_deaths;
+				response.player.stats.ranked.wins = rows[0].ranked_wins;
+				response.player.stats.ranked.losses = rows[0].ranked_losses;
+				response.player.stats.casual.wins = rows[0].casual_wins;
+				response.player.stats.casual.losses = rows[0].casual_losses;
 
-					response.player.season_id = rows[0].season_id;
-					response.player.season_rank = rows[0].season_rank;
-					response.player.season_mmr = rows[0].season_mmr;
-					response.player.season_max_mmr = rows[0].season_max_mmr;
+				response.player.season_id = rows[0].season_id;
+				response.player.season_rank = rows[0].season_rank;
+				response.player.season_mmr = rows[0].season_mmr;
+				response.player.season_max_mmr = rows[0].season_max_mmr;
 
-					printInline(query.id, response, lang);
-					return;
-				}
+				printInline(query.id, response, lang);
+				return;
 			}
 
 			bot.answerInlineQuery(query.id, [{
@@ -838,19 +833,17 @@ function numToRank(num, lang){
 		"Copper IV", "Copper III", "Copper II", "Copper I",
 		"Bronze IV", "Bronze III", "Bronze II", "Bronze I",
 		"Silver IV", "Silver III", "Silver II", "Silver I",
-		"Oro IV", "Oro III", "Oro II", "Oro I",
+		"Gold IV", "Gold III", "Gold II", "Gold I",
 		"Platinum III", "Platinum II", "Platinum I", "Diamond"
 	];
 
-	if (lang == "it"){
-		if (rankIt[num-1] == undefined)
-			return lang_season_not_ranked[lang];
+	if ((num == 0) || (num > 21))
+		return lang_season_not_ranked[lang];
+
+	if (lang == "it")
 		return rankIt[num-1];
-	}else{
-		if (rankEn[num-1] == undefined)
-			return lang_season_not_ranked[lang];
+	else
 		return rankEn[num-1];
-	}
 }
 
 bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
@@ -1241,7 +1234,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						var text = getData(response, lang);
 						r6.stats(username, platform, true).then(response => {
 							var responseOps = response;
-							
+
 							var ops = getOperators(responseOps);							
 							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], lang);
 
@@ -1265,7 +1258,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 });
 
 function getData(response, lang){
-	return "<b>" + lang_username[lang] + "</b>: " + response.player.username + "\n" +
+	var text = "<b>" + lang_username[lang] + "</b>: " + response.player.username + "\n" +
 		"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response.player.platform) + "\n" +
 		"<b>" + lang_level[lang] + "</b>: " + response.player.stats.progression.level + "\n" +
 		"<b>" + lang_xp[lang] + "</b>: " + formatNumber(response.player.stats.progression.xp) + "\n" +
@@ -1291,17 +1284,17 @@ function getData(response, lang){
 		"<b>" + lang_reinforcements[lang] + "</b>: " + formatNumber(response.player.stats.overall.reinforcements_deployed) + "\n" +
 		"<b>" + lang_barricades[lang] + "</b>: " + formatNumber(response.player.stats.overall.barricades_built) + "\n" +
 		"<b>" + lang_steps[lang] + "</b>: " + formatNumber(response.player.stats.overall.steps_moved) + "\n" +
-		//"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(response.player.stats.overall.bullets_fired) + "\n" +
 		"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(response.player.stats.overall.bullets_hit) + "\n" +
 		"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(response.player.stats.overall.headshots) + "\n" +
 		"<b>" + lang_melee_kills[lang] + "</b>: " + formatNumber(response.player.stats.overall.melee_kills) + "\n" +
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.player.stats.overall.penetration_kills) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.player.stats.overall.assists) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_id[lang] + "</b>: " + response.player.season_id + "\n" +
 		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.player.season_rank, lang) + "\n" +
 		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.player.season_mmr) + "\n" +
 		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.player.season_max_mmr) + "\n";
+
+	return text;
 }
 
 function getOperators(response){
@@ -1350,7 +1343,7 @@ function getOperators(response){
 			most_kd_name = response.operator_records[i].operator.name;
 		}
 	}
-	
+
 	return [most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name];
 }
 
@@ -1419,14 +1412,12 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 							"<b>" + lang_reinforcements[lang] + "</b>: " + compare(response1.player.stats.overall.reinforcements_deployed, response2.player.stats.overall.reinforcements_deployed, "number") + "\n" +
 							"<b>" + lang_barricades[lang] + "</b>: " + compare(response1.player.stats.overall.barricades_built, response2.player.stats.overall.barricades_built, "number") + "\n" +
 							"<b>" + lang_steps[lang] + "</b>: " + compare(response1.player.stats.overall.steps_moved, response2.player.stats.overall.steps_moved, "number") + "\n" +
-							//"<b>" + lang_bullets_fired[lang] + "</b>: " + compare(response1.player.stats.overall.bullets_fired, response2.player.stats.overall.bullets_fired, "number") + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + compare(response1.player.stats.overall.bullets_hit, response2.player.stats.overall.bullets_hit, "number") + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + compare(response1.player.stats.overall.headshots, response2.player.stats.overall.headshots, "number") + "\n" +
 							"<b>" + lang_melee_kills[lang] + "</b>: " + compare(response1.player.stats.overall.melee_kills, response2.player.stats.overall.melee_kills, "number") + "\n" +
 							"<b>" + lang_penetration_kills[lang] + "</b>: " + compare(response1.player.stats.overall.penetration_kills, response2.player.stats.overall.penetration_kills, "number") + "\n" +
 							"<b>" + lang_assists[lang] + "</b>: " + compare(response1.player.stats.overall.assists, response2.player.stats.overall.assists, "number") + "\n" +
 							"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-							"<b>" + lang_season_id[lang] + "</b>: " + compare(response1.player.season_id, response2.player.season_id) + "\n" +
 							"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.player.season_mmr), Math.round(response2.player.season_mmr)) + "\n" +
 							"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.player.season_max_mmr), Math.round(response2.player.season_max_mmr));
 
