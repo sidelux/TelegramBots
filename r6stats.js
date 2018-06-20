@@ -1338,8 +1338,11 @@ function getOperators(response){
 			most_playtime = response.operator_records[i].stats.playtime;
 			most_playtime_name = response.operator_records[i].operator.name;
 		}
-		if (response.operator_records[i].stats.kills/response.operator_records[i].stats.deaths > most_kd){
-			most_kd = response.operator_records[i].stats.kills/response.operator_records[i].stats.deaths;
+		var kd = response.operator_records[i].stats.kills/response.operator_records[i].stats.deaths;
+		if (kd == Infinity)
+			kd = response.operator_records[i].stats.kills;
+		if (kd > most_kd){
+			most_kd = kd;
 			most_kd_name = response.operator_records[i].operator.name;
 		}
 	}
