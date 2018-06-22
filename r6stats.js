@@ -30,52 +30,114 @@ class RainbowSixApi {
 
 	stats(username, platform, operators) {
 		return new Promise((resolve, reject) => {
-			if(!username || typeof username !== 'string') 
-				return reject(new TypeError('Invalid username'));
-			operators = operators || false;
-			if(typeof operators !== 'boolean') 
-				return reject(new TypeError('Operators has to be a boolean'));
-			if(typeof platform !== 'string' || !platform) 
-				return reject(new TypeError('Invalid platform, platform types can be: uplay, xone, ps4'));
-			let endpoint = `https://api.r6stats.com/api/v1/players/${username.toString()}/?platform=${platform}`;
-			if(operators)
-				endpoint = `https://api.r6stats.com/api/v1/players/${username}/operators/?platform=${platform}`;
-			request.get(endpoint, (error, response, body) => {
-				if(!error && response.statusCode == '200') {
-					var objStats = JSON.parse(body);
+			
+			if (operators){
+				var endpoint = `https://api.r6stats.com/api/v1/players/${username}/operators/?platform=${platform}`;
+				request.get(endpoint, (error, response, body) => {
+					if(!error && response.statusCode == '200') {
+						var objStats = JSON.parse(body);
+						
+						return resolve(objStats);
+					} else
+						return reject(new TypeError('502 Bad Gateway'));
+				});
+			}else{
+				
+				var objStats = {};
+				objStats.player = {};
+				objStats.player.stats = {};
+				objStats.player.stats.progression = {};
+				objStats.player.stats.ranked = {};
+				objStats.player.stats.casual = {};
+				objStats.player.stats.overall = {};
+				
+				if (platform == "ps4")
+					platform = "psn";
+				else if (platform == "xone")
+					platform = "xbl";
+				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&progression=true&appcode=r6apitelegram";
+				request.get(endpoint, (error, response, body) => {
+					if(!error && response.statusCode == '200') {
+						var objUser = JSON.parse(body);
+						
+						var keys = Object.keys(objUser.players);
+						var ubi_id = keys[0];
 
-					if(!operators){
-						if (platform == "ps4")
-							platform = "psn";
-						else if (platform == "xone")
-							platform = "xbl";
-						endpoint = `http://fenixweb.net/r6api/getUser.php?name=${username}&platform=${platform}&appcode=r6apitelegram`;
+						if (objUser.players[ubi_id] == undefined)
+							return reject(JSON.parse(body));
+						else {
+							objStats.player.ubisoft_id = objUser.players[ubi_id].profile_id;
+							objStats.player.username = objUser.players[ubi_id].nickname;
+							objStats.player.platform = objUser.players[ubi_id].platform;
+							objStats.player.stats.progression.level = objUser.players[ubi_id].level;
+							objStats.player.stats.progression.xp = objUser.players[ubi_id].xp;									
+							objStats.player.season_id = objUser.players[ubi_id].season;
+							objStats.player.season_rank = objUser.players[ubi_id].rank;
+							objStats.player.season_mmr = objUser.players[ubi_id].mmr;
+							objStats.player.season_max_mmr = objUser.players[ubi_id].max_mmr;
+							
+							if (objStats.player.season_rank == undefined) objStats.player.season_rank = 0;
+							if (objStats.player.season_mmr == undefined) objStats.player.season_mmr = 0;
+							if (objStats.player.season_max_mmr == undefined) objStats.player.season_max_mmr = 0;
+						}
+
+						endpoint = "http://fenixweb.net/r6api/getStats.php?name=" + username + "&platform=" + platform + "&appcode=r6apitelegram";
 						request.get(endpoint, (error, response, body) => {
 							if(!error && response.statusCode == '200') {
-								var objSeason = JSON.parse(body);
+								var objUser = JSON.parse(body);
 
-								var ubi_id = objStats.player.ubisoft_id;
-								if (objSeason.players[ubi_id] == undefined){
-									objStats.player.season_id = 0;
-									objStats.player.season_rank = 0;
-									objStats.player.season_mmr = 0;
-									objStats.player.season_max_mmr = 0;
-								}else {
-									objStats.player.season_id = objSeason.players[ubi_id].season;
-									objStats.player.season_rank = objSeason.players[ubi_id].rank;
-									objStats.player.season_mmr = objSeason.players[ubi_id].mmr;
-									objStats.player.season_max_mmr = objSeason.players[ubi_id].max_mmr;
-								}
+								objStats.player.stats.ranked.wins = objUser.players[ubi_id].rankedpvp_matchwon;
+								objStats.player.stats.ranked.losses = objUser.players[ubi_id].rankedpvp_matchlost;
+								objStats.player.stats.ranked.kills = objUser.players[ubi_id].rankedpvp_kills;
+								objStats.player.stats.ranked.deaths = objUser.players[ubi_id].rankedpvp_death;
+								objStats.player.stats.ranked.kd = (objStats.player.stats.ranked.kills/objStats.player.stats.ranked.deaths).toFixed(3);
+								objStats.player.stats.ranked.playtime = objUser.players[ubi_id].rankedpvp_timeplayed;
+								objStats.player.stats.casual.wins = objUser.players[ubi_id].casualpvp_matchwon;
+								objStats.player.stats.casual.losses = objUser.players[ubi_id].casualpvp_matchlost;
+								objStats.player.stats.casual.kills = objUser.players[ubi_id].casualpvp_kills;
+								objStats.player.stats.casual.deaths = objUser.players[ubi_id].casualpvp_death;
+								objStats.player.stats.casual.kd = (objStats.player.stats.casual.kills/objStats.player.stats.casual.deaths).toFixed(3);
+								objStats.player.stats.casual.playtime = objUser.players[ubi_id].casualpvp_timeplayed;
+								objStats.player.stats.overall.revives = objUser.players[ubi_id].generalpvp_revive;
+								objStats.player.stats.overall.suicides = objUser.players[ubi_id].generalpvp_suicide;
+								objStats.player.stats.overall.reinforcements_deployed = objUser.players[ubi_id].generalpvp_reinforcementdeploy;
+								objStats.player.stats.overall.barricades_built = objUser.players[ubi_id].generalpvp_barricadedeployed;
+								objStats.player.stats.overall.bullets_hit = objUser.players[ubi_id].generalpvp_bullethit;
+								objStats.player.stats.overall.headshots = objUser.players[ubi_id].generalpvp_headshot;
+								objStats.player.stats.overall.melee_kills = objUser.players[ubi_id].generalpvp_meleekills;
+								objStats.player.stats.overall.penetration_kills = objUser.players[ubi_id].generalpvp_penetrationkills;
+								objStats.player.stats.overall.assists =  objUser.players[ubi_id].generalpvp_killassists;
+								
+								if (objStats.player.stats.ranked.wins == undefined) objStats.player.stats.ranked.wins = 0;
+								if (objStats.player.stats.ranked.losses == undefined) objStats.player.stats.ranked.losses = 0;
+								if (objStats.player.stats.ranked.kills == undefined) objStats.player.stats.ranked.kills = 0;
+								if (objStats.player.stats.ranked.deaths == undefined) objStats.player.stats.ranked.deaths = 0;
+								if (objStats.player.stats.ranked.kd == Infinity) objStats.player.stats.ranked.kd = objStats.player.stats.ranked.kills;
+								if (objStats.player.stats.ranked.playtime == undefined) objStats.player.stats.ranked.playtime = 0;
+								if (objStats.player.stats.casual.wins == undefined) objStats.player.stats.casual.wins = 0;
+								if (objStats.player.stats.casual.losses == undefined) objStats.player.stats.casual.losses = 0;
+								if (objStats.player.stats.casual.kills == undefined) objStats.player.stats.casual.kills = 0;
+								if (objStats.player.stats.casual.deaths == undefined) objStats.player.stats.casual.deaths = 0;
+								if (objStats.player.stats.casual.kd == Infinity) objStats.player.stats.casual.kd = objStats.player.stats.casual.kills;
+								if (objStats.player.stats.casual.playtime == undefined) objStats.player.stats.casual.playtime = 0;
+								if (objStats.player.stats.overall.revives == undefined) objStats.player.stats.overall.revives = 0;
+								if (objStats.player.stats.overall.suicides == undefined) objStats.player.stats.overall.suicides = 0;
+								if (objStats.player.stats.overall.reinforcements_deployed == undefined) objStats.player.stats.overall.reinforcements_deployed = 0
+								if (objStats.player.stats.overall.barricades_built == undefined) objStats.player.stats.overall.barricades_built = 0;
+								if (objStats.player.stats.overall.bullets_hit == undefined) objStats.player.stats.overall.bullets_hit = 0;
+								if (objStats.player.stats.overall.headshots == undefined) objStats.player.stats.overall.headshots = 0;
+								if (objStats.player.stats.overall.melee_kills == undefined) objStats.player.stats.overall.melee_kills = 0;
+								if (objStats.player.stats.overall.penetration_kills == undefined) objStats.player.stats.overall.penetration_kills = 0;
+								if (objStats.player.stats.overall.assists == undefined) objStats.player.stats.overall.assists = 0;	
 
 								return resolve(objStats);
-							} else
-								return reject(JSON.parse(body));
+							}else
+								console.log(error);
 						});
 					}else
-						return resolve(objStats);
-				} else
-					return reject(new TypeError('502 Bad Gateway'));
-			})
+						console.log(error);
+				});
+			}
 		})
 	}
 };
@@ -135,7 +197,7 @@ var no_preview = {
 };
 
 var validLang = ["en", "it"];
-var validParam = ["casual_kd", "ranked_kd", "ranked_wlr", "casual_wlr", "season_mmr", "season_max_mmr"];
+var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr"];
 var lang_main = [];
 var lang_storebot = [];
 var lang_changed = [];
@@ -169,14 +231,12 @@ var lang_xp = [];
 
 var lang_ranked_win = [];
 var lang_ranked_losses = [];
-var lang_ranked_wlr = [];
 var lang_ranked_kills = [];
 var lang_ranked_deaths = [];
 var lang_ranked_kd = [];
 var lang_ranked_playtime = [];
 var lang_casual_win = [];
 var lang_casual_losses = [];
-var lang_casual_wlr = [];
 var lang_casual_kills = [];
 var lang_casual_deaths = [];
 var lang_casual_kd = [];
@@ -186,7 +246,6 @@ var lang_revives = [];
 var lang_suicides = [];
 var lang_reinforcements = [];
 var lang_barricades = [];
-var lang_steps = [];
 var lang_bullets_hit = [];
 var lang_headshots = [];
 var lang_melee_kills = [];
@@ -288,6 +347,8 @@ var ability_operatorpvp_blitz_flashshieldassist = [];
 var ability_operatorpvp_blitz_flashfollowupkills = [];
 var ability_operatorpvp_kapkan_boobytrapkill = [];
 var ability_operatorpvp_kapkan_boobytrapdeployed = [];
+var ability_operatorpvp_barrage_killswithturret = [];
+var ability_operatorpvp_deceiver_revealedattackers = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -375,8 +436,6 @@ lang_ranked_win["it"] = "Vittorie";
 lang_ranked_win["en"] = "Wins";
 lang_ranked_losses["it"] = "Sconfitte";
 lang_ranked_losses["en"] = "Losses";
-lang_ranked_wlr["it"] = "Precisione";
-lang_ranked_wlr["en"] = "Accuracy";
 lang_ranked_kills["it"] = "Uccisioni";
 lang_ranked_kills["en"] = "Kills";
 lang_ranked_deaths["it"] = "Morti";
@@ -390,8 +449,6 @@ lang_casual_win["it"] = "Vittorie";
 lang_casual_win["en"] = "Wins";
 lang_casual_losses["it"] = "Sconfitte";
 lang_casual_losses["en"] = "Losses";
-lang_casual_wlr["it"] = "Precisione";
-lang_casual_wlr["en"] = "Accuracy";
 lang_casual_kills["it"] = "Uccisioni";
 lang_casual_kills["en"] = "Kills";
 lang_casual_deaths["it"] = "Morti";
@@ -409,8 +466,6 @@ lang_reinforcements["it"] = "Rinforzi";
 lang_reinforcements["en"] = "Reinforcements";
 lang_barricades["it"] = "Barricate";
 lang_barricades["en"] = "Barricades";
-lang_steps["it"] = "Passi";
-lang_steps["en"] = "Steps";
 lang_bullets_hit["it"] = "Colpi a segno";
 lang_bullets_hit["en"] = "Bullets hit";
 lang_headshots["it"] = "Colpi in testa";
@@ -607,16 +662,14 @@ ability_operatorpvp_kapkan_boobytrapkill["it"] = "Uccisioni con trappole";
 ability_operatorpvp_kapkan_boobytrapkill["en"] = "Trap kills";
 ability_operatorpvp_kapkan_boobytrapdeployed["it"] = "Trappole piazzate";
 ability_operatorpvp_kapkan_boobytrapdeployed["en"] = "Traps deployed";
+ability_operatorpvp_barrage_killswithturret["it"] = "Uccisioni con torretta";
+ability_operatorpvp_barrage_killswithturret["en"] = "Kills with turret";
+ability_operatorpvp_deceiver_revealedattackers["it"] = "Attaccanti individuati";
+ability_operatorpvp_deceiver_revealedattackers["en"] = "Attackers revealed";
 
 var j = Schedule.scheduleJob('00 00 * * *', function () {
 	console.log(getNow("it") + " Autotrack called from job");
 	autoTrack();
-});
-
-bot.on("message", function (message) {
-	if (message.sticker != undefined){
-		console.log(message.sticker);
-	}
 });
 
 bot.onText(/^\/start/i, function (message) {
@@ -774,14 +827,12 @@ function saveData(responseStats, responseOps){
 					 responseStats.player.stats.progression.xp + ',' +
 					 responseStats.player.stats.ranked.wins + ',' + 
 					 responseStats.player.stats.ranked.losses + ',' + 
-					 responseStats.player.stats.ranked.wlr + ',' + 
 					 responseStats.player.stats.ranked.kills + ',' +
 					 responseStats.player.stats.ranked.deaths + ',' + 
 					 responseStats.player.stats.ranked.kd + ',' + 
 					 responseStats.player.stats.ranked.playtime + ',' +
 					 responseStats.player.stats.casual.wins + ',' + 
 					 responseStats.player.stats.casual.losses + ',' +
-					 responseStats.player.stats.casual.wlr + ',' +
 					 responseStats.player.stats.casual.kills + ',' +
 					 responseStats.player.stats.casual.deaths + ',' +
 					 responseStats.player.stats.casual.kd + ',' +
@@ -790,8 +841,6 @@ function saveData(responseStats, responseOps){
 					 responseStats.player.stats.overall.suicides + ',' +
 					 responseStats.player.stats.overall.reinforcements_deployed + ',' +
 					 responseStats.player.stats.overall.barricades_built + ',' +
-					 responseStats.player.stats.overall.steps_moved + ',' +
-					 responseStats.player.stats.overall.bullets_fired + ',' +
 					 responseStats.player.stats.overall.bullets_hit + ',' +
 					 responseStats.player.stats.overall.headshots + ',' +
 					 responseStats.player.stats.overall.melee_kills + ',' +
@@ -1175,14 +1224,12 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					response.player.stats.progression.xp = rows[0].xp;
 					response.player.stats.ranked.wins = rows[0].ranked_wins;
 					response.player.stats.ranked.losses = rows[0].ranked_losses;
-					response.player.stats.ranked.wlr = rows[0].ranked_wlr;
 					response.player.stats.ranked.kills = rows[0].ranked_kills;
 					response.player.stats.ranked.deaths = rows[0].ranked_deaths;
 					response.player.stats.ranked.kd = rows[0].ranked_kd;
 					response.player.stats.ranked.playtime = rows[0].ranked_playtime;
 					response.player.stats.casual.wins = rows[0].casual_wins;
 					response.player.stats.casual.losses = rows[0].casual_losses;
-					response.player.stats.casual.wlr = rows[0].casual_wlr;
 					response.player.stats.casual.kills = rows[0].casual_kills;
 					response.player.stats.casual.deaths = rows[0].casual_deaths;
 					response.player.stats.casual.kd = rows[0].casual_kd;
@@ -1191,8 +1238,6 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					response.player.stats.overall.suicides = rows[0].suicides;
 					response.player.stats.overall.reinforcements_deployed = rows[0].reinforcements_deployed;
 					response.player.stats.overall.barricades_built = rows[0].barricades_built;
-					response.player.stats.overall.steps_moved = rows[0].steps_moved;
-					response.player.stats.overall.bullets_fired = rows[0].bullets_fired;
 					response.player.stats.overall.bullets_hit = rows[0].bullets_hit;
 					response.player.stats.overall.headshots = rows[0].headshots;
 					response.player.stats.overall.melee_kills = rows[0].melee_kills;
@@ -1225,8 +1270,11 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					bot.sendMessage(message.chat.id, text, html);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
-				}else
+				}
+				/*
+				else
 					bot.sendMessage(message.chat.id, lang_new_user[lang], html);
+				*/
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username, platform, false).then(response => {
@@ -1248,6 +1296,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 							console.log(getNow("it") + " User data operators not found for " + username + " on " + platform);
 						});
 					}).catch(error => {
+						console.log(error);
 						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
 						console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 					});
@@ -1265,7 +1314,6 @@ function getData(response, lang){
 		"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
 		"<b>" + lang_ranked_win[lang] + "</b>: " + formatNumber(response.player.stats.ranked.wins) + "\n" +
 		"<b>" + lang_ranked_losses[lang] + "</b>: " + formatNumber(response.player.stats.ranked.losses) + "\n" +
-		"<b>" + lang_ranked_wlr[lang] + "</b>: " + response.player.stats.ranked.wlr + "%\n" +
 		"<b>" + lang_ranked_kills[lang] + "</b>: " + formatNumber(response.player.stats.ranked.kills) + "\n" +
 		"<b>" + lang_ranked_deaths[lang] + "</b>: " + formatNumber(response.player.stats.ranked.deaths) + "\n" +
 		"<b>" + lang_ranked_kd[lang] + "</b>: " + formatNumber(response.player.stats.ranked.kd) + "\n" +
@@ -1273,7 +1321,6 @@ function getData(response, lang){
 		"\n<b>" + lang_title_casual[lang] + "</b>:\n" +
 		"<b>" + lang_casual_win[lang] + "</b>: " + formatNumber(response.player.stats.casual.wins) + "\n" +
 		"<b>" + lang_casual_losses[lang] + "</b>: " + formatNumber(response.player.stats.casual.losses) + "\n" +
-		"<b>" + lang_casual_wlr[lang] + "</b>: " + response.player.stats.casual.wlr + "%\n" +
 		"<b>" + lang_casual_kills[lang] + "</b>: " + formatNumber(response.player.stats.casual.kills) + "\n" +
 		"<b>" + lang_casual_deaths[lang] + "</b>: " + formatNumber(response.player.stats.casual.deaths) + "\n" +
 		"<b>" + lang_casual_kd[lang] + "</b>: " + formatNumber(response.player.stats.casual.kd) + "\n" +
@@ -1283,7 +1330,6 @@ function getData(response, lang){
 		"<b>" + lang_suicides[lang] + "</b>: " + formatNumber(response.player.stats.overall.suicides) + "\n" +
 		"<b>" + lang_reinforcements[lang] + "</b>: " + formatNumber(response.player.stats.overall.reinforcements_deployed) + "\n" +
 		"<b>" + lang_barricades[lang] + "</b>: " + formatNumber(response.player.stats.overall.barricades_built) + "\n" +
-		"<b>" + lang_steps[lang] + "</b>: " + formatNumber(response.player.stats.overall.steps_moved) + "\n" +
 		"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(response.player.stats.overall.bullets_hit) + "\n" +
 		"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(response.player.stats.overall.headshots) + "\n" +
 		"<b>" + lang_melee_kills[lang] + "</b>: " + formatNumber(response.player.stats.overall.melee_kills) + "\n" +
@@ -1396,7 +1442,6 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 							"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
 							"<b>" + lang_ranked_win[lang] + "</b>: " + compare(response1.player.stats.ranked.wins, response2.player.stats.ranked.wins, "number") + "\n" +
 							"<b>" + lang_ranked_losses[lang] + "</b>: " + compare(response1.player.stats.ranked.losses, response2.player.stats.ranked.losses, "number", lang, 1) + "\n" +
-							"<b>" + lang_ranked_wlr[lang] + "</b>: " + compare(response1.player.stats.ranked.wlr, response2.player.stats.ranked.wlr, "perc") + "\n" +
 							"<b>" + lang_ranked_kills[lang] + "</b>: " + compare(response1.player.stats.ranked.kills, response2.player.stats.ranked.kills, "number") + "\n" +
 							"<b>" + lang_ranked_deaths[lang] + "</b>: " + compare(response1.player.stats.ranked.deaths, response2.player.stats.ranked.deaths, "number", lang, 1) + "\n" +
 							"<b>" + lang_ranked_kd[lang] + "</b>: " + compare(response1.player.stats.ranked.kd, response2.player.stats.ranked.kd, "number") + "\n" +
@@ -1404,7 +1449,6 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 							"\n<b>" + lang_title_casual[lang] + "</b>:\n" +
 							"<b>" + lang_casual_win[lang] + "</b>: " + compare(response1.player.stats.casual.wins, response2.player.stats.casual.wins, "number") + "\n" +
 							"<b>" + lang_casual_losses[lang] + "</b>: " + compare(response1.player.stats.casual.losses, response2.player.stats.casual.losses, "number", lang, 1) + "\n" +
-							"<b>" + lang_casual_wlr[lang] + "</b>: " + compare(response1.player.stats.casual.wlr, response2.player.stats.casual.wlr, "perc") + "\n" +
 							"<b>" + lang_casual_kills[lang] + "</b>: " + compare(response1.player.stats.casual.kills, response2.player.stats.casual.kills, "number") + "\n" +
 							"<b>" + lang_casual_deaths[lang] + "</b>: " + compare(response1.player.stats.casual.deaths, response2.player.stats.casual.deaths, "number", lang, 1) + "\n" +
 							"<b>" + lang_casual_kd[lang] + "</b>: " + compare(response1.player.stats.casual.kd, response2.player.stats.casual.kd, "number") + "\n" +
@@ -1414,7 +1458,6 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 							"<b>" + lang_suicides[lang] + "</b>: " + compare(response1.player.stats.overall.suicides, response2.player.stats.overall.suicides, "number", lang, 1) + "\n" +
 							"<b>" + lang_reinforcements[lang] + "</b>: " + compare(response1.player.stats.overall.reinforcements_deployed, response2.player.stats.overall.reinforcements_deployed, "number") + "\n" +
 							"<b>" + lang_barricades[lang] + "</b>: " + compare(response1.player.stats.overall.barricades_built, response2.player.stats.overall.barricades_built, "number") + "\n" +
-							"<b>" + lang_steps[lang] + "</b>: " + compare(response1.player.stats.overall.steps_moved, response2.player.stats.overall.steps_moved, "number") + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + compare(response1.player.stats.overall.bullets_hit, response2.player.stats.overall.bullets_hit, "number") + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + compare(response1.player.stats.overall.headshots, response2.player.stats.overall.headshots, "number") + "\n" +
 							"<b>" + lang_melee_kills[lang] + "</b>: " + compare(response1.player.stats.overall.melee_kills, response2.player.stats.overall.melee_kills, "number") + "\n" +
