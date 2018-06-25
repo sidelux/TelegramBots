@@ -9,6 +9,8 @@ process.on('unhandledRejection', function (error, p) {
 	console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
 });
 
+const appcode = "r6apitelegram";
+
 var config = require('./config.js');
 var TelegramBot = require('node-telegram-bot-api');
 var mysql = require('mysql');
@@ -28,21 +30,41 @@ var striptags = require('striptags');
 class RainbowSixApi {
 	constructor() {}
 
-	stats(username, platform, operators) {
+	stats(username, platform, extra) {
 		return new Promise((resolve, reject) => {
-			
-			if (operators){
-				var endpoint = `https://api.r6stats.com/api/v1/players/${username}/operators/?platform=${platform}`;
+
+			var endpoint;
+			if (platform == "ps4")
+				platform = "psn";
+			else if (platform == "xone")
+				platform = "xbl";
+
+			if (extra == 1){
+				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
 					if(!error && response.statusCode == '200') {
-						var objStats = JSON.parse(body);
+						var objUser = JSON.parse(body);
+
+						var keys = Object.keys(objUser.players);
+						var ubi_id = keys[0];
+
+						if (objUser.players[ubi_id] == undefined)
+							return reject(JSON.parse(body));
 						
-						return resolve(objStats);
-					} else
-						return reject(new TypeError('502 Bad Gateway'));
+						var objOps = objUser.players[ubi_id];
+						return resolve(objOps);
+					}
+				});
+			}else if (extra == 2){
+				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
+				request.get(endpoint, (error, response, body) => {
+					if(!error && response.statusCode == '200') {
+						var objUser = JSON.parse(body);
+						var objOps = objUser.operators;
+						return resolve(objOps);
+					}
 				});
 			}else{
-				
 				var objStats = {};
 				objStats.player = {};
 				objStats.player.stats = {};
@@ -50,41 +72,39 @@ class RainbowSixApi {
 				objStats.player.stats.ranked = {};
 				objStats.player.stats.casual = {};
 				objStats.player.stats.overall = {};
-				
-				if (platform == "ps4")
-					platform = "psn";
-				else if (platform == "xone")
-					platform = "xbl";
-				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&progression=true&appcode=r6apitelegram";
+
+				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
 					if(!error && response.statusCode == '200') {
 						var objUser = JSON.parse(body);
-						
+
 						var keys = Object.keys(objUser.players);
 						var ubi_id = keys[0];
 
 						if (objUser.players[ubi_id] == undefined)
 							return reject(JSON.parse(body));
-						else {
-							objStats.player.ubisoft_id = objUser.players[ubi_id].profile_id;
-							objStats.player.username = objUser.players[ubi_id].nickname;
-							objStats.player.platform = objUser.players[ubi_id].platform;
-							objStats.player.stats.progression.level = objUser.players[ubi_id].level;
-							objStats.player.stats.progression.xp = objUser.players[ubi_id].xp;									
-							objStats.player.season_id = objUser.players[ubi_id].season;
-							objStats.player.season_rank = objUser.players[ubi_id].rank;
-							objStats.player.season_mmr = objUser.players[ubi_id].mmr;
-							objStats.player.season_max_mmr = objUser.players[ubi_id].max_mmr;
-							
-							if (objStats.player.season_rank == undefined) objStats.player.season_rank = 0;
-							if (objStats.player.season_mmr == undefined) objStats.player.season_mmr = 0;
-							if (objStats.player.season_max_mmr == undefined) objStats.player.season_max_mmr = 0;
-						}
+
+						objStats.player.ubisoft_id = objUser.players[ubi_id].profile_id;
+						objStats.player.username = objUser.players[ubi_id].nickname;
+						objStats.player.platform = objUser.players[ubi_id].platform;
+						objStats.player.stats.progression.level = objUser.players[ubi_id].level;
+						objStats.player.stats.progression.xp = objUser.players[ubi_id].xp;									
+						objStats.player.season_id = objUser.players[ubi_id].season;
+						objStats.player.season_rank = objUser.players[ubi_id].rank;
+						objStats.player.season_mmr = objUser.players[ubi_id].mmr;
+						objStats.player.season_max_mmr = objUser.players[ubi_id].max_mmr;
+
+						if (objStats.player.season_rank == undefined) objStats.player.season_rank = 0;
+						if (objStats.player.season_mmr == undefined) objStats.player.season_mmr = 0;
+						if (objStats.player.season_max_mmr == undefined) objStats.player.season_max_mmr = 0;
 
 						endpoint = "http://fenixweb.net/r6api/getStats.php?name=" + username + "&platform=" + platform + "&appcode=r6apitelegram";
 						request.get(endpoint, (error, response, body) => {
 							if(!error && response.statusCode == '200') {
 								var objUser = JSON.parse(body);
+
+								if (objUser.players[ubi_id] == undefined)
+									return reject("User not found");
 
 								objStats.player.stats.ranked.wins = objUser.players[ubi_id].rankedpvp_matchwon;
 								objStats.player.stats.ranked.losses = objUser.players[ubi_id].rankedpvp_matchlost;
@@ -107,7 +127,7 @@ class RainbowSixApi {
 								objStats.player.stats.overall.melee_kills = objUser.players[ubi_id].generalpvp_meleekills;
 								objStats.player.stats.overall.penetration_kills = objUser.players[ubi_id].generalpvp_penetrationkills;
 								objStats.player.stats.overall.assists =  objUser.players[ubi_id].generalpvp_killassists;
-								
+
 								if (objStats.player.stats.ranked.wins == undefined) objStats.player.stats.ranked.wins = 0;
 								if (objStats.player.stats.ranked.losses == undefined) objStats.player.stats.ranked.losses = 0;
 								if (objStats.player.stats.ranked.kills == undefined) objStats.player.stats.ranked.kills = 0;
@@ -219,7 +239,6 @@ var lang_news_date = [];
 var lang_operator_no_name = [];
 var lang_operator_not_found = [];
 var lang_help = [];
-var lang_new_user = [];
 var lang_groups = [];
 var lang_rank = [];
 var lang_time = [];
@@ -281,6 +300,8 @@ var lang_inline_infos = [];
 var lang_inline_season = [];
 
 var lang_operator_title = [];
+var lang_operator_role_atk = [];
+var lang_operator_role_def = [];
 var lang_operator_plays = [];
 var lang_operator_wins = [];
 var lang_operator_losses = [];
@@ -414,8 +435,6 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
-lang_new_user["it"] = "Nuovo utente rilevato, salvare i dati iniziali potrebbe richiedere qualche minuto...";
-lang_new_user["en"] = "New user detected, save data at first time could be take some minutes...";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata:";
@@ -532,6 +551,10 @@ lang_inline_season["en"] = "Season";
 
 lang_operator_title["it"] = "Operatore";
 lang_operator_title["en"] = "Operator";
+lang_operator_role_atk["it"] = "ATT";
+lang_operator_role_atk["en"] = "ATK";
+lang_operator_role_def["it"] = "DIF";
+lang_operator_role_def["en"] = "DEF";
 lang_operator_plays["it"] = "Partite";
 lang_operator_plays["en"] = "Plays";
 lang_operator_wins["it"] = "Vittore";
@@ -1049,7 +1072,7 @@ bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
 		else if (lang == "en")
 			cookie = "english";
 
-		console.log(getNow("it") + " Request " + num + " news in " + cookie + " from " + message.from.username);
+		console.log(getNow("it") + " Request " + (num == 0 ? "all" : num) + " news in " + cookie + " from " + message.from.username);
 		var url = "https://steamcommunity.com/games/359550/rss/";
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 
@@ -1117,7 +1140,7 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?/i, function (message, match
 		var param = match[1];
 
 		console.log(getNow("it") + " Request graph for " + param + " from " + message.from.username);
-		connection.query("SELECT insert_date, " + param + " FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "'", function (err, rows) {
+		connection.query("SELECT insert_date, " + param + " FROM player_history WHERE " + param + " != 0 AND username = '" + default_username + "' AND platform = '" + default_platform + "'", function (err, rows) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length <= 1){
@@ -1271,23 +1294,21 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				}
-				/*
-				else
-					bot.sendMessage(message.chat.id, lang_new_user[lang], html);
-				*/
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username, platform, false).then(response => {
+					r6.stats(username, platform, 0).then(response => {
 						var responseStats = response;
 						var text = getData(response, lang);
-						r6.stats(username, platform, true).then(response => {
+						r6.stats(username, platform, 1).then(response => {
 							var responseOps = response;
 
 							var ops = getOperators(responseOps);							
 							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], lang);
 
 							bot.sendMessage(message.chat.id, text, html);
-							saveData(responseStats, responseOps);
+
+							if (forceSave == 0)
+								saveData(responseStats, responseOps);
 
 							console.log(getNow("it") + " User data served for " + username + " on " + platform);
 						}).catch(error => {
@@ -1344,7 +1365,6 @@ function getData(response, lang){
 }
 
 function getOperators(response){
-	var operators_num = Object.keys(response.operator_records).length;
 	var most_played = 0;
 	var most_played_name = "";
 	var most_wins = 0;
@@ -1359,39 +1379,54 @@ function getOperators(response){
 	var most_playtime_name = "";
 	var most_kd = 0;
 	var most_kd_name = "";
-	for (i = 0; i < operators_num; i++){
-		if (response.operator_records[i].stats.played > most_played){
-			most_played = response.operator_records[i].stats.played;
-			most_played_name = response.operator_records[i].operator.name;
+
+	var operators = Object.keys(response);
+
+	// remove profile_id, name, platform
+	operators.splice(-1,1);
+	operators.splice(-1,1);
+	operators.splice(-1,1);
+
+	for (i = 0; i < operators.length; i++){
+		var plays = response[operators[i]].operatorpvp_roundlost+response[operators[i]].operatorpvp_roundwon;
+		if (plays > most_played){
+			most_played = plays;
+			most_played_name = operators[i];
 		}
-		if (response.operator_records[i].stats.wins > most_wins){
-			most_wins = response.operator_records[i].stats.wins;
-			most_wins_name = response.operator_records[i].operator.name;
+		if (response[operators[i]].operatorpvp_roundwon > most_wins){
+			most_wins = response[operators[i]].operatorpvp_roundwon;
+			most_wins_name = operators[i];
 		}
-		if (response.operator_records[i].stats.losses > most_losses){
-			most_losses = response.operator_records[i].stats.losses;
-			most_losses_name = response.operator_records[i].operator.name;
+		if (response[operators[i]].operatorpvp_roundlost > most_losses){
+			most_losses = response[operators[i]].operatorpvp_roundlost;
+			most_losses_name = operators[i];
 		}
-		if (response.operator_records[i].stats.kills > most_kills){
-			most_kills = response.operator_records[i].stats.kills;
-			most_kills_name = response.operator_records[i].operator.name;
+		if (response[operators[i]].operatorpvp_kills > most_kills){
+			most_kills = response[operators[i]].operatorpvp_kills;
+			most_kills_name = operators[i];
 		}
-		if (response.operator_records[i].stats.deaths > most_deaths){
-			most_deaths = response.operator_records[i].stats.deaths;
-			most_deaths_name = response.operator_records[i].operator.name;
+		if (response[operators[i]].operatorpvp_death > most_deaths){
+			most_deaths = response[operators[i]].operatorpvp_death;
+			most_deaths_name = operators[i];
 		}
-		if (response.operator_records[i].stats.playtime > most_playtime){
-			most_playtime = response.operator_records[i].stats.playtime;
-			most_playtime_name = response.operator_records[i].operator.name;
+		if (response[operators[i]].operatorpvp_timeplayed > most_playtime){
+			most_playtime = response[operators[i]].operatorpvp_timeplayed;
+			most_playtime_name = operators[i];
 		}
-		var kd = response.operator_records[i].stats.kills/response.operator_records[i].stats.deaths;
-		if (kd == Infinity)
-			kd = response.operator_records[i].stats.kills;
+		var kd = response[operators[i]].operatorpvp_kills/response[operators[i]].operatorpvp_death;
 		if (kd > most_kd){
 			most_kd = kd;
-			most_kd_name = response.operator_records[i].operator.name;
+			most_kd_name = operators[i];
 		}
 	}
+
+	most_played_name = jsUcfirst(most_played_name);
+	most_wins_name = jsUcfirst(most_wins_name);
+	most_losses_name = jsUcfirst(most_losses_name);
+	most_kills_name = jsUcfirst(most_kills_name);
+	most_deaths_name = jsUcfirst(most_deaths_name);
+	most_playtime_name = jsUcfirst(most_playtime_name);
+	most_kd_name = jsUcfirst(most_kd_name);
 
 	return [most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name];
 }
@@ -1430,10 +1465,10 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 
 		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(username1, platform, false).then(response1 => {
+			r6.stats(username1, platform, 0).then(response1 => {
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username2, platform, false).then(response2 => {
+					r6.stats(username2, platform, 0).then(response2 => {
 
 						var text = "<i>" + response1.player.username + " vs " + response2.player.username + "</i>\n\n" +
 							"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response1.player.platform) + " - " + jsUcfirst(response2.player.platform) + "\n" +
@@ -1511,23 +1546,39 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 
 		console.log(getNow("it") + " Request operators data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(default_username, default_platform, true).then(response => {
+			r6.stats(default_username, default_platform, 1).then(response => {
 				var text = "<b>" + lang_operator_title[lang] + " - " + lang_operator_plays[lang] + " - " + lang_operator_wins[lang] + " - " + lang_operator_losses[lang] + " - " + lang_operator_kills[lang] + " - " + lang_operator_deaths[lang] + " - " + lang_operator_playtime[lang] + " - " + lang_operator_specials[lang] + "</b>\n";
-				var operators_num = Object.keys(response.operator_records).length;		
-				for (i = 0; i < operators_num; i++){
-					text += "<b>" + response.operator_records[i].operator.name + "</b> - " + formatNumber(response.operator_records[i].stats.played) + " - " + formatNumber(response.operator_records[i].stats.wins) + " - " + formatNumber(response.operator_records[i].stats.losses) + " - " + formatNumber(response.operator_records[i].stats.kills) + " - " + formatNumber(response.operator_records[i].stats.deaths) + " - " + toTime(response.operator_records[i].stats.playtime, lang, true);
 
-					if (response.operator_records[i].stats.specials != undefined){
-						var specials = Object.keys(response.operator_records[i].stats.specials);
-						var sum = 0;
+				var operators = Object.keys(response);	
+
+				// remove profile_id, name, platform
+				operators.splice(-1,1);
+				operators.splice(-1,1);
+				operators.splice(-1,1);
+
+				for (i = 0; i < operators.length; i++){
+					text += "<b>" + jsUcfirst(operators[i]) + "</b> - " + formatNumber(response[operators[i]].operatorpvp_roundwon+response[operators[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators[i]].operatorpvp_roundwon) + " - " + formatNumber(response[operators[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators[i]].operatorpvp_kills) + " - " + formatNumber(response[operators[i]].operatorpvp_death) + " - " + toTime(response[operators[i]].operatorpvp_timeplayed, lang, true);
+
+					var specials = Object.keys(response[operators[i]]);
+
+					// remove stats
+					specials.splice(0,1);
+					specials.splice(0,1);
+					specials.splice(0,1);
+					specials.splice(0,1);
+					specials.splice(0,1);
+
+					var sum = 0;
+					if (specials.length > 0){
 						for (j = 0; j < specials.length; j++)
-							sum += parseInt(eval("response.operator_records[" + i + "].stats.specials." + specials[j]));
-						text += " - " + formatNumber(sum);
+							sum += parseInt(eval("response[operators[" + i + "]]." + specials[j]));
 					}
+					text += " - " + formatNumber(sum);
 					text += "\n";
 				}
 				bot.sendMessage(message.chat.id, text + lang_operator_extra[lang], html);
 			}).catch(error => {
+				console.log(error);
 				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + default_platform + ")", html);
 				console.log(getNow("it") + " Operators data not found for " + default_username + " on " + default_platform);
 			});
@@ -1568,56 +1619,100 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 
 		console.log(getNow("it") + " Request operator data for " + operator_name + " from " + message.from.username);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(default_username, default_platform, true).then(response => {
-				var name = "";
-				var played = 0;
-				var wins = 0;
-				var losses = 0;
-				var kills = 0;
-				var deaths = 0;
-				var playtime = 0;
-				var special_names = [];
-				var special_values = [];
-				var operators_num = Object.keys(response.operator_records).length;		
-				for (i = 0; i < operators_num; i++){
-					if (response.operator_records[i].operator.name.toLowerCase() == operator_name.toLowerCase()){
-						name = response.operator_records[i].operator.name;
-						played = response.operator_records[i].stats.played;
-						wins = response.operator_records[i].stats.wins;
-						losses = response.operator_records[i].stats.losses;
-						kills = response.operator_records[i].stats.kills;
-						deaths = response.operator_records[i].stats.deaths;
-						playtime = response.operator_records[i].stats.playtime;
 
-						if (response.operator_records[i].stats.specials != undefined){
-							var specials = Object.keys(response.operator_records[i].stats.specials);
-							for (j = 0; j < specials.length; j++){
-								special_names.push(eval("ability_" + specials[j] + "['" + lang + "']"));
-								special_values.push(parseInt(eval("response.operator_records[" + i + "].stats.specials." + specials[j])));
+			r6.stats(default_username, default_platform, 2).then(response => {
+				var operators_info = response;
+
+				r6.stats(default_username, default_platform, 1).then(response => {
+
+					var operators = Object.keys(response);
+
+					// remove profile_id, name, platform
+					operators.splice(-1,1);
+					operators.splice(-1,1);
+					operators.splice(-1,1);
+
+					var name = "";
+					var role = "";
+					var org = "";
+					var badge_url = "";
+					var played = 0;
+					var wins = 0;
+					var losses = 0;
+					var kills = 0;
+					var deaths = 0;
+					var playtime = 0;
+					var special_names = [];
+					var special_values = [];	
+					var found = 0;
+					var validSpecials = 0;
+					for (i = 0; i < operators.length; i++){
+						if (operators[i] == operator_name.toLowerCase()){
+							name = jsUcfirst(operators[i]);
+							role = operators_info[operators[i]].category;
+							if (role == "atk")
+								role = lang_operator_role_atk[lang];
+							else if (role == "def")
+								role = lang_operator_role_def[lang];
+							org = operators_info[operators[i]].organisation;
+							badge_url = operators_info[operators[i]].images.badge;
+							played = (response[operators[i]].operatorpvp_roundwon+response[operators[i]].operatorpvp_roundlost);
+							wins = response[operators[i]].operatorpvp_roundwon;
+							losses = response[operators[i]].operatorpvp_roundlost;
+							kills = response[operators[i]].operatorpvp_kills;
+							deaths = response[operators[i]].operatorpvp_death;
+							playtime = response[operators[i]].operatorpvp_timeplayed;
+
+							var specials = Object.keys(response[operators[i]]);
+
+							// remove stats
+							specials.splice(0,1);
+							specials.splice(0,1);
+							specials.splice(0,1);
+							specials.splice(0,1);
+							specials.splice(0,1);
+
+							if (specials.length > 0){
+								for (j = 0; j < specials.length; j++){
+									if (specials[j].indexOf("pve") == -1){
+										special_names.push(eval("ability_" + specials[j] + "['" + lang + "']"));
+										special_values.push(parseInt(eval("response[operators[" + i + "]]." + specials[j])));
+										validSpecials++;
+									}
+								}
 							}
+							found = 1;
 						}
 					}
-				}
 
-				if (name == ""){
-					bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
-					return;
-				}
+					if (found == 0){
+						bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+						return;
+					}
 
-				var text = 	"<b>" + lang_operator_title[lang] + "</b>: " + name + "\n" +
-					"<b>" + lang_operator_plays[lang] + "</b>: " + formatNumber(played) + "\n" +
-					"<b>" + lang_operator_wins[lang] + "</b>: " + formatNumber(wins) + "\n" +
-					"<b>" + lang_operator_losses[lang] + "</b>: " + formatNumber(losses) + "\n" +
-					"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(kills) + "\n" +
-					"<b>" + lang_operator_deaths[lang] + "</b>: " + formatNumber(deaths) + "\n" +
-					"<b>" + lang_operator_playtime[lang] + "</b>: " + toTime(playtime, lang, true) + "\n";
-				for (j = 0; j < specials.length; j++)
-					text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
+					var text = 	"<b>" + lang_operator_title[lang] + "</b>: " + name + " (" + role + ", " + org + ")\n" +
+						"<b>" + lang_operator_plays[lang] + "</b>: " + formatNumber(played) + "\n" +
+						"<b>" + lang_operator_wins[lang] + "</b>: " + formatNumber(wins) + "\n" +
+						"<b>" + lang_operator_losses[lang] + "</b>: " + formatNumber(losses) + "\n" +
+						"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(kills) + "\n" +
+						"<b>" + lang_operator_deaths[lang] + "</b>: " + formatNumber(deaths) + "\n" +
+						"<b>" + lang_operator_playtime[lang] + "</b>: " + toTime(playtime, lang, true) + "\n";
+					for (j = 0; j < validSpecials; j++)
+						text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
 
-				bot.sendMessage(message.chat.id, text, html);
+					setTimeout(function () {
+						bot.sendMessage(message.chat.id, text, html);
+					}, 300);
+					bot.sendPhoto(message.chat.id, badge_url);
+				}).catch(error => {
+					console.log(error);
+					bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", html);
+					console.log(getNow("it") + " Operators data not found for " + operator_name + " from " + message.from.username);
+				});
 			}).catch(error => {
+				console.log(error);
 				bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", html);
-				console.log(getNow("it") + " Operators data not found for " + operator_name + " from " + message.from.username);
+				console.log(getNow("it") + " Operators info data not found for " + operator_name + " from " + message.from.username);
 			});
 		});
 	});
@@ -1705,7 +1800,7 @@ function setAutoTrack(element, index, array) {
 	var username = element.username;
 	var platform = element.platform;
 
-	r6.stats(username, platform, false).then(response => {
+	r6.stats(username, platform, 0).then(response => {
 
 		var responseStats = response;
 
@@ -1723,7 +1818,7 @@ function setAutoTrack(element, index, array) {
 				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " skipped");
 
 			if (toSave == 1){
-				r6.stats(username, platform, true).then(response => {
+				r6.stats(username, platform, 1).then(response => {
 					var responseOps = response;
 					if (toSave == 1)
 						saveData(responseStats, responseOps);
@@ -1742,7 +1837,8 @@ function stripContent(text){
 	text = text.replaceAll("(</li>)","");
 
 	// sempre per ultima
-	text = text.replaceAll("((\\n\\n\\n))","\n\n");
+	text = text.replaceAll("((\\n\\n\\n))","\n");
+	text = text.replaceAll("((\\n\\n))","\n");
 	if (text.length > 500)
 		text = text.substr(0, 500) + "...";
 	return text.trim();
