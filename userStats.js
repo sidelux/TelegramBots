@@ -34,8 +34,8 @@ app.listen(port);
 
 app.use(bodyParser.json());
 app.post(path, function(req, res) {
-  	bot.processUpdate(req.body);
-  	res.sendStatus(200);
+	bot.processUpdate(req.body);
+	res.sendStatus(200);
 });
 
 console.log('Starting bot...');
@@ -56,7 +56,7 @@ var connection_sync = new mysql_sync({
 });
 
 setInterval(function () {
-    connection.query('SELECT 1');
+	connection.query('SELECT 1');
 	connection_sync.query('SELECT 1');
 }, 60000);
 
@@ -83,6 +83,7 @@ var lang_stats_username = [];
 var lang_stats_msgcount = [];
 var lang_stats_creation = [];
 var lang_stats_update = [];
+var lang_rank = [];
 
 lang_main_1["en"] = "<b>Welcome to User Stats Tracker Bot!</b>\n\nAdd this bot to groups to store messages count <b>globally</b>, last message date and last username for each user, then use <i>inline mode</i> with username or account id to view user informations.\n\nMore than ";
 lang_main_1["it"] = "<b>Benvenuto nell'User Stats Tracker Bot!</b>\n\nAggiungi questo bot ai tuoi gruppi per contare messaggi in modo <b>globale</b>, la data dell'ultimo messaggio e l'ultimo username utilizzato dall'utente, poi con l'<i>inline mode</i> puoi visualizzare queste informazioni inserendo l'username o l'account id.\n\nPiù di ";
@@ -104,6 +105,8 @@ lang_stats_creation["en"] = "Creation date";
 lang_stats_creation["it"] = "Data creazione";
 lang_stats_update["en"] = "Last update date";
 lang_stats_update["it"] = "Ultimo aggiornamento";
+lang_rank["it"] = "Classifica";
+lang_rank["en"] = "Leaderboard";
 
 bot.on('message', function (message) {
 	if (message.text != undefined){
@@ -119,9 +122,31 @@ bot.on('message', function (message) {
 });
 
 bot.onText(/^\/start/i, function (message) {
+
+	if ((message.chat.id < 0) && (message.text.indexOf("@") != -1) && (message.text.indexOf("userstatstrackerbot") == -1))
+		return;
+
 	var no_preview = {
 		parse_mode: "HTML",
 		disable_web_page_preview: true
+	};
+
+	var lang = "en";
+	if (message.from.language_code != undefined){
+		if (validLang.indexOf(message.from.language_code) != -1)
+			lang = message.from.language_code;
+	}
+
+	connection.query('SELECT SUM(message_count) As cnt FROM stats', function (err, rows) {
+		if (err) throw err;
+		bot.sendMessage(message.chat.id, lang_main_1[lang] + String(formatNumber(Math.round(rows[0].cnt/1000)*1000)) + lang_main_2[lang], no_preview);
+	});
+});
+
+bot.onText(/^\/leaderboard(?:@\w+)?/i, function (message, match) {
+
+	var html = {
+		parse_mode: "HTML"
 	};
 	
 	var lang = "en";
@@ -129,10 +154,19 @@ bot.onText(/^\/start/i, function (message) {
 		if (validLang.indexOf(message.from.language_code) != -1)
 			lang = message.from.language_code;
 	}
-	
-	connection.query('SELECT SUM(message_count) As cnt FROM stats', function (err, rows) {
+
+	var text = "<b>" + lang_rank[lang] + "</b>\n";
+	var c = 1;
+	var size = 25;
+
+	connection.query('SELECT account_id, last_username, message_count FROM stats ORDER BY message_count DESC', function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(message.chat.id, lang_main_1[lang] + String(formatNumber(Math.round(rows[0].cnt/1000)*1000)) + lang_main_2[lang], no_preview);
+		for (var i = 0; i < size; i++){
+			text += c + "° <b>" + (rows[i].last_username == null ? rows[i].account_id : rows[i].last_username) + "</b>: " + formatNumber(rows[i].message_count) + "\n";
+			c++;
+		}
+
+		bot.sendMessage(message.chat.id, text, html);
 	});
 });
 
@@ -140,16 +174,16 @@ bot.on("inline_query", function (query) {
 
 	var data = query.query.replace("@","");
 	var reg = new RegExp("^[a-zA-Z0-9_]{5,256}$");
-	
+
 	if ((data == "") || (reg.test(data) == false))
 		return;
-	
+
 	var lang = "en";
 	if (query.from.language_code != undefined){
 		if (validLang.indexOf(query.from.language_code) != -1)
 			lang = query.from.language_code;
 	}
-	
+
 	console.log(getNow("it") + " User data request inline for " + data);
 	connection.query('SELECT account_id, last_username, message_count, creation_date, update_date FROM stats WHERE last_username = "' + data + '" OR account_id = "' + data + '"', function (err, rows) {
 		if (err) throw err;
@@ -171,9 +205,9 @@ bot.on("inline_query", function (query) {
 			title: lang_stats_userinfo[lang],
 			description: lang_stats_userfound[lang],
 			message_text: 	"<b>" + lang_stats_username[lang] + ":</b> " + rows[0].last_username + " (" + rows[0].account_id + ")\n" +
-							"<b>" + lang_stats_msgcount[lang] + ":</b> " + formatNumber(rows[0].message_count) + "\n" +
-							"<b>" + lang_stats_creation[lang] + ":</b> " + toDate("en", new Date(rows[0].creation_date)) + "\n" +
-							"<b>" + lang_stats_update[lang] + ":</b> " + toDate("en", new Date(rows[0].update_date)),
+			"<b>" + lang_stats_msgcount[lang] + ":</b> " + formatNumber(rows[0].message_count) + "\n" +
+			"<b>" + lang_stats_creation[lang] + ":</b> " + toDate("en", new Date(rows[0].creation_date)) + "\n" +
+			"<b>" + lang_stats_update[lang] + ":</b> " + toDate("en", new Date(rows[0].update_date)),
 			parse_mode: "HTML"
 		}]);
 	});
