@@ -50,7 +50,7 @@ class RainbowSixApi {
 
 						if (objResp.players[ubi_id] == undefined)
 							return reject("User not found (1) - " + username);
-						
+
 						var objOps = objResp.players[ubi_id];
 						return resolve(objOps);
 					}
@@ -74,7 +74,7 @@ class RainbowSixApi {
 
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
-						
+
 						if (objResp.error != undefined)
 							return reject(objResp.error.message);
 
@@ -131,7 +131,7 @@ class RainbowSixApi {
 								objStats.mode_secure = objResp.players[ubi_id].secureareapvp_bestscore;
 								objStats.mode_hostage = objResp.players[ubi_id].rescuehostagepvp_bestscore;
 								objStats.mode_bomb = objResp.players[ubi_id].plantbombpvp_bestscore;
-								
+
 								if (objStats.ranked_wins == undefined) objStats.ranked_wins = 0;
 								if (objStats.ranked_losses == undefined) objStats.ranked_losses = 0;
 								if ((objStats.ranked_wl == Infinity) || (isNaN(objStats.ranked_wl))) objStats.ranked_wl = objStats.ranked_wins;
@@ -736,16 +736,26 @@ ability_operatorpvp_barrage_killswithturret["en"] = "Kills with turret";
 ability_operatorpvp_deceiver_revealedattackers["it"] = "Attaccanti individuati";
 ability_operatorpvp_deceiver_revealedattackers["en"] = "Attackers revealed";
 
-var j = Schedule.scheduleJob('00 00 * * *', function () {
-	console.log(getNow("it") + " Autotrack called from job");
+var j1 = Schedule.scheduleJob('00 00 * * *', function () {
+	console.log(getNow("it") + " Autotrack #1 called from job");
+	autoTrack();
+});
+
+var j2 = Schedule.scheduleJob('00 01 * * *', function () {
+	console.log(getNow("it") + " Autotrack #2 called from job");
+	autoTrack();
+});
+
+var j3 = Schedule.scheduleJob('00 02 * * *', function () {
+	console.log(getNow("it") + " Autotrack #3 called from job");
 	autoTrack();
 });
 
 bot.onText(/^\/start/i, function (message) {
-	
+
 	if ((message.chat.id < 0) && (message.text.indexOf("@") != -1) && (message.text.indexOf("r6siegestatsbot") == -1))
 		return;
-	
+
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		var lang = "en";
@@ -893,61 +903,65 @@ function printInline(query_id, response, lang){
 function saveData(responseStats, responseOps){
 	var ops = getOperators(responseOps);
 
-	connection.query('INSERT INTO player_history VALUES (DEFAULT, "' + responseStats.profile_id + '", "' +
-					 responseStats.platform + '","' +
-					 responseStats.username + '",' +
-					 responseStats.level + ',' +
-					 responseStats.xp + ',' +
-					 responseStats.ranked_plays + ',' + 
-					 responseStats.ranked_wins + ',' + 
-					 responseStats.ranked_losses + ',' + 
-					 responseStats.ranked_wl + ',' + 
-					 responseStats.ranked_kills + ',' +
-					 responseStats.ranked_deaths + ',' + 
-					 responseStats.ranked_kd + ',' + 
-					 responseStats.ranked_playtime + ',' +
-					 responseStats.casual_plays + ',' +
-					 responseStats.casual_wins + ',' + 
-					 responseStats.casual_losses + ',' +
-					 responseStats.casual_wl + ',' + 
-					 responseStats.casual_kills + ',' +
-					 responseStats.casual_deaths + ',' +
-					 responseStats.casual_kd + ',' +
-					 responseStats.casual_playtime + ',' +
-					 responseStats.revives + ',' +
-					 responseStats.suicides + ',' +
-					 responseStats.reinforcements_deployed + ',' +
-					 responseStats.barricades_built + ',' +
-					 responseStats.bullets_hit + ',' +
-					 responseStats.headshots + ',' +
-					 responseStats.melee_kills + ',' +
-					 responseStats.penetration_kills + ',' +
-					 responseStats.assists + ',' +
-					 responseStats.season_id + ',' + 
-					 responseStats.season_rank + ',' + 
-					 responseStats.season_mmr + ',' +
-					 responseStats.season_max_mmr + ',' +
-					 responseStats.mode_secure + ',' + 
-					 responseStats.mode_hostage + ',' +
-					 responseStats.mode_bomb + ',"' +
-					 ops[13] + '",' +
-					 ops[12] + ',"' +
-					 ops[1] + '",' +
-					 ops[0] + ',"' +
-					 ops[3] + '",' +
-					 ops[2] + ',"' +
-					 ops[5] + '",' +
-					 ops[4] + ',"' +
-					 ops[7] + '",' +
-					 ops[6] + ',"' +
-					 ops[9] + '",' +
-					 ops[8] + ',"' +
-					 ops[11] + '",' +
-					 ops[10] + ',' +
-					 'NOW())', function (err, rows) {
-		if (err) throw err;
-		console.log(getNow("it") + " Saved user data for " + responseStats.username);
-	});
+	if (responseStats.profile_id == undefined)
+		console.log(getNow("it") + " Data undefined for " + responseStats.username);
+	else{
+		connection.query('INSERT INTO player_history VALUES (DEFAULT, "' + responseStats.profile_id + '", "' +
+						 responseStats.platform + '","' +
+						 responseStats.username + '",' +
+						 responseStats.level + ',' +
+						 responseStats.xp + ',' +
+						 responseStats.ranked_plays + ',' + 
+						 responseStats.ranked_wins + ',' + 
+						 responseStats.ranked_losses + ',' + 
+						 responseStats.ranked_wl + ',' + 
+						 responseStats.ranked_kills + ',' +
+						 responseStats.ranked_deaths + ',' + 
+						 responseStats.ranked_kd + ',' + 
+						 responseStats.ranked_playtime + ',' +
+						 responseStats.casual_plays + ',' +
+						 responseStats.casual_wins + ',' + 
+						 responseStats.casual_losses + ',' +
+						 responseStats.casual_wl + ',' + 
+						 responseStats.casual_kills + ',' +
+						 responseStats.casual_deaths + ',' +
+						 responseStats.casual_kd + ',' +
+						 responseStats.casual_playtime + ',' +
+						 responseStats.revives + ',' +
+						 responseStats.suicides + ',' +
+						 responseStats.reinforcements_deployed + ',' +
+						 responseStats.barricades_built + ',' +
+						 responseStats.bullets_hit + ',' +
+						 responseStats.headshots + ',' +
+						 responseStats.melee_kills + ',' +
+						 responseStats.penetration_kills + ',' +
+						 responseStats.assists + ',' +
+						 responseStats.season_id + ',' + 
+						 responseStats.season_rank + ',' + 
+						 responseStats.season_mmr + ',' +
+						 responseStats.season_max_mmr + ',' +
+						 responseStats.mode_secure + ',' + 
+						 responseStats.mode_hostage + ',' +
+						 responseStats.mode_bomb + ',"' +
+						 ops[13] + '",' +
+						 ops[12] + ',"' +
+						 ops[1] + '",' +
+						 ops[0] + ',"' +
+						 ops[3] + '",' +
+						 ops[2] + ',"' +
+						 ops[5] + '",' +
+						 ops[4] + ',"' +
+						 ops[7] + '",' +
+						 ops[6] + ',"' +
+						 ops[9] + '",' +
+						 ops[8] + ',"' +
+						 ops[11] + '",' +
+						 ops[10] + ',' +
+						 'NOW())', function (err, rows) {
+			if (err) throw err;
+			console.log(getNow("it") + " Saved user data for " + responseStats.username);
+		});
+	}
 }
 
 function numToRank(num, lang){
@@ -1331,7 +1345,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					response.season_rank = rows[0].season_rank;
 					response.season_mmr = rows[0].season_mmr;
 					response.season_max_mmr = rows[0].season_max_mmr;
-					
+
 					response.mode_secure = rows[0].mode_secure;
 					response.mode_hostage = rows[0].mode_hostage;
 					response.mode_bomb = rows[0].mode_bomb;
@@ -1372,7 +1386,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 							bot.sendMessage(message.chat.id, text, html);
 
 							//if (forceSave == 0)
-								saveData(responseStats, responseOps);
+							saveData(responseStats, responseOps);
 
 							console.log(getNow("it") + " User data served for " + username + " on " + platform);
 						}).catch(error => {
@@ -1905,8 +1919,7 @@ function setAutoTrack(element, index, array) {
 			}else if ((rows[0].ranked_playtime < responseStats.ranked_playtime) || (rows[0].casual_playtime < responseStats.casual_playtime)){
 				toSave = 1;
 				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (update)");
-			}else
-				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " skipped");
+			}
 
 			if (toSave == 1){
 				r6.stats(username, platform, 1).then(response => {
