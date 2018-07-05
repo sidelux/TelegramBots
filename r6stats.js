@@ -34,11 +34,7 @@ class RainbowSixApi {
 		return new Promise((resolve, reject) => {
 
 			var endpoint;
-			if (platform == "ps4")
-				platform = "psn";
-			else if (platform == "xone")
-				platform = "xbl";
-
+			
 			if (extra == 1){
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
@@ -412,8 +408,8 @@ lang_invalid_user_2["it"] = "Username non specificati, esempio: /compare usernam
 lang_invalid_user_2["en"] = "Username not specified, example: /compare username1,username2.";
 lang_invalid_platform["it"] = "Piattaforma non specificata.";
 lang_invalid_platform["en"] = "Platform not specified.";
-lang_invalid_platform_2["it"] = "Piattaforma non valida. Piattaforme disponibili: uplay, ps4 o xone.";
-lang_invalid_platform_2["en"] = "Invalid platform. Available platforms: uplay, ps4 or xone.";
+lang_invalid_platform_2["it"] = "Piattaforma non valida. Piattaforme disponibili: uplay (pc), psn (ps4) o xbl (xbox one).";
+lang_invalid_platform_2["en"] = "Invalid platform. Available platforms: uplay (pc), psn (ps4) or xbl (xbox one).";
 lang_default_platform_changed["it"] = "Piattaforma predefinita modificata!";
 lang_default_platform_changed["en"] = "Default platform changed!";
 lang_default["it"] = "Impostazioni: ";
@@ -886,7 +882,7 @@ function printInline(query_id, response, lang){
 		type: 'article',
 		title: lang_inline_userinfo[lang],
 		description: lang_inline_userfound[lang],
-		message_text: 	"<b>" + response.username + "</b> (Lv " + response.level + " - " + jsUcfirst(response.platform) + ")\n" +
+		message_text: 	"<b>" + response.username + "</b> (Lv " + response.level + " - " + decodePlatform(response.platform) + ")\n" +
 		"<b>" + lang_inline_season[lang] + "</b>: " + numToRank(response.season_rank, lang) + " (" + Math.round(response.season_mmr) + ")\n" + 
 		"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + response.ranked_kd + "\n" +
 		"<b>" + lang_inline_ranked_playtime[lang] + "</b>: " + toTime(response.ranked_playtime, lang, true) + "\n" +
@@ -989,6 +985,15 @@ function numToRank(num, lang){
 		return rankEn[num-1];
 }
 
+function decodePlatform(platform){
+	if (platform == "uplay")
+		return "PC";
+	else if (platform == "psn")
+		return "Ps4";
+	else if (platform == "xbl")
+		return "Xbox One";
+}
+
 bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -1054,7 +1059,7 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 		}
 
 		var platform = match[1].toLowerCase();
-		if ((platform != "uplay") && (platform != "ps4") && (platform != "xone")){
+		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
 			return;
 		}
@@ -1080,7 +1085,7 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 		}
 
 		var platform = match[1].toLowerCase();
-		if ((platform != "uplay") && (platform != "ps4") && (platform != "xone")){
+		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
 			return;
 		}
@@ -1094,9 +1099,9 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 		var platform_complex = 0;
 		if (platform == "uplay"){
 			platform_complex = 9;
-		}else if (platform == "ps4"){
+		}else if (platform == "psn"){
 			platform_complex = 47;
-		}else if (platform == "xone"){
+		}else if (platform == "xbl"){
 			platform_complex = 43;
 		}
 
@@ -1111,7 +1116,7 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 				var status = "";
 				while (matches = regex.exec(body))
 					status = matches[2];
-				bot.sendMessage(message.chat.id, jsUcfirst(platform) + " Server Status: " + status);
+				bot.sendMessage(message.chat.id, decodePlatform(platform) + " Server Status: " + status);
 			});
 		});
 	});
@@ -1291,7 +1296,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				platform = match[2].toLowerCase();
 		}
 
-		if ((platform != "uplay") && (platform != "ps4") && (platform != "xone")){
+		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
 			return;
 		}
@@ -1407,7 +1412,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 function getData(response, lang){
 	var text = "<b>" + lang_username[lang] + "</b>: " + response.username + "\n" +
-		"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response.platform) + "\n" +
+		"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response.platform) + "\n" +
 		"<b>" + lang_level[lang] + "</b>: " + response.level + "\n" +
 		"<b>" + lang_xp[lang] + "</b>: " + formatNumber(response.xp) + "\n" +
 		"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
@@ -1559,7 +1564,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 					r6.stats(username2, platform, 0).then(response2 => {
 
 						var text = "<i>" + response1.username + " vs " + response2.username + "</i>\n\n" +
-							"<b>" + lang_platform[lang] + "</b>: " + jsUcfirst(response1.platform) + " - " + jsUcfirst(response2.platform) + "\n" +
+							"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response1.platform) + " - " + decodePlatform(response2.platform) + "\n" +
 							"<b>" + lang_level[lang] + "</b>: " + compare(response1.level, response2.level) + "\n" +
 							"<b>" + lang_xp[lang] + "</b>: " + compare(response1.xp, response2.xp, "number") + "\n" +
 							"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
@@ -1874,7 +1879,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 		connection.query('SELECT username, platform, ranked_kd As points FROM player_history WHERE id IN (SELECT MAX(id) FROM player_history GROUP BY username, platform) GROUP BY username, platform ORDER BY ranked_kd DESC', function (err, rows, fields) {
 			if (err) throw err;
 			for (var i = 0; i < size; i++){
-				text += c + "° <b>" + rows[i].username + "</b> on " + jsUcfirst(rows[i].platform) + " (" + rows[i].points + ")\n";
+				text += c + "° <b>" + rows[i].username + "</b> on " + decodePlatform(rows[i].platform) + " (" + rows[i].points + ")\n";
 				c++;
 			}
 
