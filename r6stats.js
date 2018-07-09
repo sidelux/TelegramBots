@@ -1419,7 +1419,14 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username, platform, 0).then(response => {
 						var responseStats = response;
-						var text = getData(response, lang);
+						
+						if (responseStats.platform == undefined){
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
+							return;
+						}
+						
+						var text = getData(responseStats, lang);
 						r6.stats(username, platform, 1).then(response => {
 							var responseOps = response;
 
@@ -1428,8 +1435,8 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 							bot.sendMessage(message.chat.id, text, html);
 
-							//if (forceSave == 0)
-							saveData(responseStats, responseOps);
+							if (forceSave == 0)
+								saveData(responseStats, responseOps);
 
 							console.log(getNow("it") + " User data served for " + username + " on " + platform);
 						}).catch(error => {
@@ -1697,20 +1704,32 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(default_username, default_platform, 1).then(response => {
 				var text = "<b>" + lang_operator_title[lang] + " - " + lang_operator_plays[lang] + " - " + lang_operator_wins[lang] + " - " + lang_operator_losses[lang] + " - " + lang_operator_kills[lang] + " - " + lang_operator_deaths[lang] + " - " + lang_operator_playtime[lang] + " - " + lang_operator_specials[lang] + "</b>\n";
+				
+				var operators = response;
+				
+				delete operators.nickname;
+				delete operators.platform;
+				delete operators.profile_id;
+				
+				var ordered = {};
+				Object.keys(response).sort().forEach(function(key) {
+					ordered[key] = response[key];
+				});
+				operators = ordered;
+				
+				var operators_name = Object.keys(operators);
 
-				var operators = Object.keys(response);	
+				for (i = 0; i < Object.keys(operators).length; i++){
+					text += "<b>" + jsUcfirst(operators_name[i]) + "</b> - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon+response[operators_name[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators_name[i]].operatorpvp_kills) + " - " + formatNumber(response[operators_name[i]].operatorpvp_death) + " - " + toTime(response[operators_name[i]].operatorpvp_timeplayed, lang, true);
 
-				// remove profile_id, name, platform
-				operators.splice(-1,1);
-				operators.splice(-1,1);
-				operators.splice(-1,1);
-
-				for (i = 0; i < operators.length; i++){
-					text += "<b>" + jsUcfirst(operators[i]) + "</b> - " + formatNumber(response[operators[i]].operatorpvp_roundwon+response[operators[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators[i]].operatorpvp_roundwon) + " - " + formatNumber(response[operators[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators[i]].operatorpvp_kills) + " - " + formatNumber(response[operators[i]].operatorpvp_death) + " - " + toTime(response[operators[i]].operatorpvp_timeplayed, lang, true);
-
-					var specials = Object.keys(response[operators[i]]);
+					var specials = Object.keys(operators[operators_name[i]]);
 
 					// remove stats
+					delete operators[operators_name[i]].operatorpvp_roundlost;
+					delete operators[operators_name[i]].operatorpvp_death;
+					delete operators[operators_name[i]].operatorpvp_roundwon;
+					delete operators[operators_name[i]].operatorpvp_kills;
+					delete operators[operators_name[i]].operatorpvp_timeplayed;
 					specials.splice(0,1);
 					specials.splice(0,1);
 					specials.splice(0,1);
@@ -1720,7 +1739,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 					var sum = 0;
 					if (specials.length > 0){
 						for (j = 0; j < specials.length; j++)
-							sum += parseInt(eval("response[operators[" + i + "]]." + specials[j]));
+							sum += parseInt(eval("operators[operators_name[" + i + "]]." + specials[j]));
 					}
 					text += " - " + formatNumber(sum);
 					text += "\n";
