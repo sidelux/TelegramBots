@@ -26,6 +26,7 @@ var Schedule = require('node-schedule');
 var Parser = require('rss-parser');
 var request = require('request');
 var striptags = require('striptags');
+var stringSimilarity = require('string-similarity');
 
 class RainbowSixApi {
 	constructor() {}
@@ -225,6 +226,7 @@ var no_preview = {
 
 var validLang = ["en", "it"];
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
+var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan"];
 var lang_main = [];
 var lang_storebot = [];
 var lang_startme = [];
@@ -390,6 +392,34 @@ var ability_operatorpvp_kapkan_boobytrapkill = [];
 var ability_operatorpvp_kapkan_boobytrapdeployed = [];
 var ability_operatorpvp_barrage_killswithturret = [];
 var ability_operatorpvp_deceiver_revealedattackers = [];
+				
+var lang_loadout_intro = [];
+var lang_loadout_primary = [];
+var lang_loadout_weapon = [];
+var lang_loadout_grip = [];
+var lang_loadout_sight = [];
+var lang_loadout_attachment  = [];
+var lang_loadout_laser = [];
+var lang_loadout_secondary = [];
+var lang_loadout_utility = [];
+
+var lang_loadout_map_verticalgrip = [];
+var lang_loadout_map_holographic = [];
+var lang_loadout_map_compensator = [];
+var lang_loadout_map_impact = [];
+var lang_loadout_map_shield = [];
+var lang_loadout_map_flashider = [];
+var lang_loadout_map_breach = [];
+var lang_loadout_map_reddot = [];
+var lang_loadout_map_muzzle = [];
+var lang_loadout_map_nitro = [];
+var lang_loadout_map_smoke = [];
+var lang_loadout_map_barbed = [];
+var lang_loadout_map_frag = [];
+var lang_loadout_map_bulletproof = [];
+var lang_loadout_map_stun = [];
+var lang_loadout_map_suppressor = [];
+var lang_loadout_map_lasertrue = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -441,6 +471,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
+	"> '/loadout <nome-operatore>' - Suggerisce un equipaggiamento per l'operatore specificato.\n" +
 	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
 	"> '/news <numero>' - Permette di visualizzare le ultime news ufficiali del gioco reperite da Steam.\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
@@ -453,6 +484,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
+	"> '/loadout <operator-name>' - Suggest a full loadout for specified operator.\n" +
 	"> '/status <platform>' - Allow to print official server status of the game.\n" +
 	"> '/news <number>' - Allow to print latest official news of the game wrote by Steam.\n" +
 	"> '/lang <language>' - Change bot language.\n" +
@@ -734,6 +766,43 @@ ability_operatorpvp_barrage_killswithturret["it"] = "Uccisioni con torretta";
 ability_operatorpvp_barrage_killswithturret["en"] = "Kills with turret";
 ability_operatorpvp_deceiver_revealedattackers["it"] = "Attaccanti individuati";
 ability_operatorpvp_deceiver_revealedattackers["en"] = "Attackers revealed";
+
+lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
+lang_loadout_intro["en"] = "Recommended loadout for";
+lang_loadout_primary["it"] = "Arma primaria";
+lang_loadout_primary["en"] = "Primary weapon";
+lang_loadout_weapon["it"] = "Nome";
+lang_loadout_weapon["en"] = "Name";
+lang_loadout_grip["it"] = "Impugnatura";
+lang_loadout_grip["en"] = "Grip";
+lang_loadout_sight["it"] = "Mirino";
+lang_loadout_sight["en"] = "Sight";
+lang_loadout_attachment["it"] = "Accessorio";
+lang_loadout_attachment["en"] = "Attachment";
+lang_loadout_laser["it"] = "Laser";
+lang_loadout_laser["en"] = "Laser";
+lang_loadout_secondary["it"] = "Arma secondaria";
+lang_loadout_secondary["en"] = "Secondary weapon";
+lang_loadout_utility["it"] = "Gadget";
+lang_loadout_utility["en"] = "Utility";
+
+lang_loadout_map_verticalgrip["it"] = "Verticale";
+lang_loadout_map_holographic["it"] = "Olografico";
+lang_loadout_map_compensator["it"] = "Compensatore";
+lang_loadout_map_impact["it"] = "Granata a Impatto";
+lang_loadout_map_shield["it"] = "Scudo";
+lang_loadout_map_flashider["it"] = "Rompifiamma";
+lang_loadout_map_breach["it"] = "Carica da Irruzione";
+lang_loadout_map_reddot["it"] = "Punto Rosso";
+lang_loadout_map_muzzle["it"] = "Freno di Bocca";
+lang_loadout_map_nitro["it"] = "C4";
+lang_loadout_map_smoke["it"] = "Granata Fumogena";
+lang_loadout_map_barbed["it"] = "Filo Spinato";
+lang_loadout_map_frag["it"] = "Granata a Frammentazione";
+lang_loadout_map_bulletproof["it"] = "Telecamera Antiproiettile";
+lang_loadout_map_stun["it"] = "Granata Stordente";
+lang_loadout_map_suppressor["it"] = "Soppressore";
+lang_loadout_map_lasertrue["it"] = "Si";
 
 var j1 = Schedule.scheduleJob('00 00 * * *', function () {
 	console.log(getNow("it") + " Autotrack #1 called from job");
@@ -1603,15 +1672,27 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 		if (rows[0].default_platform != null)
 			platform = rows[0].default_platform;
 
-		var username1 = match[1];
-		var username2 = match[2];
+		var username1 = match[1].trim();
+		var username2 = match[2].trim();
 
 		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(username1, platform, 0).then(response1 => {
+				
+				if (response1.platform == undefined){
+					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + platform + ")", html);
+					console.log(getNow("it") + " User data 1 (compare) undefined for " + username1 + " on " + platform);
+					return;
+				}
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username2, platform, 0).then(response2 => {
+						
+						if (response2.platform == undefined){
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + platform + ")", html);
+							console.log(getNow("it") + " User data 2 (compare) undefined for " + username2 + " on " + platform);
+							return;
+						}
 
 						var text = "<i>" + response1.username + " vs " + response2.username + "</i>\n\n" +
 							"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response1.platform) + " - " + decodePlatform(response2.platform) + "\n" +
@@ -1654,12 +1735,8 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 							"<b>" + lang_mode_bomb[lang] + "</b>: " + compare(response1.mode_bomb, response2.mode_bomb, "number");
 
 						bot.sendMessage(message.chat.id, text, html);
-
 					}).catch(error => {
-						if (error.errors[0] != undefined)
-							bot.sendMessage(message.chat.id, "<b>" + error.errors[0].title + "</b>\n" +  error.errors[0].detail, html);
-						else
-							bot.sendMessage(message.chat.id, error, html);
+						bot.sendMessage(message.chat.id, error, html);
 						console.log(getNow("it") + " User data not found for " + username2 + " on " + platform);
 					});
 				});
@@ -1788,6 +1865,16 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 			bot.sendMessage(message.chat.id, lang_operator_no_name[lang]);
 			return;
 		}
+		if (operatorList.indexOf(match[1]) == -1){
+			var sim = stringSimilarity.findBestMatch(match[1], operatorList);
+			if (sim.bestMatch.rating >= 0.6)
+				match[1] = sim.bestMatch.target;
+			else{
+				bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+				return;
+			}
+		}
+		
 		operator_name = match[1];
 
 		console.log(getNow("it") + " Request operator data for " + operator_name + " from " + message.from.username);
@@ -1881,11 +1968,12 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 					for (j = 0; j < validSpecials; j++)
 						text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
 
-					setTimeout(function () {
-						bot.sendMessage(message.chat.id, text, html);
-					}, 300);
+					bot.sendMessage(message.chat.id, text, html);
+					
+					/* invio immagine badge
 					if (message.chat.id > 0)
 						bot.sendPhoto(message.chat.id, badge_url);
+					*/
 				}).catch(error => {
 					console.log(error);
 					bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", html);
@@ -1899,6 +1987,147 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 		});
 	});
 });
+
+bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operator");
+			return;
+		}
+
+		var lang = rows[0].lang;
+		var operator_name;
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, lang_operator_no_name[lang]);
+			return;
+		}
+		if (operatorList.indexOf(match[1]) == -1){
+			var sim = stringSimilarity.findBestMatch(match[1], operatorList);
+			if (sim.bestMatch.rating >= 0.6)
+				match[1] = sim.bestMatch.target;
+			else{
+				bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+				return;
+			}
+		}
+		operator_name = jsUcfirst(match[1]);
+
+		console.log(getNow("it") + " Request best loadout for " + operator_name + " from " + message.from.username);
+		var endpoint = "https://pastebin.com/raw/kAKZKUuq";
+		request.get(endpoint, (error, response, body) => {
+			if(!error && response.statusCode == '200') {
+				var resp = JSON.parse(body);
+				var equip = resp[operator_name];
+				
+				if (equip == undefined){
+					bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+					return;
+				}
+				
+				var primary = equip.Primary;
+				var primary_weapon = primary.Weapon;
+				var primary_grip = primary.Grip;
+				var primary_sight = primary.Sight;
+				var primary_attachment = primary.Attachment;
+				var primary_laser = primary.Laser;
+				if (primary_laser == true)
+					primary_laser = "Yes";
+				
+				var secondary = equip.Secondary;
+				var secondary_weapon = secondary.Weapon;
+				var secondary_grip = secondary.Grip;
+				var secondary_sight = secondary.Sight;
+				var secondary_attachment = secondary.Attachment;
+				var secondary_laser = secondary.Laser;
+				if (secondary_laser == true)
+					secondary_laser = "Yes";
+				
+				var utility = equip.Utility;
+				
+				var text = 	"";
+				
+				text += lang_loadout_intro[lang] + " <b>" + operator_name + "</b>:\n";
+				
+				text += "\n<b>" + lang_loadout_primary[lang] + "</b>\n";
+				text += "<b>" + lang_loadout_weapon[lang] + "</b>: " + primary_weapon + "\n";
+				if (primary_grip != undefined)
+					text += "<b>" + lang_loadout_grip[lang] + "</b>: " + mapLoadout(primary_grip, lang) + "\n";
+				if (primary_sight != undefined)
+					text += "<b>" + lang_loadout_sight[lang] + "</b>: " + mapLoadout(primary_sight, lang) + "\n";
+				if (primary_attachment != undefined)
+					text += "<b>" + lang_loadout_attachment[lang] + "</b>: " + mapLoadout(primary_attachment, lang) + "\n";
+				if (primary_laser != undefined)
+					text += "<b>" + lang_loadout_laser[lang] + "</b>: " + mapLoadout(primary_laser, lang) + "\n";
+				
+				text += "\n<b>" + lang_loadout_secondary[lang] + "</b>\n";
+				text += "<b>" + lang_loadout_weapon[lang] + "</b>: " + secondary_weapon + "\n";
+				if (secondary_grip != undefined)
+					text += "<b>" + lang_loadout_grip[lang] + "</b>: " + mapLoadout(secondary_grip, lang) + "\n";
+				if (secondary_sight != undefined)
+					text += "<b>" + lang_loadout_sight[lang] + "</b>: " + mapLoadout(secondary_sight, lang) + "\n";
+				if (secondary_attachment != undefined)
+					text += "<b>" + lang_loadout_attachment[lang] + "</b>: " + mapLoadout(secondary_attachment, lang) + "\n";
+				if (secondary_laser != undefined)
+					text += "<b>" + lang_loadout_laser[lang] + "</b>: " + mapLoadout(secondary_laser, lang) + "\n";
+				
+				text += "\n<b>" + lang_loadout_utility[lang] + "</b>: " + mapLoadout(utility, lang);
+				
+				bot.sendMessage(message.chat.id, text, html);
+			}
+		});
+	});
+});
+
+function mapLoadout(itemOrig, lang){
+	var resp = "";
+	if (lang != "en"){
+		item = itemOrig.toLowerCase();
+		if (item == "vertical")
+			resp = lang_loadout_map_verticalgrip[lang];
+		else if (item == "holographic")
+			resp = lang_loadout_map_holographic[lang];
+		else if (item == "compensator")
+			resp = lang_loadout_map_compensator[lang];
+		else if (item == "impact grenade")
+			resp = lang_loadout_map_impact[lang];
+		else if (item == "shield")
+			resp = lang_loadout_map_shield[lang];
+		else if (item == "flash hider")
+			resp = lang_loadout_map_flashider[lang];
+		else if (item == "breach charge")
+			resp = lang_loadout_map_breach[lang];
+		else if (item == "red dot")
+			resp = lang_loadout_map_reddot[lang];
+		else if (item == "muzzle brake")
+			resp = lang_loadout_map_muzzle[lang];
+		else if (item == "nitro cell")
+			resp = lang_loadout_map_nitro[lang];
+		else if (item == "smoke grenade")
+			resp = lang_loadout_map_smoke[lang];
+		else if (item == "barbed wire")
+			resp = lang_loadout_map_barbed[lang];
+		else if (item == "frag grenade")
+			resp = lang_loadout_map_frag[lang];
+		else if (item == "bulletproof camera")
+			resp = lang_loadout_map_bulletproof[lang];
+		else if (item == "stun grenade")
+			resp = lang_loadout_map_stun[lang];
+		else if (item == "suppressor")
+			resp = lang_loadout_map_suppressor[lang];
+		else if (item == "yes")
+			resp = lang_loadout_map_lasertrue[lang];
+		else
+			resp = itemOrig;
+	}else
+		resp = itemOrig;
+	return resp;
+}
 
 bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
