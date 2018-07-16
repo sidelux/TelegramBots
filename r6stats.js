@@ -1922,11 +1922,11 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 							wins = response[operators[i]].operatorpvp_roundwon;
 							losses = response[operators[i]].operatorpvp_roundlost;
 							wlratio = (wins/losses).toFixed(3);
-							if (wlratio == Infinity) wlratio = wins;
+							if ((wlratio == Infinity) || (wlratio == NaN)) wlratio = wins;
 							kills = response[operators[i]].operatorpvp_kills;
 							deaths = response[operators[i]].operatorpvp_death;
 							kdratio = (kills/deaths).toFixed(3);
-							if (kdratio == Infinity) kdratio = kills;
+							if ((kdratio == Infinity) || (kdratio == NaN)) kdratio = kills;
 							playtime = response[operators[i]].operatorpvp_timeplayed;
 
 							var specials = Object.keys(response[operators[i]]);
