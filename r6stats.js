@@ -100,21 +100,17 @@ class RainbowSixApi {
 								if (objResp.players[ubi_id] == undefined)
 									return reject("User stats not found (0) - " + username);
 
+								objStats.ranked_plays = objResp.players[ubi_id].rankedpvp_matchplayed;
 								objStats.ranked_wins = objResp.players[ubi_id].rankedpvp_matchwon;
 								objStats.ranked_losses = objResp.players[ubi_id].rankedpvp_matchlost;
-								objStats.ranked_wl = (objStats.ranked_wins/objStats.ranked_losses).toFixed(3);
-								objStats.ranked_plays = objStats.ranked_wins+objStats.ranked_losses;
 								objStats.ranked_kills = objResp.players[ubi_id].rankedpvp_kills;
 								objStats.ranked_deaths = objResp.players[ubi_id].rankedpvp_death;
-								objStats.ranked_kd = (objStats.ranked_kills/objStats.ranked_deaths).toFixed(3);
 								objStats.ranked_playtime = objResp.players[ubi_id].rankedpvp_timeplayed;
+								objStats.casual_plays = objResp.players[ubi_id].casualpvp_matchplayed;
 								objStats.casual_wins = objResp.players[ubi_id].casualpvp_matchwon;
 								objStats.casual_losses = objResp.players[ubi_id].casualpvp_matchlost;
-								objStats.casual_wl = (objStats.casual_wins/objStats.casual_losses).toFixed(3);
-								objStats.casual_plays = objStats.casual_wins+objStats.casual_losses;
 								objStats.casual_kills = objResp.players[ubi_id].casualpvp_kills;
 								objStats.casual_deaths = objResp.players[ubi_id].casualpvp_death;
-								objStats.casual_kd = (objStats.casual_kills/objStats.casual_deaths).toFixed(3);
 								objStats.casual_playtime = objResp.players[ubi_id].casualpvp_timeplayed;
 								objStats.revives = objResp.players[ubi_id].generalpvp_revive;
 								objStats.suicides = objResp.players[ubi_id].generalpvp_suicide;
@@ -129,21 +125,17 @@ class RainbowSixApi {
 								objStats.mode_hostage = objResp.players[ubi_id].rescuehostagepvp_bestscore;
 								objStats.mode_bomb = objResp.players[ubi_id].plantbombpvp_bestscore;
 
+								if (objStats.ranked_plays == undefined) objStats.ranked_plays = 0;
 								if (objStats.ranked_wins == undefined) objStats.ranked_wins = 0;
 								if (objStats.ranked_losses == undefined) objStats.ranked_losses = 0;
-								if ((objStats.ranked_wl == Infinity) || (isNaN(objStats.ranked_wl))) objStats.ranked_wl = objStats.ranked_wins;
-								if ((objStats.ranked_plays == undefined) || (isNaN(objStats.ranked_plays))) objStats.ranked_plays = 0;
 								if (objStats.ranked_kills == undefined) objStats.ranked_kills = 0;
 								if (objStats.ranked_deaths == undefined) objStats.ranked_deaths = 0;
-								if ((objStats.ranked_kd == Infinity) || (isNaN(objStats.ranked_kd))) objStats.ranked_kd = objStats.ranked_kills;
 								if (objStats.ranked_playtime == undefined) objStats.ranked_playtime = 0;
+								if (objStats.casual_plays == undefined) objStats.casual_plays = 0;
 								if (objStats.casual_wins == undefined) objStats.casual_wins = 0;
 								if (objStats.casual_losses == undefined) objStats.casual_losses = 0;
-								if ((objStats.casual_wl == Infinity) || (isNaN(objStats.casual_wl))) objStats.casual_wl = objStats.casual_wins;
-								if ((objStats.casual_plays == undefined) || (isNaN(objStats.casual_plays))) objStats.casual_plays = 0;
 								if (objStats.casual_kills == undefined) objStats.casual_kills = 0;
 								if (objStats.casual_deaths == undefined) objStats.casual_deaths = 0;
-								if ((objStats.casual_kd == Infinity) || (isNaN(objStats.casual_kd))) objStats.casual_kd = objStats.casual_kills;
 								if (objStats.casual_playtime == undefined) objStats.casual_playtime = 0;
 								if (objStats.revives == undefined) objStats.revives = 0;
 								if (objStats.suicides == undefined) objStats.suicides = 0;
@@ -157,6 +149,15 @@ class RainbowSixApi {
 								if (objStats.mode_secure == undefined) objStats.mode_secure = 0;
 								if (objStats.mode_hostage == undefined) objStats.mode_hostage = 0;
 								if (objStats.mode_bomb == undefined) objStats.mode_bomb = 0;
+								
+								objStats.ranked_wl = (objStats.ranked_wins/objStats.ranked_losses).toFixed(3);
+								if ((objStats.ranked_wl == Infinity) || (isNaN(objStats.ranked_wl))) objStats.ranked_wl = objStats.ranked_wins;
+								objStats.ranked_kd = (objStats.ranked_kills/objStats.ranked_deaths).toFixed(3);
+								if ((objStats.ranked_kd == Infinity) || (isNaN(objStats.ranked_kd))) objStats.ranked_kd = objStats.ranked_kills;
+								objStats.casual_wl = (objStats.casual_wins/objStats.casual_losses).toFixed(3);
+								if ((objStats.casual_wl == Infinity) || (isNaN(objStats.casual_wl))) objStats.casual_wl = objStats.casual_wins;
+								objStats.casual_kd = (objStats.casual_kills/objStats.casual_deaths).toFixed(3);
+								if ((objStats.casual_kd == Infinity) || (isNaN(objStats.casual_kd))) objStats.casual_kd = objStats.casual_kills;
 
 								return resolve(objStats);
 							}else
