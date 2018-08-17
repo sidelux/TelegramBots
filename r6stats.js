@@ -1403,6 +1403,9 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 			}else
 				platform = match[2].toLowerCase();
 		}
+		
+		username = username.trim();
+		platform = platform.trim();
 
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
