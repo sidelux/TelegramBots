@@ -151,13 +151,13 @@ class RainbowSixApi {
 								if (objStats.mode_bomb == undefined) objStats.mode_bomb = 0;
 								
 								objStats.ranked_wl = (objStats.ranked_wins/objStats.ranked_losses).toFixed(3);
-								if ((objStats.ranked_wl == Infinity) || (isNaN(objStats.ranked_wl))) objStats.ranked_wl = objStats.ranked_wins;
+								if (!isFinite(objStats.ranked_wl)) objStats.ranked_wl = objStats.ranked_wins;
 								objStats.ranked_kd = (objStats.ranked_kills/objStats.ranked_deaths).toFixed(3);
-								if ((objStats.ranked_kd == Infinity) || (isNaN(objStats.ranked_kd))) objStats.ranked_kd = objStats.ranked_kills;
+								if (!isFinite(objStats.ranked_kd)) objStats.ranked_kd = objStats.ranked_kills;
 								objStats.casual_wl = (objStats.casual_wins/objStats.casual_losses).toFixed(3);
-								if ((objStats.casual_wl == Infinity) || (isNaN(objStats.casual_wl))) objStats.casual_wl = objStats.casual_wins;
+								if (!isFinite(objStats.casual_wl)) objStats.casual_wl = objStats.casual_wins;
 								objStats.casual_kd = (objStats.casual_kills/objStats.casual_deaths).toFixed(3);
-								if ((objStats.casual_kd == Infinity) || (isNaN(objStats.casual_kd))) objStats.casual_kd = objStats.casual_kills;
+								if (!isFinite(objStats.casual_kd)) objStats.casual_kd = objStats.casual_kills;
 
 								return resolve(objStats);
 							}else
@@ -227,7 +227,7 @@ var no_preview = {
 
 var validLang = ["en", "it"];
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
-var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan"];
+var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan","Maverick","Clash"];
 var lang_main = [];
 var lang_storebot = [];
 var lang_startme = [];
@@ -393,6 +393,8 @@ var ability_operatorpvp_kapkan_boobytrapkill = [];
 var ability_operatorpvp_kapkan_boobytrapdeployed = [];
 var ability_operatorpvp_barrage_killswithturret = [];
 var ability_operatorpvp_deceiver_revealedattackers = [];
+var ability_operatorpvp_maverick_wallbreached = [];
+var ability_operatorpvp_clash_sloweddown = [];
 				
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
@@ -767,6 +769,10 @@ ability_operatorpvp_barrage_killswithturret["it"] = "Uccisioni con torretta";
 ability_operatorpvp_barrage_killswithturret["en"] = "Kills with turret";
 ability_operatorpvp_deceiver_revealedattackers["it"] = "Attaccanti individuati";
 ability_operatorpvp_deceiver_revealedattackers["en"] = "Attackers revealed";
+ability_operatorpvp_maverick_wallbreached["it"] = "Muri bucati";
+ability_operatorpvp_maverick_wallbreached["en"] = "Walls breached";
+ability_operatorpvp_clash_sloweddown["it"] = "Nemici rallentati";
+ability_operatorpvp_clash_sloweddown["en"] = "Enemies slowed down";
 
 lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
 lang_loadout_intro["en"] = "Recommended loadout for";
@@ -1623,7 +1629,7 @@ function getOperators(response){
 			most_playtime_name = operators[i];
 		}
 		var kd = response[operators[i]].operatorpvp_kills/response[operators[i]].operatorpvp_death;
-		if (kd == Infinity)
+		if (!isFinite(kd))
 			kd = response[operators[i]].operatorpvp_kills;
 		if (kd > most_kd){
 			most_kd = kd;
@@ -1926,11 +1932,11 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 							wins = response[operators[i]].operatorpvp_roundwon;
 							losses = response[operators[i]].operatorpvp_roundlost;
 							wlratio = (wins/losses).toFixed(3);
-							if ((wlratio == Infinity) || (wlratio == NaN)) wlratio = wins;
+							if (!isFinite(wlratio)) wlratio = wins;
 							kills = response[operators[i]].operatorpvp_kills;
 							deaths = response[operators[i]].operatorpvp_death;
 							kdratio = (kills/deaths).toFixed(3);
-							if ((kdratio == Infinity) || (kdratio == NaN)) kdratio = kills;
+							if (!isFinite(kdratio)) kdratio = kills;
 							playtime = response[operators[i]].operatorpvp_timeplayed;
 
 							var specials = Object.keys(response[operators[i]]);
