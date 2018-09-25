@@ -35,7 +35,7 @@ class RainbowSixApi {
 		return new Promise((resolve, reject) => {
 
 			var endpoint;
-			
+
 			if (extra == 1){
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
@@ -149,7 +149,7 @@ class RainbowSixApi {
 								if (objStats.mode_secure == undefined) objStats.mode_secure = 0;
 								if (objStats.mode_hostage == undefined) objStats.mode_hostage = 0;
 								if (objStats.mode_bomb == undefined) objStats.mode_bomb = 0;
-								
+
 								objStats.ranked_wl = (objStats.ranked_wins/objStats.ranked_losses).toFixed(3);
 								if (!isFinite(objStats.ranked_wl)) objStats.ranked_wl = objStats.ranked_wins;
 								objStats.ranked_kd = (objStats.ranked_kills/objStats.ranked_deaths).toFixed(3);
@@ -395,7 +395,7 @@ var ability_operatorpvp_barrage_killswithturret = [];
 var ability_operatorpvp_deceiver_revealedattackers = [];
 var ability_operatorpvp_maverick_wallbreached = [];
 var ability_operatorpvp_clash_sloweddown = [];
-				
+
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
 var lang_loadout_weapon = [];
@@ -1091,12 +1091,13 @@ bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
 			bot.sendMessage(message.chat.id, errMsg);
 			return;
 		}
+		match[1] = match[1].toLowerCase();
 		if (validLang.indexOf(match[1]) == -1){
 			bot.sendMessage(message.chat.id, errMsg);
 			return;
 		}
 
-		var lang = match[1].toLowerCase();
+		var lang = match[1];
 		connection.query("UPDATE user SET lang = '" + lang + "' WHERE account_id = " + message.from.id, function (err, rows) {
 			if (err) throw err;
 			bot.sendMessage(message.chat.id, lang_changed[lang]);
@@ -1317,6 +1318,7 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?/i, function (message, match
 			bot.sendMessage(message.chat.id, errMsg);
 			return;
 		}
+		match[1] = match[1].toLowerCase();
 		if (validParam.indexOf(match[1]) == -1){
 			bot.sendMessage(message.chat.id, errMsg);
 			return;
@@ -1409,7 +1411,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 			}else
 				platform = match[2].toLowerCase();
 		}
-		
+
 		username = username.trim();
 		platform = platform.trim();
 
@@ -1498,13 +1500,13 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username, platform, 0).then(response => {
 						var responseStats = response;
-						
+
 						if (responseStats.platform == undefined){
 							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
 							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 							return;
 						}
-						
+
 						var text = getData(responseStats, lang);
 						r6.stats(username, platform, 1).then(response => {
 							var responseOps = response;
@@ -1688,7 +1690,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(username1, platform, 0).then(response1 => {
-				
+
 				if (response1.platform == undefined){
 					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + platform + ")", html);
 					console.log(getNow("it") + " User data 1 (compare) undefined for " + username1 + " on " + platform);
@@ -1697,7 +1699,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username2, platform, 0).then(response2 => {
-						
+
 						if (response2.platform == undefined){
 							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + platform + ")", html);
 							console.log(getNow("it") + " User data 2 (compare) undefined for " + username2 + " on " + platform);
@@ -1791,19 +1793,19 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(default_username, default_platform, 1).then(response => {
 				var text = "<b>" + lang_operator_title[lang] + " - " + lang_operator_plays[lang] + " - " + lang_operator_wins[lang] + " - " + lang_operator_losses[lang] + " - " + lang_operator_kills[lang] + " - " + lang_operator_deaths[lang] + " - " + lang_operator_playtime[lang] + " - " + lang_operator_specials[lang] + "</b>\n";
-				
+
 				var operators = response;
-				
+
 				delete operators.nickname;
 				delete operators.platform;
 				delete operators.profile_id;
-				
+
 				var ordered = {};
 				Object.keys(response).sort().forEach(function(key) {
 					ordered[key] = response[key];
 				});
 				operators = ordered;
-				
+
 				var operators_name = Object.keys(operators);
 
 				for (i = 0; i < Object.keys(operators).length; i++){
@@ -1884,7 +1886,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 				return;
 			}
 		}
-		
+
 		operator_name = match[1];
 
 		console.log(getNow("it") + " Request operator data for " + operator_name + " from " + message.from.username);
@@ -1979,7 +1981,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 						text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
 
 					bot.sendMessage(message.chat.id, text, html);
-					
+
 					/* invio immagine badge
 					if (message.chat.id > 0)
 						bot.sendPhoto(message.chat.id, badge_url);
@@ -2034,12 +2036,12 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 			if(!error && response.statusCode == '200') {
 				var resp = JSON.parse(body);
 				var equip = resp[operator_name];
-				
+
 				if (equip == undefined){
 					bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
 					return;
 				}
-				
+
 				var primary = equip.Primary;
 				var primary_weapon = primary.Weapon;
 				var primary_grip = primary.Grip;
@@ -2048,7 +2050,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				var primary_laser = primary.Laser;
 				if (primary_laser == true)
 					primary_laser = "Yes";
-				
+
 				var secondary = equip.Secondary;
 				var secondary_weapon = secondary.Weapon;
 				var secondary_grip = secondary.Grip;
@@ -2057,13 +2059,13 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				var secondary_laser = secondary.Laser;
 				if (secondary_laser == true)
 					secondary_laser = "Yes";
-				
+
 				var utility = equip.Utility;
-				
+
 				var text = 	"";
-				
+
 				text += lang_loadout_intro[lang] + " <b>" + operator_name + "</b>:\n";
-				
+
 				text += "\n<b>" + lang_loadout_primary[lang] + "</b>\n";
 				text += "<b>" + lang_loadout_weapon[lang] + "</b>: " + primary_weapon + "\n";
 				if (primary_grip != undefined)
@@ -2074,7 +2076,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 					text += "<b>" + lang_loadout_attachment[lang] + "</b>: " + mapLoadout(primary_attachment, lang) + "\n";
 				if (primary_laser != undefined)
 					text += "<b>" + lang_loadout_laser[lang] + "</b>: " + mapLoadout(primary_laser, lang) + "\n";
-				
+
 				text += "\n<b>" + lang_loadout_secondary[lang] + "</b>\n";
 				text += "<b>" + lang_loadout_weapon[lang] + "</b>: " + secondary_weapon + "\n";
 				if (secondary_grip != undefined)
@@ -2085,9 +2087,9 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 					text += "<b>" + lang_loadout_attachment[lang] + "</b>: " + mapLoadout(secondary_attachment, lang) + "\n";
 				if (secondary_laser != undefined)
 					text += "<b>" + lang_loadout_laser[lang] + "</b>: " + mapLoadout(secondary_laser, lang) + "\n";
-				
+
 				text += "\n<b>" + lang_loadout_utility[lang] + "</b>: " + mapLoadout(utility, lang);
-				
+
 				bot.sendMessage(message.chat.id, text, html);
 			}
 		});
