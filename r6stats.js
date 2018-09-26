@@ -288,6 +288,7 @@ var lang_penetration_kills = [];
 var lang_assists = [];
 
 var lang_op_kd = [];
+var lang_op_wl = [];
 var lang_op_plays = [];
 var lang_op_wins = [];
 var lang_op_losses = [];
@@ -305,6 +306,7 @@ var lang_inline_total_kills = [];
 var lang_inline_total_deaths = [];
 var lang_inline_total_wins = [];
 var lang_inline_total_losses = [];
+var lang_inline_best_operator = [];
 var lang_inline_ranked_kd = [];
 var lang_inline_casual_kd = [];
 var lang_inline_ranked_playtime = [];
@@ -565,6 +567,8 @@ lang_assists["en"] = "Assists";
 
 lang_op_kd["it"] = "Miglior rapporto U/M";
 lang_op_kd["en"] = "Best K/D ratio";
+lang_op_wl["it"] = "Miglior rapporto V/S";
+lang_op_wl["en"] = "Best W/L ratio";
 lang_op_plays["it"] = "Più partite";
 lang_op_plays["en"] = "Most plays";
 lang_op_wins["it"] = "Più vittorie";
@@ -597,6 +601,8 @@ lang_inline_total_wins["it"] = "Vittorie totali";
 lang_inline_total_wins["en"] = "Total wins";
 lang_inline_total_losses["it"] = "Sconfitte totali";
 lang_inline_total_losses["en"] = "Total losses";
+lang_inline_best_operator["it"] = "Miglior operatore (V/S)";
+lang_inline_best_operator["en"] = "Best operator (W/L)";
 lang_inline_userinfo["it"] = "Informazioni giocatore";
 lang_inline_userinfo["en"] = "Player info";
 lang_user_not_ready["it"] = "Utente non memorizzato, usa /stats";
@@ -811,18 +817,8 @@ lang_loadout_map_stun["it"] = "Granata Stordente";
 lang_loadout_map_suppressor["it"] = "Soppressore";
 lang_loadout_map_lasertrue["it"] = "Si";
 
-var j1 = Schedule.scheduleJob('00 00 * * *', function () {
-	console.log(getNow("it") + " Autotrack #1 called from job");
-	autoTrack();
-});
-
-var j2 = Schedule.scheduleJob('00 01 * * *', function () {
-	console.log(getNow("it") + " Autotrack #2 called from job");
-	autoTrack();
-});
-
-var j3 = Schedule.scheduleJob('00 02 * * *', function () {
-	console.log(getNow("it") + " Autotrack #3 called from job");
+callNTimes(3600000, function () {
+	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
 });
 
@@ -907,7 +903,7 @@ bot.on("inline_query", function (query) {
 
 		console.log(getNow("it") + " User data request inline for " + username + " on " + platform);
 
-		connection.query('SELECT username, level, platform, ranked_kd, ranked_playtime, casual_kd, casual_playtime, ranked_kills, ranked_deaths, casual_kills, casual_deaths, ranked_wins, ranked_losses, casual_wins, casual_losses, season_id, season_rank, season_mmr, season_max_mmr, TIMESTAMPDIFF(HOUR, insert_date, NOW()) As diff FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC LIMIT 1', function (err, rows) {
+		connection.query('SELECT username, level, platform, ranked_kd, ranked_playtime, casual_kd, casual_playtime, ranked_kills, ranked_deaths, casual_kills, casual_deaths, ranked_wins, ranked_losses, casual_wins, casual_losses, season_id, season_rank, season_mmr, season_max_mmr, operator_max_wl_name, operator_max_wl FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC LIMIT 1', function (err, rows) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length > 0){
@@ -938,6 +934,9 @@ bot.on("inline_query", function (query) {
 				response.season_rank = rows[0].season_rank;
 				response.season_mmr = rows[0].season_mmr;
 				response.season_max_mmr = rows[0].season_max_mmr;
+				
+				response.operator_max_wl = rows[0].operator_max_wl;
+				response.operator_max_wl_name = rows[0].operator_max_wl_name;
 
 				printInline(query.id, response, lang);
 				return;
@@ -970,7 +969,8 @@ function printInline(query_id, response, lang){
 		"<b>" + lang_inline_total_kills[lang] + "</b>: " + formatNumber(response.ranked_kills + response.casual_kills) + "\n" +
 		"<b>" + lang_inline_total_deaths[lang] + "</b>: " + formatNumber(response.ranked_deaths + response.casual_deaths) + "\n" +
 		"<b>" + lang_inline_total_wins[lang] + "</b>: " + formatNumber(response.ranked_wins + response.casual_wins) + "\n" +
-		"<b>" + lang_inline_total_losses[lang] + "</b>: " + formatNumber(response.ranked_losses + response.casual_losses) + "\n\n" + lang_inline_infos[lang],
+		"<b>" + lang_inline_total_losses[lang] + "</b>: " + formatNumber(response.ranked_losses + response.casual_losses) + "\n" +
+		"<b>" + lang_inline_best_operator[lang] + "</b>: " + response.operator_max_wl_name + " (" + (response.operator_max_wl).toFixed(3) + ")\n\n" + lang_inline_infos[lang],
 		parse_mode: "HTML"
 	}]);
 }
@@ -1020,6 +1020,8 @@ function saveData(responseStats, responseOps){
 						 responseStats.mode_bomb + ',"' +
 						 ops[13] + '",' +
 						 ops[12] + ',"' +
+						 ops[15] + '",' +
+						 ops[14] + ',"' +
 						 ops[1] + '",' +
 						 ops[0] + ',"' +
 						 ops[3] + '",' +
@@ -1488,9 +1490,11 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					var most_playtime_name = rows[0].operator_max_playtime_name;
 					var most_kd = rows[0].operator_max_kd;
 					var most_kd_name = rows[0].operator_max_kd_name;
+					var most_wl = rows[0].operator_max_wl;
+					var most_wl_name = rows[0].operator_wl_name;
 
 					var text = getData(response, lang);
-					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, lang);
+					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang);
 
 					bot.sendMessage(message.chat.id, text, html);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
@@ -1512,7 +1516,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 							var responseOps = response;
 
 							var ops = getOperators(responseOps);							
-							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], lang);
+							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], ops[14], ops[15], lang);
 
 							bot.sendMessage(message.chat.id, text, html);
 
@@ -1596,6 +1600,8 @@ function getOperators(response){
 	var most_playtime_name = "";
 	var most_kd = 0;
 	var most_kd_name = "";
+	var most_wl = 0;
+	var most_wl_name = "";
 
 	var operators = Object.keys(response);
 
@@ -1637,6 +1643,13 @@ function getOperators(response){
 			most_kd = kd;
 			most_kd_name = operators[i];
 		}
+		var wl = response[operators[i]].operatorpvp_roundwon/response[operators[i]].operatorpvp_roundlost;
+		if (!isFinite(wl))
+			wl = response[operators[i]].operatorpvp_roundwon;
+		if (wl > most_wl){
+			most_wl = kd;
+			most_wl_name = operators[i];
+		}
 	}
 
 	most_played_name = jsUcfirst(most_played_name);
@@ -1646,13 +1659,15 @@ function getOperators(response){
 	most_deaths_name = jsUcfirst(most_deaths_name);
 	most_playtime_name = jsUcfirst(most_playtime_name);
 	most_kd_name = jsUcfirst(most_kd_name);
+	most_wl_name = jsUcfirst(most_wl_name);
 
-	return [most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name];
+	return [most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name];
 }
 
-function getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, lang){
+function getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang){
 	return "\n<b>" + lang_title_operators[lang] + "</b>:\n" +
 		"<b>" + lang_op_kd[lang] + "</b>: " + most_kd_name + " (" + most_kd.toFixed(3) + ")\n" +
+		"<b>" + lang_op_wl[lang] + "</b>: " + most_wl_name + " (" + most_wl.toFixed(3) + ")\n" +
 		"<b>" + lang_op_plays[lang] + "</b>: " + most_played_name + " (" + formatNumber(most_played) + ")\n" +
 		"<b>" + lang_op_wins[lang] + "</b>: " + most_wins_name + " (" + formatNumber(most_wins) + ")\n" +
 		"<b>" + lang_op_losses[lang] + "</b>: " + most_losses_name + " (" + formatNumber(most_losses) + ")\n" +
@@ -1942,7 +1957,6 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 							playtime = response[operators[i]].operatorpvp_timeplayed;
 
 							var specials = Object.keys(response[operators[i]]);
-
 							// remove stats
 							specials.splice(0,1);
 							specials.splice(0,1);
@@ -2335,6 +2349,15 @@ function toTime(seconds, lang = "en", onlyHours = false) {
 		return formatNumber(humanizeDuration(seconds*1000, { language: lang, units: ['h'], round: true }));
 	else
 		return humanizeDuration(seconds*1000, { language: lang });
+}
+
+function callNTimes(time, fn) {
+	function callFn() {
+		if (1 < 0) return;
+		fn();
+		setTimeout(callFn, time);
+	}
+	setTimeout(callFn, time);
 }
 
 function getNow(lang, obj) {
