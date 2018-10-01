@@ -254,6 +254,10 @@ var lang_help = [];
 var lang_groups = [];
 var lang_rank = [];
 var lang_time = [];
+var lang_update_ok = [];
+var lang_update_err = [];
+var lang_update_err_2 = [];
+var lang_update_err_3 = [];
 
 var lang_username = [];
 var lang_platform = [];
@@ -301,6 +305,8 @@ var lang_title_casual = [];
 var lang_title_general = [];
 var lang_title_season = [];
 var lang_title_operators = [];
+
+var lang_insert_date = [];
 
 var lang_inline_total_kills = [];
 var lang_inline_total_deaths = [];
@@ -472,6 +478,7 @@ lang_operator_not_found["it"] = "Operatore non trovato.";
 lang_operator_not_found["en"] = "Operator not found.";
 lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/stats <username>,<piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
+	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
@@ -485,6 +492,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
+	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
 	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
@@ -502,6 +510,14 @@ lang_rank["it"] = "Classifica per rapporto U/M in Classificata:";
 lang_rank["en"] = "Leaderboard for ranked K/D:";
 lang_time["it"] = "Ultimo aggiornamento:";
 lang_time["en"] = "Last update:";
+lang_update_ok["it"] = "Al prossimo /stats il tuo profilo verrà aggiornato!";
+lang_update_ok["en"] = "At next /stats your profile will be updated!";
+lang_update_err["it"] = "Puoi aggiornare il profilo manualmente solo ogni 3 ore";
+lang_update_err["en"] = "You can update your profile only every 3 hours";
+lang_update_err_2["it"] = "Il tuo profilo è già pronto per l'aggiornamento";
+lang_update_err_2["en"] = "Your profile is already prepared for update";
+lang_update_err_3["it"] = "Puoi aggiornare il profilo manualmente solo ogni 3 ore dalle ultime stats salvate";
+lang_update_err_3["en"] = "You can update your profile only every 3 hours after last saved stats";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -592,6 +608,9 @@ lang_title_season["it"] = "Stagione";
 lang_title_season["en"] = "Season";
 lang_title_operators["it"] = "Operatori";
 lang_title_operators["en"] = "Operators";
+
+lang_insert_date["it"] = "Ultimo aggiornamento: ";
+lang_insert_date["en"] = "Last update: ";
 
 lang_inline_total_kills["it"] = "Uccisioni totali";
 lang_inline_total_kills["en"] = "Total kills";
@@ -1366,8 +1385,70 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?/i, function (message, match
 	});
 });
 
+bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
+	connection.query("SELECT default_username, default_platform, lang, force_update, last_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /update");
+			return;
+		}
+		
+		var lang = rows[0].lang;
+		
+		var date1 = new Date(rows[0].last_update);
+		var date2 = new Date();
+		var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+		var diffMin = Math.ceil(timeDiff / (1000 * 60)); 
+		
+		if (diffMin < 180){
+			bot.sendMessage(message.chat.id, lang_update_err[lang]);
+			return;
+		}
+		
+		var force_update = rows[0].force_update;
+		
+		var default_username = "";
+		if (rows[0].default_username != undefined)
+			default_username = rows[0].default_username;
+		
+		var default_platform = "";
+		if (rows[0].default_platform != undefined)
+			default_platform = rows[0].default_platform;
+		
+		connection.query("SELECT insert_date FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' ORDER BY id DESC", function (err, rows) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length > 0){
+				date1 = new Date(rows[0].insert_date);
+				timeDiff = Math.abs(date2.getTime() - date1.getTime());
+				diffMin = Math.ceil(timeDiff / (1000 * 60)); 
+
+				if (diffMin < 180){
+					bot.sendMessage(message.chat.id, lang_update_err_3[lang]);
+					return;
+				}
+			}
+		
+			if (force_update == 1){
+				bot.sendMessage(message.chat.id, lang_update_err_2[lang]);
+				return;
+			}
+
+			connection.query("UPDATE user SET force_update = 1 WHERE account_id = " + message.from.id, function (err, rows) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, lang_update_ok[lang]);
+			});
+		});
+	});
+});
+
 bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?|^\/!stats(?:@\w+)?/i, function (message, match) {
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = "en";
@@ -1384,9 +1465,8 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 		var platform = "uplay";
 
 		var forceSave = 0;
-		if (message.text.indexOf("!") != -1){
+		if (rows[0].force_update == 1){
 			forceSave = 1;
-			message.text = message.text.replace("!","");
 			console.log("ForceSave enabled");
 		}
 
@@ -1428,6 +1508,13 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				if (err) throw err;
 
 				if ((Object.keys(rows).length > 0) && (forceSave == 0)){
+					var d = new Date(rows[0].insert_date);
+					var insert_date;
+					if (lang == "it")
+						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+					else
+						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " of " + addZero(d.getMonth() + 1) + "/" + addZero(d.getDate()) + "/" + d.getFullYear();
+					insert_date = "\n\n" + lang_insert_date[lang] + insert_date;
 					var response = {};
 					response.player = {};
 					response.player.stats = {};
@@ -1491,12 +1578,12 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					var most_kd = rows[0].operator_max_kd;
 					var most_kd_name = rows[0].operator_max_kd_name;
 					var most_wl = rows[0].operator_max_wl;
-					var most_wl_name = rows[0].operator_wl_name;
+					var most_wl_name = rows[0].operator_max_wl_name;
 
 					var text = getData(response, lang);
 					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang);
 
-					bot.sendMessage(message.chat.id, text, html);
+					bot.sendMessage(message.chat.id, text + insert_date, html);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				}
@@ -1520,8 +1607,12 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 							bot.sendMessage(message.chat.id, text, html);
 
-							if (forceSave == 0)
+							if (forceSave == 1){
+								connection.query("UPDATE user SET force_update = 0, last_update = NOW() WHERE account_id = " + message.from.id, function (err, rows) {
+									if (err) throw err;
+								});
 								saveData(responseStats, responseOps);
+							}
 
 							console.log(getNow("it") + " User data served for " + username + " on " + platform);
 						}).catch(error => {
