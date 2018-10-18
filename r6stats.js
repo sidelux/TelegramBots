@@ -1344,7 +1344,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 			request.get(endpoint, (error, response, body) => {
 				if(!error && response.statusCode == '200') {			
 					var resp = JSON.parse(body);
-					//asd
+					
 					var challenges = resp[0]["playerChallenges"]["challenges"];
 					var rewards;
 					var reward;
@@ -1365,7 +1365,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 						rewards = challenges[i]["thresholds"][0]["rewards"];
 						reward = "";
 						for (var k = 0, rew_len = Object.keys(rewards).length; k < rew_len; k++){
-							if ((rewards[k]["type"] != "XP") && (rewards[k]["type"] != "renown")){
+							if ((rewards[k]["type"].toLowerCase() != "xp") && (rewards[k]["type"].toLowerCase() != "renown")){
 								rewards[k]["localizations"][0]["value"] = jsUcfirst(rewards[k]["localizations"][0]["value"].toLowerCase());
 								rewards[k]["localizations"][0]["value"] += " Charm";
 							}
@@ -1382,7 +1382,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 					var preview = "";
 					for (var i = 0, len = challengesName.length; i < len; i++){
 						if (challengesPreview[i] != null)
-							preview = " - <a href='" + image_url + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
+							preview = " | <a href='" + image_url + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
 						else
 							preview = "";
 						text += "<b>" + challengesName[i] + "</b>" + preview + "\n" + challengesDescription[i] + "\n" + lang_challenges_rewards[lang] + ": " + challengesReward[i] + "\n\n";
