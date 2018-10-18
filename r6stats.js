@@ -432,6 +432,9 @@ var lang_loadout_map_stun = [];
 var lang_loadout_map_suppressor = [];
 var lang_loadout_map_lasertrue = [];
 
+var lang_challenges_preview = [];
+var lang_challenges_rewards = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_storebot["it"] = "%n operatori registrati, %s statistiche memorizzate - <a href='https://storebot.me/bot/r6siegestatsbot'>Vota sullo Storebot</a>";
@@ -486,6 +489,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/loadout <nome-operatore>' - Suggerisce un equipaggiamento per l'operatore specificato.\n" +
 	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
 	"> '/news <numero>' - Permette di visualizzare le ultime news ufficiali del gioco reperite da Steam.\n" +
+	"> '/challenges' - Permette di visualizzare le sfide settimanali in corso.\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
@@ -500,6 +504,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/loadout <operator-name>' - Suggest a full loadout for specified operator.\n" +
 	"> '/status <platform>' - Allow to print official server status of the game.\n" +
 	"> '/news <number>' - Allow to print latest official news of the game wrote by Steam.\n" +
+	"> '/challenges' - Allow to print current weekly challenges.\n" +
 	"> '/lang <language>' - Change bot language.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
@@ -835,6 +840,11 @@ lang_loadout_map_bulletproof["it"] = "Telecamera Antiproiettile";
 lang_loadout_map_stun["it"] = "Granata Stordente";
 lang_loadout_map_suppressor["it"] = "Soppressore";
 lang_loadout_map_lasertrue["it"] = "Si";
+
+lang_challenges_rewards["it"] = "Ricompense";
+lang_challenges_rewards["en"] = "Rewards";
+lang_challenges_preview["it"] = "Anteprima";
+lang_challenges_preview["en"] = "Preview";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1301,6 +1311,86 @@ bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
 						bot.sendMessage(message.chat.id, text, no_preview);
 				});
 			})();
+		});
+	});
+});
+
+bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /challenges");
+			return;
+		}
+
+		var lang = rows[0].lang;
+
+		var lang_complex = "";
+		if (lang == "it")
+			lang_complex = "it-IT";
+		else if (lang == "en")
+			lang_complex = "en-US";
+		
+		var image_url = "https://static8.cdn.ubi.com/u/Uplay";
+
+		console.log(getNow("it") + " Request challenges in " + lang_complex + " from " + message.from.username);
+		var endpoint = "https://public-ubiservices.ubi.com/v3/spaces/5172a557-50b5-4665-b7db-e3f2e8c5041d/club/challengepools?locale=" + lang_complex;
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			request.get(endpoint, (error, response, body) => {
+				if(!error && response.statusCode == '200') {			
+					var resp = JSON.parse(body);
+					//asd
+					var challenges = resp[0]["playerChallenges"]["challenges"];
+					var rewards;
+					var reward;
+					var challengesName = [];
+					var challengesDescription = [];
+					var challengesPreview = [];
+					var challengesValue = [];
+					var challengesReward = [];
+					for (var i = 0, len = Object.keys(challenges).length; i < len; i++) {
+						challengesName.push(challenges[i]["localizations"][0]["value"]);
+						challengesDescription.push(challenges[i]["localizations"][1]["value"]); // description
+						if (challenges[i]["localizations"].length >= 4)
+							challengesPreview.push(challenges[i]["localizations"][3]["value"]);
+						else
+							challengesPreview.push(null);
+						challengesValue.push(challenges[i]["thresholds"][0]["value"]);
+						
+						rewards = challenges[i]["thresholds"][0]["rewards"];
+						reward = "";
+						for (var k = 0, rew_len = Object.keys(rewards).length; k < rew_len; k++){
+							if ((rewards[k]["type"] != "XP") && (rewards[k]["type"] != "renown")){
+								rewards[k]["localizations"][0]["value"] = jsUcfirst(rewards[k]["localizations"][0]["value"].toLowerCase());
+								rewards[k]["localizations"][0]["value"] += " Charm";
+							}
+							reward += rewards[k]["value"] + " " + rewards[k]["localizations"][0]["value"] + " | ";
+						}
+						reward = reward.slice(0, -3);
+						challengesReward.push(reward);
+						
+						challengesDescription[i] = challengesDescription[i].replace("{threshold}", challengesValue[i]);
+						challengesDescription[i] = challengesDescription[i].replaceAll("(<br>)", "").trim();
+					}
+					
+					var text = "<b>" + resp[0]["localizations"][0]["value"] + "</b>\n\n";
+					var preview = "";
+					for (var i = 0, len = challengesName.length; i < len; i++){
+						if (challengesPreview[i] != null)
+							preview = " - <a href='" + image_url + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
+						else
+							preview = "";
+						text += "<b>" + challengesName[i] + "</b>" + preview + "\n" + challengesDescription[i] + "\n" + lang_challenges_rewards[lang] + ": " + challengesReward[i] + "\n\n";
+					}
+
+					bot.sendMessage(message.chat.id, text, no_preview);
+				}
+			});
 		});
 	});
 });
