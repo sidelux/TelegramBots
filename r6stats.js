@@ -434,6 +434,7 @@ var lang_loadout_map_lasertrue = [];
 
 var lang_challenges_preview = [];
 var lang_challenges_rewards = [];
+var lang_challenges_refresh = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -844,7 +845,9 @@ lang_loadout_map_lasertrue["it"] = "Si";
 lang_challenges_rewards["it"] = "Ricompense";
 lang_challenges_rewards["en"] = "Rewards";
 lang_challenges_preview["it"] = "Anteprima";
-lang_challenges_preview["en"] = "Preview";
+lang_challenges_preview["en"] = "Reward";
+lang_challenges_refresh["it"] = "Aggiornamento il";
+lang_challenges_refresh["en"] = "Refresh on";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1344,47 +1347,73 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 			request.get(endpoint, (error, response, body) => {
 				if(!error && response.statusCode == '200') {			
 					var resp = JSON.parse(body);
-					
-					var challenges = resp[0]["playerChallenges"]["challenges"];
+						
 					var rewards;
 					var reward;
+					var challenges = [];
+					var challengeKeys = []
+					var challengesCat = [];
+					var challengesExpire = [];
 					var challengesName = [];
 					var challengesDescription = [];
 					var challengesPreview = [];
 					var challengesValue = [];
 					var challengesReward = [];
-					for (var i = 0, len = Object.keys(challenges).length; i < len; i++) {
-						challengesName.push(challenges[i]["localizations"][0]["value"]);
-						challengesDescription.push(challenges[i]["localizations"][1]["value"]); // description
-						if (challenges[i]["localizations"].length >= 4)
-							challengesPreview.push(challenges[i]["localizations"][3]["value"]);
-						else
-							challengesPreview.push(null);
-						challengesValue.push(challenges[i]["thresholds"][0]["value"]);
-						
-						rewards = challenges[i]["thresholds"][0]["rewards"];
-						reward = "";
-						for (var k = 0, rew_len = Object.keys(rewards).length; k < rew_len; k++){
-							if ((rewards[k]["type"].toLowerCase() != "xp") && (rewards[k]["type"].toLowerCase() != "renown")){
-								rewards[k]["localizations"][0]["value"] = jsUcfirst(rewards[k]["localizations"][0]["value"].toLowerCase());
-								rewards[k]["localizations"][0]["value"] += " Charm";
+					
+					for (var j = 0, ch_len = Object.keys(resp).length; j < ch_len; j++) {
+						challengeKeys = Object.keys(resp[j]);
+						for (var m = 0, ke_len = Object.keys(challengeKeys).length; m < ke_len; m++) {
+							if (challengeKeys[m] == "playerChallenges")
+								challenges = resp[j]["playerChallenges"]["challenges"];
+							else if (challengeKeys[m] == "communityChallenges")
+								challenges = resp[j]["communityChallenges"];
+							else
+								continue;
+							for (var i = 0, len = Object.keys(challenges).length; i < len; i++) {
+								challengesCat.push(resp[j]["localizations"][0]["value"]);
+								challengesExpire.push(resp[j]["expirationDate"]);
+								challengesName.push(challenges[i]["localizations"][0]["value"]);
+								challengesDescription.push(challenges[i]["localizations"][1]["value"]);
+								if (challenges[i]["localizations"].length >= 4)
+									challengesPreview.push(challenges[i]["localizations"][3]["value"]);
+								else
+									challengesPreview.push(null);
+								challengesValue.push(challenges[i]["thresholds"][0]["value"]);
+
+								rewards = challenges[i]["thresholds"][0]["rewards"];
+								reward = "";
+								for (var k = 0, rew_len = Object.keys(rewards).length; k < rew_len; k++){
+									if ((rewards[k]["type"].toLowerCase() != "xp") && (rewards[k]["type"].toLowerCase() != "renown"))
+										rewards[k]["localizations"][0]["value"] = jsUcfirst(rewards[k]["localizations"][0]["value"].toLowerCase());
+									reward += rewards[k]["value"] + " " + rewards[k]["localizations"][0]["value"] + " | ";
+								}
+								reward = reward.slice(0, -3);
+								challengesReward.push(reward);
 							}
-							reward += rewards[k]["value"] + " " + rewards[k]["localizations"][0]["value"] + " | ";
 						}
-						reward = reward.slice(0, -3);
-						challengesReward.push(reward);
-						
-						challengesDescription[i] = challengesDescription[i].replace("{threshold}", challengesValue[i]);
-						challengesDescription[i] = challengesDescription[i].replaceAll("(<br>)", "").trim();
 					}
 					
-					var text = "<b>" + resp[0]["localizations"][0]["value"] + "</b>\n\n";
+					var text = "";
+					var thisCat = "";
 					var preview = "";
+					var expire_date;
 					for (var i = 0, len = challengesName.length; i < len; i++){
+						if (thisCat != challengesCat[i]){
+							expire_date = new Date(challengesExpire[i]);
+							text += "<b>" + challengesCat[i] + "</b> | " + lang_challenges_refresh[lang] + " " + toDate(lang, expire_date) + "\n\n";
+							thisCat = challengesCat[i];
+						}
+						
+						preview = "";
 						if (challengesPreview[i] != null)
 							preview = " | <a href='" + image_url + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
+
+						if (challengesDescription[i].indexOf("{threshold}") != -1)
+							challengesDescription[i] = challengesDescription[i].replace("{threshold}", challengesValue[i]);
 						else
-							preview = "";
+							challengesDescription[i] += " | " + challengesValue[i];
+						challengesDescription[i] = challengesDescription[i].replaceAll("(<br>)", "").trim();
+
 						text += "<b>" + challengesName[i] + "</b>" + preview + "\n" + challengesDescription[i] + "\n" + lang_challenges_rewards[lang] + ": " + challengesReward[i] + "\n\n";
 					}
 
@@ -2564,9 +2593,9 @@ function toDate(lang, date) {
 		d = date;
 	var datetime;
 	if (lang == "it") {
-		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 	} else if (lang == "en") {
-		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 	} else {
 		datetime = "Error";
 	}
