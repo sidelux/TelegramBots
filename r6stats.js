@@ -14,6 +14,7 @@ const appcode = "r6apitelegram";
 var config = require('./config.js');
 var TelegramBot = require('node-telegram-bot-api');
 var mysql = require('mysql');
+var mysql_sync = require('sync-mysql');
 var express = require('express');
 var http = require('http');
 var https = require('https');
@@ -199,6 +200,13 @@ var connection = mysql.createConnection({
 	database: config.dbdatabase_r6stats
 });
 connection.connect();
+
+var connection_sync = new mysql_sync({
+	host: config.dbhost,
+	user: config.dbuser_r6stats,
+	password: config.dbpassword_r6stats,
+	database: config.dbdatabase_r6stats
+});
 
 setInterval(function () {
 	connection.query('SELECT 1');
@@ -435,6 +443,22 @@ var lang_loadout_map_lasertrue = [];
 var lang_challenges_preview = [];
 var lang_challenges_rewards = [];
 var lang_challenges_refresh = [];
+
+var lang_team_invalid_syntax = [];
+var lang_team_invalid_name = [];
+var lang_team_invalid_at = [];
+var lang_team_invalid_count = [];
+var lang_team_created = [];
+var lang_team_users_added = [];
+var lang_team_only_leader = [];
+var lang_team_not_exists = [];
+var lang_team_not_leader_del = [];
+var lang_team_remove_yourself = [];
+var lang_team_deleted = [];
+var lang_team_user_removed = [];
+var lang_team_call = [];
+var lang_team_intro = [];
+var lang_team_no_team = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -848,6 +872,37 @@ lang_challenges_preview["it"] = "Anteprima";
 lang_challenges_preview["en"] = "Reward";
 lang_challenges_refresh["it"] = "Aggiornamento il";
 lang_challenges_refresh["en"] = "Refresh on";
+
+lang_team_invalid_syntax["it"] = "Sintassi non valida, riprova";
+lang_team_invalid_syntax["en"] = "Invalid syntax, retry.";
+lang_team_invalid_name["it"] = "Nome team non valido, massimo 64 caratteri solo lettere, numeri e trattini";
+lang_team_invalid_name["en"] = "Invalid team name, only 64 chars only words, numbers and dashes";
+lang_team_invalid_at["it"] = "Non inserire la @ per i nickname!";
+lang_team_invalid_at["en"] = "Don't use @ for nicknames!";
+lang_team_invalid_count["it"] = "Massimo 10 membri per un team!";
+lang_team_invalid_count["en"] = "Max 10 members for a team!";
+lang_team_created["it"] = "Team creato";
+lang_team_created["en"] = "Team created";
+lang_team_users_added["it"] = "utenti aggiunti";
+lang_team_users_added["en"] = "users added";
+lang_team_only_leader["it"] = "Solo il leader può aggiungere membri al team!";
+lang_team_only_leader["en"] = "Only the leader can add users to team!";
+lang_team_not_exists["it"] = "Il team selezionato non esiste";
+lang_team_not_exists["en"] = "Selected team does not exists";
+lang_team_not_leader_del["it"] = "Solo il leader può eliminare membri dal team!";
+lang_team_not_leader_del["en"] = "Only the leader can delete members from team!";
+lang_team_remove_yourself["it"] = "Non puoi rimuovere te stesso, per cancellare il team elimina tutti gli altri membri!";
+lang_team_remove_yourself["en"] = "You can't remove yourself, to delete team before delete all other members!";
+lang_team_deleted["it"] = "e team cancellato";
+lang_team_deleted["en"] = "and team deleted";
+lang_team_user_removed["it"] = "utenti rimossi";
+lang_team_user_removed["en"] = "users removed";
+lang_team_call["it"] = "chiama i suoi compagni di team";
+lang_team_call["en"] = "call his teammates";
+lang_team_intro["it"] = "Benvenuto nella gestione dei <b>Team</b>.\nI team sono legati al gruppo in cui si creano.\nPuoi crearlo ed aggiungere utenti con /addteam 'nome_team' 'nickname,nickname,nickname'\nPuoi rimuovere gli utenti con /delteam 'nome_team' 'nickname,nickname,nickname', quando un team non ha più utenti viene cancellato\nPuoi usare /tagteam 'nome_team' per taggare tutti i compagni di team\nCreando un team ne sarai il leader\n\nTeam creati:";
+lang_team_intro["en"] = "Welcome to <b>Team</b> manage.\nTeams are linked with groups where they are created.\nYou can create it and add users with /addteam 'team_name' 'nickname,nickname,nickname'\nYou can remove users with /delteam 'team_name' 'nickname,nickname,nickname', when a team have no more users it will be deleted\nYou can use /tagteam 'team_name' to tag your teammates\nCreating a team make you the leader\n\nCreated teams:";
+lang_team_no_team["it"] = "Non hai creato nessun team";
+lang_team_no_team["en"] = "No teams created";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2407,6 +2462,297 @@ bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
 	});
 });
 
+bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
+			return;
+		}
+		
+		var mark = {
+			parse_mode: "HTML"
+		};
+		
+		connection.query("SELECT team_id FROM team_member WHERE username = '" + message.from.username + "' AND role = 1", function (err, rows) {
+			if (err) throw err;
+			
+			var team_list = "";
+			if (Object.keys(rows).length == 0)
+				team_list = "\n" + lang_team_no_team[lang];
+			else{
+				var team;
+				var team_member;
+				var team_members = "";
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					team = connection_sync.query("SELECT name FROM team WHERE id = " + rows[i].team_id);
+					team_member = connection_sync.query("SELECT username FROM team_member WHERE username != '" + message.from.username + "' AND team_id = " + rows[i].team_id);
+					team_members = "";
+					for (var j = 0, len2 = Object.keys(team_member).length; j < len2; j++)
+						team_members += team_member[j].username + ", ";
+					team_members = team_members.slice(0, -2);
+					team_list += "\n" + team[0].name + " (" + team_members + ")";
+				}
+			}
+
+			bot.sendMessage(message.chat.id, lang_team_intro[lang] + team_list, mark);
+			
+		});
+	});
+});
+
+bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
+			return;
+		}
+		
+		/*
+		if (message.chat.id > 0){
+			bot.sendMessage(message.chat.id, "Questo comando può essere usato solo nei gruppi");
+			return;
+		}
+		*/
+		
+		var mark = {
+			parse_mode: "HTML"
+		};
+		
+		var team_name = match[1];
+		
+		connection.query("SELECT id FROM team WHERE group_id = '" + message.chat.id + "' AND name = '" + team_name + "'", function (err, rows) {
+		if (err) throw err;
+			var team_id = rows[0].id;
+			connection.query("SELECT username FROM team_member WHERE username != '" + message.from.username + "' AND team_id = " + team_id, function (err, rows) {
+				if (err) throw err;
+				var text = "<b>" + message.from.username + "</b> " + lang_team_call[lang] + ": ";
+				for (var i = 0; i < Object.keys(rows).length; i++)
+					text += "@" + rows[i].username + ", ";
+				text = text.slice(0, -2) + "!";
+				bot.sendMessage(message.chat.id, text, mark);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
+			return;
+		}
+		
+		/*
+		if (message.chat.id > 0){
+			bot.sendMessage(message.chat.id, "Questo comando può essere usato solo nei gruppi");
+			return;
+		}
+		*/
+		
+		var parts = message.text.split(" ");
+		if (parts.length < 3){
+			bot.sendMessage(message.chat.id, lang_team_invalid_syntax[lang]);
+			return;
+		}
+		
+		var team_name = parts[1];
+		var members = parts[2];
+		
+		var re = new RegExp("^[a-zA-Z0-9àèìòù\\-_ ]{1,64}$");
+		if (re.test(team_name) == false) {
+			bot.sendMessage(message.chat.id, lang_team_invalid_name[lang]);
+			return;
+		}
+		
+		if (members.indexOf("@") != -1){
+			bot.sendMessage(message.chat.id, lang_team_invalid_at[lang]);
+			return;
+		}
+		
+		var arr_members = [];
+		if (members.indexOf(",") != -1)
+			arr_members = members.split(",").map(item => item.trim());
+		else
+			arr_members.push(members);
+		arr_members.push(message.from.username);
+		arr_members = uniq(arr_members);
+		
+		connection.query("SELECT id FROM team WHERE group_id = '" + message.chat.id + "' AND name = '" + team_name + "'", function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0){
+				if (arr_members.length > 10){
+					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang]);
+					return;
+				}
+				connection.query("INSERT INTO team (group_id, name) VALUES (" + message.chat.id + ",'" + team_name + "')", function (err, rows, fields) {
+					if (err) throw err;
+					var team_id = rows.insertId;
+					var role = 0;
+					var added = 0;
+					for (var i = 0; i < arr_members.length; i++){
+						if (arr_members[i] == message.from.username)
+							role = 1;
+						else
+							role = 0;
+						var member = connection_sync.query("SELECT 1 FROM team_member WHERE team_id = " + team_id + " AND username = '" + arr_members[i] + "'");
+						if (Object.keys(member).length == 0){
+							connection.query("INSERT INTO team_member (team_id, username, role) VALUES (" + team_id + ",'" + arr_members[i] + "', " + role + ")", function (err, rows, fields) {
+								if (err) throw err;
+							});
+							added++;
+						}
+					}
+					
+					bot.sendMessage(message.chat.id, lang_team_created[lang] + ", " + added + " " + lang_team_users_added[lang] + "!");
+				});
+				return;
+			} else {
+				var team_id = rows[0].id;
+				var member_permission = connection_sync.query("SELECT username FROM team_member WHERE team_id = " + team_id + " AND role = 1");
+				if (member_permission[0].username != message.from.username){
+					bot.sendMessage(message.chat.id, lang_team_only_leader[lang]);
+					return;
+				}
+				var member_cnt = connection_sync.query("SELECT COUNT(id) As cnt FROM team_member WHERE team_id = " + team_id);
+				member_cnt = member_cnt[0].cnt;
+				if (member_cnt+(arr_members.length-1) > 10){
+					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang]);
+					return;
+				}
+				var role = 0;
+				var added = 0;
+				for (var i = 0; i < arr_members.length; i++){
+					if (arr_members[i] == message.from.username)
+						role = 1;
+					else
+						role = 0;
+					var member = connection_sync.query("SELECT 1 FROM team_member WHERE team_id = " + team_id + " AND username = '" + arr_members[i] + "'");
+					if (Object.keys(member).length == 0){
+						connection.query("INSERT INTO team_member (team_id, username, role) VALUES (" + team_id + ",'" + arr_members[i] + "', " + role + ")", function (err, rows, fields) {
+							if (err) throw err;
+						});
+						added++;
+					}
+				}
+
+				bot.sendMessage(message.chat.id, added + " " + lang_team_users_added[lang] + "!");
+			}
+		});
+	});
+});
+
+bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
+			return;
+		}
+		
+		/*
+		if (message.chat.id > 0){
+			bot.sendMessage(message.chat.id, "Questo comando può essere usato solo nei gruppi");
+			return;
+		}
+		*/
+		
+		var parts = message.text.split(" ");
+		if (parts.length < 3){
+			bot.sendMessage(message.chat.id, lang_team_invalid_syntax[lang]);
+			return;
+		}
+		
+		var team_name = parts[1];
+		var members = parts[2];
+		
+		var re = new RegExp("^[a-zA-Z0-9àèìòù\\-_ ]{1,64}$");
+		if (re.test(team_name) == false) {
+			bot.sendMessage(message.chat.id, lang_team_invalid_name[lang]);
+			return;
+		}
+		
+		if (members.indexOf("@") != -1){
+			bot.sendMessage(message.chat.id, lang_team_invalid_at[lang]);
+			return;
+		}
+		
+		var arr_members = [];
+		if (members.indexOf(",") != -1)
+			arr_members = members.split(",").map(item => item.trim());
+		else
+			arr_members.push(members);
+		arr_members = uniq(arr_members);
+		
+		connection.query("SELECT id FROM team WHERE group_id = '" + message.chat.id + "' AND name = '" + team_name + "'", function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, lang_team_not_exists[lang]);
+			} else {
+				var team_id = rows[0].id;
+				var member_permission = connection_sync.query("SELECT username FROM team_member WHERE team_id = " + team_id + " AND role = 1");
+				if (member_permission[0].username != message.from.username){
+					bot.sendMessage(message.chat.id, lang_team_not_leader_del[lang]);
+					return;
+				}
+				var member_cnt = connection_sync.query("SELECT COUNT(id) As cnt FROM team_member WHERE team_id = " + team_id);
+				member_cnt = member_cnt[0].cnt;
+				var removed = 0;
+				for (var i = 0; i < arr_members.length; i++){
+					var member = connection_sync.query("SELECT role FROM team_member WHERE team_id = " + team_id + " AND username = '" + arr_members[i] + "'");
+					if (Object.keys(member).length > 0){
+						if (arr_members[i] == message.from.username){
+							bot.sendMessage(message.chat.id, lang_team_remove_yourself[lang]);
+							continue;
+						}
+						connection.query("DELETE FROM team_member WHERE team_id = " + team_id + " AND username = '" + arr_members[i] + "'", function (err, rows, fields) {
+							if (err) throw err;
+						});
+						removed++;
+					}
+				}
+				
+				var team_deleted = "";
+				if (member_cnt-1 == removed){
+					connection.query("DELETE FROM team WHERE id = " + team_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+					connection.query("DELETE FROM team_member WHERE team_id = " + team_id + " AND username = '" + message.from.username + "'", function (err, rows, fields) {
+						if (err) throw err;
+					});
+					team_deleted = " " + lang_team_deleted[lang];
+				}
+
+				bot.sendMessage(message.chat.id, removed + " " + lang_team_user_removed[lang] + team_deleted + "!");
+			}
+		});
+	});
+});
+
 bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -2610,4 +2956,8 @@ function addZero(i) {
 	if (i < 10)
 		i = "0" + i;
 	return i;
+}
+
+function uniq(a) {
+   return Array.from(new Set(a));
 }
