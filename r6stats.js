@@ -459,6 +459,7 @@ var lang_team_user_removed = [];
 var lang_team_call = [];
 var lang_team_intro = [];
 var lang_team_no_team = [];
+var lang_team_only_groups = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -899,14 +900,17 @@ lang_team_user_removed["it"] = "utenti rimossi";
 lang_team_user_removed["en"] = "users removed";
 lang_team_call["it"] = "chiama i suoi compagni di team";
 lang_team_call["en"] = "call his teammates";
-lang_team_intro["it"] = "Benvenuto nella gestione dei <b>Team</b>.\nI team sono legati al gruppo in cui si creano.\nPuoi crearlo ed aggiungere utenti con /addteam 'nome_team' 'nickname,nickname,nickname'\nPuoi rimuovere gli utenti con /delteam 'nome_team' 'nickname,nickname,nickname', quando un team non ha più utenti viene cancellato\nPuoi usare /tagteam 'nome_team' per taggare tutti i compagni di team\nCreando un team ne sarai il leader\n\nTeam creati:";
-lang_team_intro["en"] = "Welcome to <b>Team</b> manage.\nTeams are linked with groups where they are created.\nYou can create it and add users with /addteam 'team_name' 'nickname,nickname,nickname'\nYou can remove users with /delteam 'team_name' 'nickname,nickname,nickname', when a team have no more users it will be deleted\nYou can use /tagteam 'team_name' to tag your teammates\nCreating a team make you the leader\n\nCreated teams:";
+lang_team_intro["it"] = "Benvenuto nella gestione dei <b>Team</b>.\nI team sono legati al gruppo in cui si creano.\nPuoi crearlo ed aggiungere utenti con /addteam 'nome_team' 'nickname,nickname,nickname'\nPuoi rimuovere gli utenti con /delteam 'nome_team' 'nickname,nickname,nickname', quando un team non ha più utenti viene cancellato\nPuoi usare /tagteam 'nome_team' per taggare tutti i compagni di team\nCreando un team ne sarai il leader, dopo 15 giorni che un team non viene taggato, viene automaticamente cancellato\n\nTeam creati:";
+lang_team_intro["en"] = "Welcome to <b>Team</b> manage.\nTeams are linked with groups where they are created.\nYou can create it and add users with /addteam 'team_name' 'nickname,nickname,nickname'\nYou can remove users with /delteam 'team_name' 'nickname,nickname,nickname', when a team have no more users it will be deleted\nYou can use /tagteam 'team_name' to tag your teammates\nCreating a team make you the leader, after 15 days that a team has not been tagged, is automatically deleted\n\nCreated teams:";
 lang_team_no_team["it"] = "Non hai creato nessun team";
 lang_team_no_team["en"] = "No teams created";
+lang_team_only_groups["it"] = "Questo comando può essere usato solo nei gruppi";
+lang_team_only_groups["en"] = "This command can be used only in groups";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
+	checkTeam();
 });
 
 bot.onText(/^\/start/i, function (message) {
@@ -1465,7 +1469,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 
 						if (challengesDescription[i].indexOf("{threshold}") != -1)
 							challengesDescription[i] = challengesDescription[i].replace("{threshold}", challengesValue[i]);
-						else
+						else if (challengesDescription[i].indexOf(challengesValue[i]) == -1)
 							challengesDescription[i] += " | " + challengesValue[i];
 						challengesDescription[i] = challengesDescription[i].replaceAll("(<br>)", "").trim();
 
@@ -2519,12 +2523,10 @@ bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
 			return;
 		}
 		
-		/*
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, "Questo comando può essere usato solo nei gruppi");
+			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
 			return;
 		}
-		*/
 		
 		var mark = {
 			parse_mode: "HTML"
@@ -2542,6 +2544,10 @@ bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
 					text += "@" + rows[i].username + ", ";
 				text = text.slice(0, -2) + "!";
 				bot.sendMessage(message.chat.id, text, mark);
+				
+				connection.query("UPDATE team SET tag_date = NOW() WHERE id = " + team_id, function (err, rows) {
+					if (err) throw err;
+				});
 			});
 		});
 	});
@@ -2560,12 +2566,10 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 			return;
 		}
 		
-		/*
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, "Questo comando può essere usato solo nei gruppi");
+			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
 			return;
 		}
-		*/
 		
 		var parts = message.text.split(" ");
 		if (parts.length < 3){
@@ -2673,12 +2677,10 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 			return;
 		}
 		
-		/*
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, "Questo comando può essere usato solo nei gruppi");
+			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
 			return;
 		}
-		*/
 		
 		var parts = message.text.split(" ");
 		if (parts.length < 3){
@@ -2794,6 +2796,30 @@ bot.onText(/^\/autotrack(?:@\w+)?/i, function (message, match) {
 });
 
 // Funzioni
+
+function checkTeam() {
+	connection.query('SELECT id FROM team WHERE DATEDIFF(CURDATE(), CAST(tag_date As date)) > 15', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 team deleted\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " teams deleted\x1b[0m");
+			rows.forEach(deleteTeam);
+		}
+	});
+};
+
+function deleteTeam(element, index, array) {
+	var team_id = element.id;
+
+	connection.query('DELETE FROM team_member WHERE team_id = ' + team_id, function (err, rows, fields) {
+		if (err) throw err;
+		connection.query('DELETE FROM team WHERE id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	});
+};
 
 function autoTrack(){
 	connection.query('SELECT username, platform FROM player_history GROUP BY username, platform', function (err, rows, fields) {
@@ -2927,9 +2953,8 @@ function getNow(lang, obj) {
 	} else {
 		datetime = "Error";
 	}
-	if (obj == true) {
+	if (obj == true)
 		datetime = new Date(datetime);
-	}
 	return datetime;
 }
 
@@ -2942,9 +2967,8 @@ function toDate(lang, date) {
 		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 	} else if (lang == "en") {
 		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-	} else {
+	} else
 		datetime = "Error";
-	}
 	return datetime;
 }
 
