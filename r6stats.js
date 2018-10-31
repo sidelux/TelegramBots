@@ -900,8 +900,8 @@ lang_team_user_removed["it"] = "utenti rimossi";
 lang_team_user_removed["en"] = "users removed";
 lang_team_call["it"] = "chiama i suoi compagni di team";
 lang_team_call["en"] = "call his teammates";
-lang_team_intro["it"] = "Benvenuto nella gestione dei <b>Team</b>.\nI team sono legati al gruppo in cui si creano.\nPuoi crearlo ed aggiungere utenti con /addteam 'nome_team' 'nickname,nickname,nickname'\nPuoi rimuovere gli utenti con /delteam 'nome_team' 'nickname,nickname,nickname', quando un team non ha più utenti viene cancellato\nPuoi usare /tagteam 'nome_team' per taggare tutti i compagni di team\nCreando un team ne sarai il leader, dopo 15 giorni che un team non viene taggato, viene automaticamente cancellato\n\nTeam creati:";
-lang_team_intro["en"] = "Welcome to <b>Team</b> manage.\nTeams are linked with groups where they are created.\nYou can create it and add users with /addteam 'team_name' 'nickname,nickname,nickname'\nYou can remove users with /delteam 'team_name' 'nickname,nickname,nickname', when a team have no more users it will be deleted\nYou can use /tagteam 'team_name' to tag your teammates\nCreating a team make you the leader, after 15 days that a team has not been tagged, is automatically deleted\n\nCreated teams:";
+lang_team_intro["it"] = "Benvenuto nella gestione dei <b>Team</b>.\nI team sono legati al gruppo in cui si creano.\n\nPuoi crearlo ed aggiungere utenti con:\n/addteam <i>nome_team</i> <i>nickname,nickname,nickname</i>\nCreandolo ne sarai il leader\n\nPuoi rimuovere gli utenti con:\n/delteam <i>nome_team</i> <i>nickname,nickname,nickname</i>\nQuando un team non ha più utenti viene cancellato\n\nPer taggare tutti i compagni di team:\n/tagteam <i>nome_team</i>\nDopo 15 giorni che non viene taggato, il team viene cancellato\n\n<b>Team creati:</b>";
+lang_team_intro["en"] = "Welcome to <b>Team</b> manage.\nTeams are linked with groups where they are created.\n\nYou can create it and add users with:\n/addteam <i>team_name</i> <i>nickname,nickname,nickname</i>\nCreating it you will be the leader\n\nYou can remove users with:\n/delteam <i>team_name</i> <i>nickname,nickname,nickname</i>\nWhen a team have no more users it will be deleted\n\nYou can tag all your teammates with:\n/tagteam <i>team_name</i>\nAfter 15 days that a team has not been tagged, it will be automatically deleted\n\nCreated teams:";
 lang_team_no_team["it"] = "Non hai creato nessun team";
 lang_team_no_team["en"] = "No teams created";
 lang_team_only_groups["it"] = "Questo comando può essere usato solo nei gruppi";
@@ -2457,12 +2457,14 @@ bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
 			bot.sendMessage(message.chat.id, lang_startme[lang] + " /groups");
 			return;
 		}
+		
+		var lang = rows[0].lang;
 
 		var mark = {
 			parse_mode: "HTML"
 		};
 
-		bot.sendMessage(message.chat.id, lang_groups[rows[0].lang], mark);
+		bot.sendMessage(message.chat.id, lang_groups[lang], mark);
 	});
 });
 
@@ -2478,6 +2480,8 @@ bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match)
 			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
 			return;
 		}
+		
+		var lang = rows[0].lang;
 		
 		var mark = {
 			parse_mode: "HTML"
@@ -2523,6 +2527,8 @@ bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
 			return;
 		}
 		
+		var lang = rows[0].lang;
+		
 		if (message.chat.id > 0){
 			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
 			return;
@@ -2565,6 +2571,8 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
 			return;
 		}
+		
+		var lang = rows[0].lang;
 		
 		if (message.chat.id > 0){
 			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
@@ -2676,6 +2684,8 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
 			return;
 		}
+		
+		var lang = rows[0].lang;
 		
 		if (message.chat.id > 0){
 			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
