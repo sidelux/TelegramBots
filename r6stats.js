@@ -461,6 +461,10 @@ var lang_team_intro = [];
 var lang_team_no_team = [];
 var lang_team_only_groups = [];
 
+var lang_search_noplayers = [];
+var lang_search_found = [];
+var lang_private = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_storebot["it"] = "%n operatori registrati, %s statistiche memorizzate - <a href='https://storebot.me/bot/r6siegestatsbot'>Vota sullo Storebot</a>";
@@ -519,6 +523,8 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
+	"> '/team <nome_team> <utenti>' - Crea un team e fornisce la possibilità di taggarne tutti i membri.\n" +
+	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
@@ -534,6 +540,8 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/lang <language>' - Change bot language.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
+	"> '/team <team_name> <users>' - Create a team and offer the possibility to tag all members.\n" +
+	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
@@ -906,6 +914,13 @@ lang_team_no_team["it"] = "Non hai creato nessun team";
 lang_team_no_team["en"] = "No teams created";
 lang_team_only_groups["it"] = "Questo comando può essere usato solo nei gruppi";
 lang_team_only_groups["en"] = "This command can be used only in groups";
+
+lang_search_noplayers["it"] = "Non ci sono giocatori per la piattaforma e la lingua selezionata";
+lang_search_noplayers["en"] = "No players for selected platform and language";
+lang_search_found["it"] = "Giocatori registrati trovati per la piattaforma";
+lang_search_found["en"] = "Players found for platform";
+lang_private["it"] = "Messaggio inviato in privato";
+lang_private["en"] = "Message sent in private";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2761,6 +2776,55 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 
 				bot.sendMessage(message.chat.id, removed + " " + lang_team_user_removed[lang] + team_deleted + "!");
 			}
+		});
+	});
+});
+
+bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /search");
+			return;
+		}
+		
+		var lang = rows[0].lang;
+		
+		var mark = {
+			parse_mode: "HTML"
+		};
+		
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, lang_invalid_platform[lang]);
+			return;
+		}
+
+		var platform = match[1].toLowerCase();
+		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
+			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
+			return;
+		}
+		
+		connection.query("SELECT default_username FROM user WHERE default_platform = '" + platform + "' AND lang = '" + lang + "' AND default_username IS NOT NULL", function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, lang_search_noplayers[lang]);
+				return;
+			}
+		
+			var list = lang_search_found[lang] + " " + platform + ":";
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+				list += "\n" + rows[i].default_username;
+			
+			if (message.chat.id < 0)
+				bot.sendMessage(message.chat.id, lang_private[lang]);
+			bot.sendMessage(message.from.id, list);
 		});
 	});
 });
