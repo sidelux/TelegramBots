@@ -208,23 +208,29 @@ bot.onText(/^\/leaderboard(?:@\w+)?/i, function (message, match) {
 	connection.query('SELECT account_id, last_username, message_count FROM stats ORDER BY message_count DESC', function (err, rows, fields) {
 		if (err) throw err;
 		for (var i = 0; i < size; i++){
-			text += c + "° <b>" + (rows[i].last_username == null ? rows[i].account_id : rows[i].last_username) + "</b>: " + formatNumber(rows[i].message_count) + "\n";
+			if (rows[i].last_username == undefined)
+				rows[i].last_username = rows[i].account_id;
+			text += c + "° <b>" + rows[i].last_username + "</b>: " + formatNumber(rows[i].message_count) + "\n";
 			c++;
 		}
 		
-		c = 0;
+		c = 1;
 		
 		var chat_id = 0;
 		if (message.chat.id < 0)
 			chat_id = message.chat.id;
 		
-		connection.query('SELECT S.account_id, S.last_username, S.message_count FROM user_group U, stats S WHERE U.account_id = S.account_id AND U.chat_id = ' + chat_id + ' ORDER BY S.message_count ASC', function (err, rows, fields) {
+		connection.query('SELECT S.account_id, S.last_username, S.message_count FROM user_group U, stats S WHERE U.account_id = S.account_id AND U.chat_id = ' + chat_id + ' ORDER BY S.message_count DESC', function (err, rows, fields) {
 			if (err) throw err;
 			
-			if (Object.keys(rows).length == 0) {
+			if (Object.keys(rows).length > 0) {
 				text += "\n<b>" + lang_rank_group[lang] + "</b>\n"; 
+				if (size > Object.keys(rows).length)
+					size = Object.keys(rows).length;
 				for (var i = 0; i < size; i++){
-					text += c + "° <b>" + (rows[i].last_username == null ? rows[i].account_id : rows[i].last_username) + "</b>: " + formatNumber(rows[i].message_count) + "\n";
+					if (rows[i].last_username == undefined)
+						rows[i].last_username = rows[i].account_id;
+					text += c + "° <b>" + rows[i].last_username + "</b>: " + formatNumber(rows[i].message_count) + "\n";
 					c++;
 				}
 			}
@@ -253,7 +259,7 @@ bot.onText(/^\/export(?:@\w+)?/i, function (message, match) {
 	
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {	
-			connection.query('SELECT S.account_id, S.last_username, S.message_count FROM user_group U, stats S WHERE U.account_id = S.account_id AND U.chat_id = ' + message.chat.id + ' ORDER BY S.message_count ASC', function (err, rows, fields) {
+			connection.query('SELECT S.account_id, S.last_username, S.message_count FROM user_group U, stats S WHERE U.account_id = S.account_id AND U.chat_id = ' + message.chat.id + ' ORDER BY S.message_count DESC', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, lang_export_nodata[lang], html);
@@ -261,8 +267,11 @@ bot.onText(/^\/export(?:@\w+)?/i, function (message, match) {
 				}
 
 				var content = "Account ID;Username;Messages\r\n";
-				for (var i = 0; i < Object.keys(rows).length; i++)
+				for (var i = 0; i < Object.keys(rows).length; i++){
+					if (rows[i].last_username == undefined)
+						rows[i].last_username = "";
 					content += rows[i].account_id + ";" + rows[i].last_username  + ";" + rows[i].message_count + "\r\n";
+				}
 
 				var fname = "/tmp/export" + message.chat.id + ".csv";
 				fs.writeFile(fname, content, function(err) {
