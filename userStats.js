@@ -75,6 +75,8 @@ process.on('SIGTERM', function() {
 var validLang = ["en", "it"];
 var lang_main_1 = [];
 var lang_main_2 = [];
+var lang_main_3 = [];
+var lang_main_4 = [];
 var lang_stats_userinfo = [];
 var lang_stats_usernotfound = [];
 var lang_stats_notfound = [];
@@ -84,11 +86,20 @@ var lang_stats_msgcount = [];
 var lang_stats_creation = [];
 var lang_stats_update = [];
 var lang_rank = [];
+var lang_rank_group = [];
+var lang_only_groups = [];
+var lang_export_nodata = [];
+var lang_export_sent = [];
+var lang_only_admin = [];
 
 lang_main_1["en"] = "<b>Welcome to User Stats Tracker Bot!</b>\n\nAdd this bot to groups to store messages count <b>globally</b>, last message date and last username for each user, then use <i>inline mode</i> with username or account id to view user informations.\n\nMore than ";
 lang_main_1["it"] = "<b>Benvenuto nell'User Stats Tracker Bot!</b>\n\nAggiungi questo bot ai tuoi gruppi per contare messaggi in modo <b>globale</b>, la data dell'ultimo messaggio e l'ultimo username utilizzato dall'utente, poi con l'<i>inline mode</i> puoi visualizzare queste informazioni inserendo l'username o l'account id.\n\nPiù di ";
-lang_main_2["en"] = " messages counted - <a href='https://storebot.me/bot/userstatstrackerbot'>Vote on Storebot</a>";
-lang_main_2["it"] = " messaggi inviati - <a href='https://storebot.me/bot/userstatstrackerbot'>Vota sullo Storebot</a>";
+lang_main_2["en"] = " messages counted";
+lang_main_2["it"] = " messaggi inviati";
+lang_main_3["en"] = " in this group";
+lang_main_3["it"] = " in questo gruppo";
+lang_main_4["en"] = " - <a href='https://storebot.me/bot/userstatstrackerbot'>Vote on Storebot</a>";
+lang_main_4["it"] = " - <a href='https://storebot.me/bot/userstatstrackerbot'>Vota sullo Storebot</a>";
 lang_stats_userinfo["en"] = "Send user informations";
 lang_stats_userinfo["it"] = "Invia informazioni utente";
 lang_stats_usernotfound["en"] = "User not found";
@@ -105,8 +116,18 @@ lang_stats_creation["en"] = "Creation date";
 lang_stats_creation["it"] = "Data creazione";
 lang_stats_update["en"] = "Last update date";
 lang_stats_update["it"] = "Ultimo aggiornamento";
-lang_rank["it"] = "Classifica";
-lang_rank["en"] = "Leaderboard";
+lang_rank["it"] = "Classifica Globale";
+lang_rank["en"] = "Global Leaderboard";
+lang_rank_group["it"] = "Classifica Gruppo";
+lang_rank_group["en"] = "Group Leaderboard";
+lang_only_groups["it"] = "Questo comando funziona solo nei gruppi";
+lang_only_groups["en"] = "This command works only in groups";
+lang_export_nodata["it"] = "Non ci sono dati relativi agli utenti legati a questo gruppo";
+lang_export_nodata["en"] = "Not enough users data for this group";
+lang_export_sent["it"] = "File inviato in privato";
+lang_export_sent["en"] = "File sent in private chat";
+lang_only_admin["it"] = "Questo comando può essere usato solo da un amministratore del gruppo";
+lang_only_admin["en"] = "This command can be only used by a group administrator";
 
 bot.on('message', function (message) {
 	if (message.text != undefined){
@@ -117,6 +138,15 @@ bot.on('message', function (message) {
 			var rows = connection_sync.query('UPDATE stats SET message_count = message_count+1, last_username = ' + user + ' WHERE account_id = ' + message.from.id);
 			if (rows.affectedRows == 0)
 				connection_sync.query('INSERT INTO stats (account_id, message_count, last_username) VALUES (' + message.from.id + ', 1, ' + user + ')');
+			
+			connection.query('SELECT 1 FROM user_group WHERE chat_id = ' + message.chat.id + ' AND account_id = ' + message.from.id, function (err, rows) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					connection.query('INSERT INTO user_group (account_id, chat_id) VALUES (' + message.from.id + ',' + message.chat.id + ')', function (err, rows) {
+						if (err) throw err;
+					});
+				}
+			});
 		}
 	}
 });
@@ -139,7 +169,23 @@ bot.onText(/^\/start/i, function (message) {
 
 	connection.query('SELECT SUM(message_count) As cnt FROM stats', function (err, rows) {
 		if (err) throw err;
-		bot.sendMessage(message.chat.id, lang_main_1[lang] + String(formatNumber(Math.round(rows[0].cnt/1000)*1000)) + lang_main_2[lang], no_preview);
+		
+		var global_cnt = rows[0].cnt;
+		
+		var chat_id = 0;
+		if (message.chat.id < 0)
+			chat_id = message.chat.id;
+		
+		connection.query('SELECT SUM(S.message_count) As cnt FROM user_group U, stats S WHERE U.account_id = S.account_id AND U.chat_id = ' + chat_id, function (err, rows) {
+			if (err) throw err;
+			
+			var chat_cnt = rows[0].cnt;
+			var extra = "";
+			if (chat_cnt > 0)
+				extra = ", " + String(formatNumber(chat_cnt)) + lang_main_3[lang];
+					
+			bot.sendMessage(message.chat.id, lang_main_1[lang] + String(formatNumber(Math.round(global_cnt/1000)*1000)) + lang_main_2[lang] + extra + lang_main_4[lang], no_preview);
+		});
 	});
 });
 
@@ -165,8 +211,70 @@ bot.onText(/^\/leaderboard(?:@\w+)?/i, function (message, match) {
 			text += c + "° <b>" + (rows[i].last_username == null ? rows[i].account_id : rows[i].last_username) + "</b>: " + formatNumber(rows[i].message_count) + "\n";
 			c++;
 		}
+		
+		c = 0;
+		
+		var chat_id = 0;
+		if (message.chat.id < 0)
+			chat_id = message.chat.id;
+		
+		connection.query('SELECT S.account_id, S.last_username, S.message_count FROM user_group U, stats S WHERE U.account_id = S.account_id AND U.chat_id = ' + chat_id + ' ORDER BY S.message_count ASC', function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				text += "\n<b>" + lang_rank_group[lang] + "</b>\n"; 
+				for (var i = 0; i < size; i++){
+					text += c + "° <b>" + (rows[i].last_username == null ? rows[i].account_id : rows[i].last_username) + "</b>: " + formatNumber(rows[i].message_count) + "\n";
+					c++;
+				}
+			}
 
-		bot.sendMessage(message.chat.id, text, html);
+			bot.sendMessage(message.chat.id, text, html);
+		});
+	});
+});
+
+bot.onText(/^\/export(?:@\w+)?/i, function (message, match) {
+	
+	var html = {
+		parse_mode: "HTML"
+	};
+	
+	var lang = "en";
+	if (message.from.language_code != undefined){
+		if (validLang.indexOf(message.from.language_code) != -1)
+			lang = message.from.language_code;
+	}
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+		return;
+	}
+	
+	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
+		if ((data.status == "creator") || (data.status == "administrator")) {	
+			connection.query('SELECT S.account_id, S.last_username, S.message_count FROM user_group U, stats S WHERE U.account_id = S.account_id AND U.chat_id = ' + message.chat.id + ' ORDER BY S.message_count ASC', function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, lang_export_nodata[lang], html);
+					return;
+				}
+
+				var content = "Account ID;Username;Messages\r\n";
+				for (var i = 0; i < Object.keys(rows).length; i++)
+					content += rows[i].account_id + ";" + rows[i].last_username  + ";" + rows[i].message_count + "\r\n";
+
+				var fname = "/tmp/export" + message.chat.id + ".csv";
+				fs.writeFile(fname, content, function(err) {
+					if(err)
+						return console.log(err);
+
+					bot.sendMessage(message.chat.id, lang_export_sent[lang]);
+					bot.sendDocument(message.from.id, fname);
+				});
+			});
+		}else
+			bot.sendMessage(message.chat.id, lang_only_admin[lang]);
 	});
 });
 
