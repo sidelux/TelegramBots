@@ -464,6 +464,7 @@ var lang_team_only_groups = [];
 var lang_search_noplayers = [];
 var lang_search_found = [];
 var lang_private = [];
+var lang_extra_info = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -523,7 +524,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
-	"> '/team <nome_team> <utenti>' - Crea un team e fornisce la possibilità di taggarne tutti i membri.\n" +
+	"> '/team <nome-team> <utenti>' - Crea un team e fornisce la possibilità di taggarne tutti i membri.\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
@@ -540,7 +541,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/lang <language>' - Change bot language.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
-	"> '/team <team_name> <users>' - Create a team and offer the possibility to tag all members.\n" +
+	"> '/team <team-name> <users>' - Create a team and offer the possibility to tag all members.\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
@@ -921,6 +922,8 @@ lang_search_found["it"] = "Giocatori registrati trovati per la piattaforma";
 lang_search_found["en"] = "Players found for platform";
 lang_private["it"] = "Messaggio inviato in privato";
 lang_private["en"] = "Message sent in private";
+lang_extra_info["it"] = "\nA causa di malfunzionamenti delle API Ubisoft, i dati potrebbero essere non correttamente aggiornati.";
+lang_extra_info["en"] = "\nCause Ubisoft's API malfunction, data can be inaccurate.";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1656,6 +1659,10 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 		var lang = rows[0].lang;
 		var username = "";
 		var platform = "uplay";
+		
+		var extra_info = "";
+		if (lang_extra_info[lang] != "")
+			extra_info = lang_extra_info[lang];
 
 		var forceSave = 0;
 		if (rows[0].force_update == 1){
@@ -1707,7 +1714,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 					else
 						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " of " + addZero(d.getMonth() + 1) + "/" + addZero(d.getDate()) + "/" + d.getFullYear();
-					insert_date = "\n\n" + lang_insert_date[lang] + insert_date;
+					insert_date = "\n\n<i>" + lang_insert_date[lang] + insert_date + "</i>";
 					var response = {};
 					response.player = {};
 					response.player.stats = {};
@@ -1776,7 +1783,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					var text = getData(response, lang);
 					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang);
 
-					bot.sendMessage(message.chat.id, text + insert_date, html);
+					bot.sendMessage(message.chat.id, text + insert_date + extra_info, html);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				}
@@ -1798,7 +1805,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 							var ops = getOperators(responseOps);							
 							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], ops[14], ops[15], lang);
 
-							bot.sendMessage(message.chat.id, text, html);
+							bot.sendMessage(message.chat.id, text + "\n" + extra_info, html);
 
 							if (forceSave == 1){
 								connection.query("UPDATE user SET force_update = 0, last_update = NOW() WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2451,12 +2458,16 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 			bot.sendMessage(message.chat.id, lang_startme[lang] + " /help");
 			return;
 		}
+		
+		var lang = rows[0].lang;
 
 		var mark = {
 			parse_mode: "Markdown"
 		};
 
-		bot.sendMessage(message.chat.id, lang_help[rows[0].lang], mark);
+		if (message.chat.id < 0)
+			bot.sendMessage(message.chat.id, lang_private[lang]);
+		bot.sendMessage(message.from.id, lang_help[lang], mark);
 	});
 });
 
