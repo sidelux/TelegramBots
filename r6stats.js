@@ -1702,6 +1702,10 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 					textDone++;
 					if (textDone >= players.length)
 						bot.sendMessage(message.chat.id, text, html);
+				}).catch(error => {
+					textDone++;
+					if (textDone >= players.length)
+						bot.sendMessage(message.chat.id, text, html);
 				});
 			}
 		});
