@@ -465,6 +465,8 @@ var lang_search_noplayers = [];
 var lang_search_found = [];
 var lang_private = [];
 var lang_extra_info = [];
+var lang_invalid_multiple = [];
+var lang_multiple_limit = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -512,6 +514,7 @@ lang_operator_not_found["it"] = "Operatore non trovato.";
 lang_operator_not_found["en"] = "Operator not found.";
 lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/stats <username>,<piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
+	"> '/mstats <username1>,<username2>,ecc. - Permette di visualizzare statistiche brevi per la lista di utenti specificata.\n" +
 	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
@@ -529,6 +532,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
+	"> '/mstats <username1>,<username2>,etc. - Allow to print a short stats for multiple specified users.\n" +
 	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
 	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
@@ -923,7 +927,11 @@ lang_search_found["en"] = "Players found for platform";
 lang_private["it"] = "Messaggio inviato in privato";
 lang_private["en"] = "Message sent in private";
 lang_extra_info["it"] = "\nA causa di malfunzionamenti delle API Ubisoft, i dati potrebbero essere non correttamente aggiornati.";
-lang_extra_info["en"] = "\nCause Ubisoft's API malfunction, data can be inaccurate.";
+lang_extra_info["en"] = "\nCause Ubisoft's API malfunction, data may be inaccurate.";
+lang_invalid_multiple["it"] = "Username non specificati, esempio: /mstats username1,username2,ecc.";
+lang_invalid_multiple["en"] = "Username not specified, example: /mstats username1,username2,etc.";
+lang_multiple_limit["it"] = "Puoi specificare massimo 5 giocatori";
+lang_multiple_limit["en"] = "You can define at least 5 players";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1643,6 +1651,63 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 	});
 });
 
+bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, match) {
+	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = "en";
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /mstats");
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, lang_invalid_multiple[lang]);
+			return;
+		}
+		
+		var platform = "uplay";
+		
+		if (rows[0].default_platform != null)
+			platform = rows[0].default_platform;
+		
+		var players = match[1].split(",");
+		players = players.map(function(item) {
+			return item.trim();
+		});
+		players = players.filter(function(elem, pos) {
+			return players.indexOf(elem) == pos;
+		})
+		if (players.length > 5){
+			bot.sendMessage(message.chat.id, lang_multiple_limit[lang], html);
+			return;
+		}
+		var responseStats = "";
+		var text = "";
+		var textDone = 0;
+		
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			for (i = 0; i < players.length; i++){
+				r6.stats(players[i], platform, 0).then(response => {
+					responseStats = response;
+					
+					if (responseStats.level != undefined)
+						text += getDataLine(responseStats, lang) + "\n";
+					
+					textDone++;
+					if (textDone >= players.length)
+						bot.sendMessage(message.chat.id, text, html);
+				});
+			}
+		});
+	});
+});
+
 bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?|^\/!stats(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -1876,6 +1941,12 @@ function getData(response, lang){
 	return text;
 }
 
+function getDataLine(response, lang){
+	var text = "<b>" + response.username + "</b>: Lv " + response.level + " - " + lang_ranked_kd[lang] + " " + response.ranked_kd + " - " + numToRank(response.season_rank, lang);
+	
+	return text;
+}
+
 function getOperators(response){
 	var most_played = 0;
 	var most_played_name = "";
@@ -1938,7 +2009,7 @@ function getOperators(response){
 		if (!isFinite(wl))
 			wl = response[operators[i]].operatorpvp_roundwon;
 		if (wl > most_wl){
-			most_wl = kd;
+			most_wl = wl;
 			most_wl_name = operators[i];
 		}
 	}
