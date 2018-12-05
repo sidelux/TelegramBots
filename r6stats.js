@@ -234,8 +234,9 @@ var no_preview = {
 };
 
 var validLang = ["en", "it"];
+var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
-var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan","Maverick","Clash"];
+var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan","Maverick","Clash","Nomad","Kaid"];
 var lang_main = [];
 var lang_storebot = [];
 var lang_startme = [];
@@ -411,6 +412,8 @@ var ability_operatorpvp_barrage_killswithturret = [];
 var ability_operatorpvp_deceiver_revealedattackers = [];
 var ability_operatorpvp_maverick_wallbreached = [];
 var ability_operatorpvp_clash_sloweddown = [];
+var ability_operatorpvp_Kaid_Electroclaw_Hatches = [];
+var ability_operatorpvp_Nomad_Assist = [];
 
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
@@ -842,6 +845,10 @@ ability_operatorpvp_maverick_wallbreached["it"] = "Muri bucati";
 ability_operatorpvp_maverick_wallbreached["en"] = "Walls breached";
 ability_operatorpvp_clash_sloweddown["it"] = "Nemici rallentati";
 ability_operatorpvp_clash_sloweddown["en"] = "Enemies slowed down";
+ability_operatorpvp_Kaid_Electroclaw_Hatches["it"] = "Elettroartigli lanciati su botole";
+ability_operatorpvp_Kaid_Electroclaw_Hatches["en"] = "Electroclaw throwed to hatches";
+ability_operatorpvp_Nomad_Assist["it"] = "Assist con abilità";
+ability_operatorpvp_Nomad_Assist["en"] = "Ability assists";
 
 lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
 lang_loadout_intro["en"] = "Recommended loadout for";
@@ -926,8 +933,8 @@ lang_search_found["it"] = "Giocatori registrati trovati per la piattaforma";
 lang_search_found["en"] = "Players found for platform";
 lang_private["it"] = "Messaggio inviato in privato";
 lang_private["en"] = "Message sent in private";
-lang_extra_info["it"] = "\nA causa di malfunzionamenti delle API Ubisoft, i dati potrebbero essere non correttamente aggiornati.";
-lang_extra_info["en"] = "\nCause Ubisoft's API malfunction, data may be inaccurate.";
+lang_extra_info["it"] = "";
+lang_extra_info["en"] = "";
 lang_invalid_multiple["it"] = "Username non specificati, esempio: /mstats username1,username2,ecc.";
 lang_invalid_multiple["en"] = "Username not specified, example: /mstats username1,username2,etc.";
 lang_multiple_limit["it"] = "Puoi specificare massimo 5 giocatori";
@@ -946,7 +953,7 @@ bot.onText(/^\/start/i, function (message) {
 
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
-		var lang = "en";
+		var lang = defaultLang;
 		if (message.from.language_code != undefined){
 			if (validLang.indexOf(message.from.language_code) != -1)
 				lang = message.from.language_code;
@@ -995,7 +1002,7 @@ bot.on("inline_query", function (query) {
 	if (data.length < 6)
 		return;
 
-	var lang = "en";
+	var lang = defaultLang;
 	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + query.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1196,7 +1203,7 @@ bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1228,7 +1235,7 @@ bot.onText(/^\/setusername(?:@\w+)? (.+)|^\/setusername(?:@\w+)?/i, function (me
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1256,7 +1263,7 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1288,7 +1295,7 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1345,7 +1352,7 @@ bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1407,7 +1414,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1513,7 +1520,7 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?/i, function (message, match
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1593,7 +1600,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT default_username, default_platform, lang, force_update, last_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1655,7 +1662,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -1712,11 +1719,21 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 	});
 });
 
+bot.onText(/^\/checklang/, function (message, match) {
+	var lang = defaultLang;
+	if (message.from.language_code != undefined){
+		if (validLang.indexOf(message.from.language_code) != -1)
+			lang = message.from.language_code;
+	}
+	
+	bot.sendMessage(message.from.id, message.from.language_code + " - " + lang);
+});
+
 bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?|^\/!stats(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2046,7 +2063,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2145,7 +2162,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2228,7 +2245,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2384,7 +2401,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2525,7 +2542,7 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2550,7 +2567,7 @@ bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2573,7 +2590,7 @@ bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match)
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2619,7 +2636,7 @@ bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2664,7 +2681,7 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2777,7 +2794,7 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2870,7 +2887,7 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -2919,7 +2936,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
-			var lang = "en";
+			var lang = defaultLang;
 			if (message.from.language_code != undefined){
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
@@ -3043,7 +3060,7 @@ String.prototype.replaceAll = function (search, replacement) {
 	return target.replace(new RegExp(search, 'g'), replacement);
 };
 
-function compare(val1, val2, format = "", lang = "en", inverted = 0){
+function compare(val1, val2, format = "", lang = defaultLang, inverted = 0){
 	var res = "";
 	var formattedVal1 = val1;
 	var formattedVal2 = val2;
@@ -3086,7 +3103,7 @@ function formatNumber(num) {
 	});
 }
 
-function toTime(seconds, lang = "en", onlyHours = false) {
+function toTime(seconds, lang = defaultLang, onlyHours = false) {
 	if (onlyHours == true)
 		return formatNumber(humanizeDuration(seconds*1000, { language: lang, units: ['h'], round: true }));
 	else
