@@ -1650,7 +1650,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 				return;
 			}
 
-			connection.query("UPDATE user SET force_update = 1 WHERE account_id = " + message.from.id, function (err, rows) {
+			connection.query("UPDATE user SET force_update = 1, last_force_update = NOW() WHERE account_id = " + message.from.id, function (err, rows) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, lang_update_ok[lang]);
 			});
@@ -2999,7 +2999,9 @@ function deleteTeam(element, index, array) {
 };
 
 function autoTrack(){
-	connection.query('SELECT username, platform FROM player_history GROUP BY username, platform', function (err, rows, fields) {
+	var query = "SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL ORDER BY last_force_update DESC, last_update ASC";
+	//query = 'SELECT username, platform FROM player_history GROUP BY username, platform';
+	connection.query(query, function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0)
@@ -3008,8 +3010,8 @@ function autoTrack(){
 }
 
 function setAutoTrack(element, index, array) {
-	var username = element.username;
-	var platform = element.platform;
+	var username = element.default_username;
+	var platform = element.default_platform;
 
 	r6.stats(username, platform, 0).then(response => {
 
