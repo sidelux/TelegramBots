@@ -1102,9 +1102,12 @@ function printInline(query_id, response, lang){
 function saveData(responseStats, responseOps){
 	var ops = getOperators(responseOps);
 
-	if (responseStats.profile_id == undefined)
-		console.log(getNow("it") + " Data undefined for " + responseStats.username);
-	else{
+	if (responseStats.profile_id == undefined){
+		console.log(getNow("it") + " Data undefined for " + responseStats.username + ", flagged with undefined_track = 1");
+		connection.query('UPDATE user SET undefined_track = 1 WHERE default_username = "' + responseStats.username + '"', function (err, rows) {
+			if (err) throw err;
+		});
+	} else {
 		connection.query('INSERT INTO player_history VALUES (DEFAULT, "' + responseStats.profile_id + '", "' +
 						 responseStats.platform + '","' +
 						 responseStats.username + '",' +
@@ -1497,8 +1500,12 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 						}
 						
 						preview = "";
-						if (challengesPreview[i] != null)
-							preview = " | <a href='" + image_url + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
+						if (challengesPreview[i] != null){
+							if (challengesPreview[i].startsWith("https"))
+								preview = " | <a href='" + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
+							else
+								preview = " | <a href='" + image_url + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
+						}
 
 						if (challengesDescription[i].indexOf("{threshold}") != -1)
 							challengesDescription[i] = challengesDescription[i].replace("{threshold}", challengesValue[i]);
@@ -1730,7 +1737,7 @@ bot.onText(/^\/checklang/, function (message, match) {
 });
 
 bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?|^\/!stats(?:@\w+)?/i, function (message, match) {
-	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -1743,6 +1750,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 		}
 
 		var lang = rows[0].lang;
+		var undefined_track = rows[0].undefined_track;
 		var username = "";
 		var platform = "uplay";
 		
@@ -1890,6 +1898,13 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 							var ops = getOperators(responseOps);							
 							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], ops[14], ops[15], lang);
+							
+							if (undefined_track == 1){
+								connection.query("UPDATE user SET undefined_track = 0 WHERE account_id = " + message.from.id, function (err, rows) {
+									if (err) throw err;
+									console.log(getNow("it") + " User unlocked for " + username + " on " + platform);
+								});
+							}
 
 							bot.sendMessage(message.chat.id, text + "\n" + extra_info, html);
 
@@ -2999,7 +3014,7 @@ function deleteTeam(element, index, array) {
 };
 
 function autoTrack(){
-	var query = "SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL ORDER BY last_force_update DESC, last_update ASC";
+	var query = "SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND undefined_track = 0 ORDER BY last_force_update DESC, last_update ASC";
 	//query = 'SELECT username, platform FROM player_history GROUP BY username, platform';
 	connection.query(query, function (err, rows, fields) {
 		if (err) throw err;
