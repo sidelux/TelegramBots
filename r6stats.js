@@ -350,6 +350,7 @@ var lang_season_rank = [];
 var lang_season_mmr = [];
 var lang_season_max_mmr = [];
 var lang_season_not_ranked = [];
+var lang_season_prevision = [];
 
 var lang_title_mode = [];
 var lang_mode_secure = [];
@@ -470,6 +471,27 @@ var lang_private = [];
 var lang_extra_info = [];
 var lang_invalid_multiple = [];
 var lang_multiple_limit = [];
+
+var lang_rank_copper4 = [];
+var lang_rank_copper3 = [];
+var lang_rank_copper2 = [];
+var lang_rank_copper1 = [];
+var lang_rank_bronze4 = [];
+var lang_rank_bronze3 = [];
+var lang_rank_bronze2 = [];
+var lang_rank_bronze1 = [];
+var lang_rank_silver4 = [];
+var lang_rank_silver3 = [];
+var lang_rank_silver2 = [];
+var lang_rank_silver1 = [];
+var lang_rank_gold4 = [];
+var lang_rank_gold3 = [];
+var lang_rank_gold2 = [];
+var lang_rank_gold1 = [];
+var lang_rank_platinum3 = [];
+var lang_rank_platinum2 = [];
+var lang_rank_platinum1 = [];
+var lang_rank_diamond = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -723,6 +745,8 @@ lang_season_max_mmr["it"] = "MMR massimo";
 lang_season_max_mmr["en"] = "Max MMR";
 lang_season_not_ranked["it"] = "Non classificato";
 lang_season_not_ranked["en"] = "Not ranked";
+lang_season_prevision["it"] = "Previsione";
+lang_season_prevision["en"] = "Prevision";
 
 lang_title_mode["it"] = "Modalità";
 lang_title_mode["en"] = "Mode";
@@ -939,6 +963,47 @@ lang_invalid_multiple["it"] = "Username non specificati, esempio: /mstats userna
 lang_invalid_multiple["en"] = "Username not specified, example: /mstats username1,username2,etc.";
 lang_multiple_limit["it"] = "Puoi specificare massimo 5 giocatori";
 lang_multiple_limit["en"] = "You can define at least 5 players";
+
+lang_rank_copper4["it"] = "Rame IV";
+lang_rank_copper4["en"] = "Copper IV";
+lang_rank_copper3["it"] = "Rame III";
+lang_rank_copper3["en"] = "Copper III";
+lang_rank_copper2["it"] = "Rame II";
+lang_rank_copper2["en"] = "Copper II";
+lang_rank_copper1["it"] = "Rame I";
+lang_rank_copper1["en"] = "Copper I";
+lang_rank_bronze4["it"] = "Bronzo IV";
+lang_rank_bronze4["en"] = "Bronze IV";
+lang_rank_bronze3["it"] = "Bronzo III";
+lang_rank_bronze3["en"] = "Bronze III";
+lang_rank_bronze2["it"] = "Bronzo II";
+lang_rank_bronze2["en"] = "Bronze II";
+lang_rank_bronze1["it"] = "Bronzo I";
+lang_rank_bronze1["en"] = "Bronze I";
+lang_rank_silver4["it"] = "Argento IV";
+lang_rank_silver4["en"] = "Silver IV";
+lang_rank_silver3["it"] = "Argento III";
+lang_rank_silver3["en"] = "Silver III";
+lang_rank_silver2["it"] = "Argento II";
+lang_rank_silver2["en"] = "Silver II";
+lang_rank_silver1["it"] = "Argento I";
+lang_rank_silver1["en"] = "Silver I";
+lang_rank_gold4["it"] = "Oro IV";
+lang_rank_gold4["en"] = "Gold IV";
+lang_rank_gold3["it"] = "Oro III";
+lang_rank_gold3["en"] = "Gold III";
+lang_rank_gold2["it"] = "Oro II";
+lang_rank_gold2["en"] = "Gold II";
+lang_rank_gold1["it"] = "Oro I";
+lang_rank_gold1["en"] = "Gold I";
+lang_rank_platinum3["it"] = "Platino III";
+lang_rank_platinum3["en"] = "Platinum III";
+lang_rank_platinum2["it"] = "Platino II";
+lang_rank_platinum2["en"] = "Platinum II";
+lang_rank_platinum1["it"] = "Platino I";
+lang_rank_platinum1["en"] = "Platinum I";
+lang_rank_diamond["it"] = "Diamante";
+lang_rank_diamond["en"] = "Diamond";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1168,7 +1233,7 @@ function saveData(responseStats, responseOps){
 	}
 }
 
-function numToRank(num, lang){
+function numToRank(num, lang, mmr = -1){
 	var rankIt = [
 		"Rame IV", "Rame III", "Rame II", "Rame I",
 		"Bronzo IV", "Bronzo III", "Bronzo II", "Bronzo I",
@@ -1184,8 +1249,12 @@ function numToRank(num, lang){
 		"Platinum III", "Platinum II", "Platinum I", "Diamond"
 	];
 
-	if ((num == 0) || (num > 21))
-		return lang_season_not_ranked[lang];
+	if ((num == 0) || (num > 21)){
+		if (mmr != -1)
+			return lang_season_not_ranked[lang] + " (" + lang_season_prevision[lang] + ": " + mapRank(mmr, lang) + ")";
+		else
+			return lang_season_not_ranked[lang];
+	}
 
 	if (lang == "it")
 		return rankIt[num-1];
@@ -1966,7 +2035,7 @@ function getData(response, lang){
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.season_rank, lang) + "\n" +
+		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + "\n" +
 		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + "\n" +
 		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + "\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
@@ -2551,6 +2620,49 @@ function mapLoadout(itemOrig, lang){
 	}else
 		resp = itemOrig;
 	return resp;
+}
+
+function mapRank(rank, lang){	
+	if (rank < 1399)
+		return lang_rank_copper4[lang];
+	else if ((rank >= 1400) && (rank < 1499))
+		return lang_rank_copper3[lang];
+	else if ((rank >= 1500) && (rank < 1599))
+		return lang_rank_copper2[lang];
+	else if ((rank >= 1600) && (rank < 1699))
+		return lang_rank_copper1[lang];
+	else if ((rank >= 1700) && (rank < 1799))
+		return lang_rank_bronze4[lang];
+	else if ((rank >= 1800) && (rank < 1899))
+		return lang_rank_bronze3[lang];
+	else if ((rank >= 1900) && (rank < 1999))
+		return lang_rank_bronze2[lang];
+	else if ((rank >= 2000) && (rank < 2099))
+		return lang_rank_bronze1[lang];
+	else if ((rank >= 2100) && (rank < 2199))
+		return lang_rank_silver4[lang];
+	else if ((rank >= 2200) && (rank < 2299))
+		return lang_rank_silver3[lang];
+	else if ((rank >= 2300) && (rank < 2399))
+		return lang_rank_silver2[lang];
+	else if ((rank >= 2400) && (rank < 2499))
+		return lang_rank_silver1[lang];
+	else if ((rank >= 2500) && (rank < 2699))
+		return lang_rank_gold4[lang];
+	else if ((rank >= 2700) && (rank < 2899))
+		return lang_rank_gold3[lang];
+	else if ((rank >= 2900) && (rank < 3099))
+		return lang_rank_gold2[lang];
+	else if ((rank >= 3100) && (rank < 3299))
+		return lang_rank_gold1[lang];
+	else if ((rank >= 3300) && (rank < 3699))
+		return lang_rank_platinum3[lang];
+	else if ((rank >= 3700) && (rank < 4099))
+		return lang_rank_platinum2[lang];
+	else if ((rank >= 4100) && (rank < 4499))
+		return lang_rank_platinum1[lang];
+	else
+		return lang_rank_diamond[lang];
 }
 
 bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
