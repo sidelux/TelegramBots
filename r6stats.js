@@ -493,6 +493,8 @@ var lang_rank_platinum2 = [];
 var lang_rank_platinum1 = [];
 var lang_rank_diamond = [];
 
+var lang_no_validgraph = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_storebot["it"] = "%n operatori registrati, %s statistiche memorizzate - <a href='https://storebot.me/bot/r6siegestatsbot'>Vota sullo Storebot</a>";
@@ -545,6 +547,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
+	"> '/lastgraph' - Genere un grafico utilizzando l'ultimo parametro usato.\n" +
 	"> '/loadout <nome-operatore>' - Suggerisce un equipaggiamento per l'operatore specificato.\n" +
 	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
 	"> '/news <numero>' - Permette di visualizzare le ultime news ufficiali del gioco reperite da Steam.\n" +
@@ -563,6 +566,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
+	"> '/lastgraph' - Generate a graph using last parameter used.\n" +
 	"> '/loadout <operator-name>' - Suggest a full loadout for specified operator.\n" +
 	"> '/status <platform>' - Allow to print official server status of the game.\n" +
 	"> '/news <number>' - Allow to print latest official news of the game wrote by Steam.\n" +
@@ -1004,6 +1008,9 @@ lang_rank_platinum1["it"] = "Platino I";
 lang_rank_platinum1["en"] = "Platinum I";
 lang_rank_diamond["it"] = "Diamante";
 lang_rank_diamond["en"] = "Diamond";
+
+lang_no_validgraph["it"] = "Utilizza almeno una volta il comando /graph prima di utilizzare /lastgraph";
+lang_no_validgraph["en"] = "Use at least once the command /graph before using /lastgraph";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1592,8 +1599,8 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?/i, function (message, match) {
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, function (message, match) {
+	connection.query("SELECT lang, default_username, default_platform, last_graph FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -1620,19 +1627,28 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?/i, function (message, match
 		}
 
 		var default_platform = rows[0].default_platform;
+		var param = "";
+		
+		if (message.text.indexOf("/lastgraph") == -1){
+			var errMsg = lang_graph_no_param[lang] + validParam.join(", ")
+			if (match[1] == undefined){
+				bot.sendMessage(message.chat.id, errMsg);
+				return;
+			}
+			match[1] = match[1].toLowerCase();
+			if (validParam.indexOf(match[1]) == -1){
+				bot.sendMessage(message.chat.id, errMsg);
+				return;
+			}
 
-		var errMsg = lang_graph_no_param[lang] + validParam.join(", ")
-		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, errMsg);
-			return;
+			param = match[1];
+		} else {
+			if (rows[0].last_graph == null){
+				bot.sendMessage(message.chat.id, lang_no_validgraph[lang]);
+				return;
+			}
+			param = rows[0].last_graph;
 		}
-		match[1] = match[1].toLowerCase();
-		if (validParam.indexOf(match[1]) == -1){
-			bot.sendMessage(message.chat.id, errMsg);
-			return;
-		}
-
-		var param = match[1];
 
 		console.log(getNow("it") + " Request graph for " + param + " from " + message.from.username);
 		connection.query("SELECT insert_date, " + param + " FROM player_history WHERE " + param + " != 0 AND username = '" + default_username + "' AND platform = '" + default_platform + "'", function (err, rows) {
@@ -1667,6 +1683,10 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?/i, function (message, match
 					return console.log (error);
 
 				bot.sendPhoto(message.chat.id, imageStream);
+				
+				connection.query("UPDATE user SET last_graph = '" + param + "' WHERE account_id = '" + message.from.id + "'", function (err, rows) {
+					if (err) throw err;
+				});
 			});
 		});
 	});
