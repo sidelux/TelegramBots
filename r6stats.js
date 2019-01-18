@@ -3146,13 +3146,17 @@ function deleteTeam(element, index, array) {
 };
 
 function autoTrack(){
-	var query = "SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND undefined_track = 0 ORDER BY last_force_update DESC, last_update ASC";
-	//query = 'SELECT username, platform FROM player_history GROUP BY username, platform';
-	connection.query(query, function (err, rows, fields) {
+	connection.query("SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL ORDER BY last_force_update DESC, last_update ASC, undefined_track ASC", function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0)
 			rows.forEach(setAutoTrack);
+		else {
+			connection.query("UPDATE user SET undefined_track = 0", function (err, rows, fields) {
+				if (err) throw err;
+				console.log("Resetting undefined track for all users...");
+			});
+		}
 	});
 }
 
