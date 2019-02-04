@@ -1330,7 +1330,7 @@ bot.onText(/^\/setusername(?:@\w+)? (.+)|^\/setusername(?:@\w+)?/i, function (me
 			return;
 		}
 
-		var user = match[1].toLowerCase();
+		var user = match[1].toLowerCase().trim();
 		connection.query("UPDATE user SET default_username = '" + user + "' WHERE account_id = " + message.from.id, function (err, rows) {
 			if (err) throw err;
 			bot.sendMessage(message.chat.id, lang_default_user_changed[lang]);
@@ -1358,7 +1358,7 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 			return;
 		}
 
-		var platform = match[1].toLowerCase();
+		var platform = match[1].toLowerCase().trim();
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
 			return;
@@ -1651,41 +1651,52 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, fu
 		}
 
 		console.log(getNow("it") + " Request graph for " + param + " from " + message.from.username);
-		connection.query("SELECT insert_date, " + param + " FROM player_history WHERE " + param + " != 0 AND username = '" + default_username + "' AND platform = '" + default_platform + "'", function (err, rows) {
+		connection.query("SELECT ubisoft_id FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "'", function (err, rows) {
 			if (err) throw err;
-
-			if (Object.keys(rows).length <= 1){
+			
+			if (Object.keys(rows).length == 0){
 				bot.sendMessage(message.chat.id, lang_graph_no_data[lang]);
 				return;
 			}
+			
+			var ubisoft_id = rows[0].ubisoft_id;
+			
+			connection.query("SELECT insert_date, " + param + " FROM player_history WHERE " + param + " != 0 AND ubisoft_id = '" + ubisoft_id + "'", function (err, rows) {
+				if (err) throw err;
 
-			var arrX = [];
-			var arrY = [];
-			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				arrX.push(rows[i].insert_date);
-				arrY.push(eval("rows[i]." + param));
-			}
+				if (Object.keys(rows).length <= 5){
+					bot.sendMessage(message.chat.id, lang_graph_no_data[lang]);
+					return;
+				}
 
-			var trace1 = {
-				x: arrX,
-				y: arrY,
-				type: "scatter"
-			};
-			var figure = { 'data': [trace1] };
-			var imgOpts = {
-				format: 'png',
-				width: 1280,
-				height: 800
-			};
+				var arrX = [];
+				var arrY = [];
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					arrX.push(rows[i].insert_date);
+					arrY.push(eval("rows[i]." + param));
+				}
 
-			plotly.getImage(figure, imgOpts, function (error, imageStream) {
-				if (error) 
-					return console.log (error);
+				var trace1 = {
+					x: arrX,
+					y: arrY,
+					type: "scatter"
+				};
+				var figure = { 'data': [trace1] };
+				var imgOpts = {
+					format: 'png',
+					width: 1280,
+					height: 800
+				};
 
-				bot.sendPhoto(message.chat.id, imageStream);
-				
-				connection.query("UPDATE user SET last_graph = '" + param + "' WHERE account_id = '" + message.from.id + "'", function (err, rows) {
-					if (err) throw err;
+				plotly.getImage(figure, imgOpts, function (error, imageStream) {
+					if (error) 
+						return console.log (error);
+
+					bot.sendPhoto(message.chat.id, imageStream);
+
+					connection.query("UPDATE user SET last_graph = '" + param + "' WHERE account_id = '" + message.from.id + "'", function (err, rows) {
+						if (err) throw err;
+					});
 				});
 			});
 		});
