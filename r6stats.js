@@ -758,7 +758,7 @@ lang_mode_secure["it"] = "Presidio";
 lang_mode_secure["en"] = "Secure area";
 lang_mode_hostage["it"] = "Ostaggio";
 lang_mode_hostage["en"] = "Hostage";
-lang_mode_bomb["it"] = "Disinnesco";
+lang_mode_bomb["it"] = "Bombe";
 lang_mode_bomb["en"] = "Bomb";
 
 ability_operatorpvp_phoneshacked["it"] = "Telefoni hackerati";
