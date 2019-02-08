@@ -260,6 +260,7 @@ var lang_news_date = [];
 var lang_operator_no_name = [];
 var lang_operator_not_found = [];
 var lang_help = [];
+var lang_last_news = [];
 var lang_groups = [];
 var lang_rank = [];
 var lang_time = [];
@@ -523,8 +524,8 @@ lang_invalid_platform_2["it"] = "Piattaforma non valida. Piattaforme disponibili
 lang_invalid_platform_2["en"] = "Invalid platform. Available platforms: uplay (pc), psn (ps4) or xbl (xbox one).";
 lang_default_platform_changed["it"] = "Piattaforma predefinita modificata!";
 lang_default_platform_changed["en"] = "Default platform changed!";
-lang_default["it"] = "Impostazioni: ";
-lang_default["en"] = "Settings: ";
+lang_default["it"] = "Impostazioni attuali: ";
+lang_default["en"] = "Actual settings: ";
 lang_user_not_found["it"] = "Username non trovato per la piattaforma selezionata.";
 lang_user_not_found["en"] = "Username not found for selected platform.";
 lang_graph_no_data["it"] = "Non ci sono abbastanza dati salvati per creare un grafico, usa /stats per salvarli.";
@@ -583,6 +584,8 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
+lang_last_news["it"] = "<b>ULTIMI AGGIORNAMENTI:</b>\n08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
+lang_last_news["en"] = "<b>LATEST UPDATES:</b>\n02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata:";
@@ -1075,6 +1078,10 @@ bot.onText(/^\/start/i, function (message) {
 					default_text = "\n" + lang_default[lang] + rows[0].default_platform + "\n";
 			}
 		}
+		
+		var last_news = "";
+		if (lang_last_news[lang] != "")
+			last_news = "\n" + lang_last_news[lang] + "\n";
 
 		connection.query("SELECT COUNT(1) As cnt FROM user UNION SELECT COUNT(1) As cnt FROM player_history", function (err, rows) {
 			if (err) throw err;
@@ -1087,7 +1094,7 @@ bot.onText(/^\/start/i, function (message) {
 				var time = new Date(stats.mtime);
 				var time_text = "\n<i>" + lang_time[lang] + " " + toDate(lang, time) + "</i>";
 
-				bot.sendMessage(message.chat.id, lang_main[lang] + "\n" + default_text + stats_text + time_text, no_preview);
+				bot.sendMessage(message.chat.id, lang_main[lang] + "\n" + default_text + last_news + stats_text + time_text, no_preview);
 			});
 		});
 	});
