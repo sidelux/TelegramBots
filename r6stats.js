@@ -494,6 +494,10 @@ var lang_rank_platinum1 = [];
 var lang_rank_diamond = [];
 
 var lang_no_validgraph = [];
+var lang_report_deactivated = [];
+var lang_report_activated = [];
+var lang_report_header_week = [];
+var lang_report_header_month = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -557,6 +561,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
 	"> '/team <nome-team> <utenti>' - Crea un team e fornisce la possibilità di taggarne tutti i membri.\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
+	"> '/setreport' - Attiva o disattiva il report statistiche del gruppo in cui si è usato /stats l'ultima volta.\n" +
 	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
@@ -576,6 +581,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
 	"> '/team <team-name> <users>' - Create a team and offer the possibility to tag all members.\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
+	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
@@ -1011,11 +1017,33 @@ lang_rank_diamond["en"] = "Diamond";
 
 lang_no_validgraph["it"] = "Utilizza almeno una volta il comando /graph prima di utilizzare /lastgraph";
 lang_no_validgraph["en"] = "Use at least once the command /graph before using /lastgraph";
+lang_report_activated["it"] = "Report attivato";
+lang_report_activated["en"] = "Report activated";
+lang_report_deactivated["it"] = "Report disattivato";
+lang_report_deactivated["en"] = "Report deactivated";
+lang_report_header_month["it"] = "Report mensile progressi di questo gruppo";
+lang_report_header_month["en"] = "Monthly report for this group";
+lang_report_header_week["it"] = "Report settimanale progressi di questo gruppo";
+lang_report_header_week["en"] = "Weekly report for this group";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
 	checkTeam();
+});
+
+var reportType = 0;
+
+var j = Schedule.scheduleJob('0 10 * * 1', function () {
+	console.log(getNow("it") + " Weekly report generation called from job");
+	reportType = 1;
+	reportProgress();
+});
+
+var j = Schedule.scheduleJob('0 10 1 * *', function () {
+	console.log(getNow("it") + " Monthly report generation called from job");
+	reportType = 2;
+	reportProgress();
 });
 
 bot.onText(/^\/start/i, function (message) {
@@ -1367,6 +1395,35 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 			if (err) throw err;
 			bot.sendMessage(message.chat.id, lang_default_platform_changed[lang]);
 		});
+	});
+});
+
+bot.onText(/^\/setreport(?:@\w+)?/i, function (message, match) {
+	connection.query("SELECT lang, report FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setreport");
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (rows[0].report == 1) {
+			connection.query("UPDATE user SET report = 0 WHERE account_id = " + message.from.id, function (err, rows) {
+			if (err) throw err;
+				bot.sendMessage(message.chat.id, lang_report_deactivated[lang]);
+			});
+		} else {
+			connection.query("UPDATE user SET report = 1 WHERE account_id = " + message.from.id, function (err, rows) {
+			if (err) throw err;
+				bot.sendMessage(message.chat.id, lang_report_activated[lang]);
+			});
+		}
 	});
 });
 
@@ -1895,6 +1952,8 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
 			return;
 		}
+		
+		updateChatId(message.from.id, message.chat.id);
 
 		console.log(getNow("it") + " Request user data for " + username + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -3130,7 +3189,91 @@ bot.onText(/^\/autotrack(?:@\w+)?/i, function (message, match) {
 	}
 });
 
+bot.onText(/^\/report(?:@\w+)?/i, function (message, match) {
+	if (message.from.id == 20471035) {
+		console.log(getNow("it") + " Report generation called manually");
+		reportType = 1;
+		reportProgress();
+	}
+});
+
 // Funzioni
+
+function updateChatId(from_id, chat_id) {
+	if (chat_id < 0){
+		connection.query('UPDATE user SET last_chat_id = "' + chat_id + '" WHERE account_id = ' + from_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	}
+}
+
+function reportProgress() {
+	connection.query('SELECT last_chat_id, lang FROM user WHERE last_chat_id IS NOT NULL AND report = 1 GROUP BY last_chat_id', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 report generation\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " reports generation\x1b[0m");
+			rows.forEach(generateReport);
+		}
+	});
+}
+
+function generateReport(element, index, array) {
+	var last_chat_id = element.last_chat_id;
+	var lang = element.lang;
+	var interval = "";
+	var intervalDays = 0;
+	if (reportType == 1) {
+		intervalDays = 7;
+		interval = lang_report_header_week[lang];
+	} else if (reportType == 2) {
+		intervalDays = 30;
+		interval = lang_report_header_month[lang];
+	}
+	var report = "<b>" + interval + "</b>\n";
+	var cnt = 0;
+	
+	var lastId;
+	var player;
+	var player_list = connection_sync.query('SELECT default_username, default_platform FROM user WHERE last_chat_id = "' + last_chat_id + '"');
+	for (var i = 0, len = Object.keys(player_list).length; i < len; i++) {
+		player = connection_sync.query('SELECT username, platform, ranked_wl, ranked_kd, season_mmr FROM player_history WHERE username = "' + player_list[i].default_username + '" AND platform = "' + player_list[i].default_platform + '" AND insert_date BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL ' + intervalDays + ' DAY) AND CURRENT_DATE ORDER BY id DESC');
+		if (Object.keys(player).length > 5){
+			var lastId = Object.keys(player).length-1;
+			report_head = "\n<b>" + player[0].username + "</b> su " + decodePlatform(player[0].platform) + ":\n";
+			report_line = "";
+			report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1);
+			report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1);
+			report_line += calculateSym(lang_season_mmr[lang], player[0].season_mmr, player[lastId].season_mmr, 1);
+			if (report_line != ""){
+				report += report_head + report_line;
+				cnt++;
+			}
+		}
+	}
+	
+	if (cnt > 0) {
+		// bot.sendMessage(last_chat_id, report, html);
+		bot.sendMessage(20471035, report, html);
+		console.log("Data report sent for group " + last_chat_id);
+	} else
+		console.log("No data report for group " + last_chat_id);
+}
+
+function calculateSym(text, first, last, float) {
+	if (first == last)
+		return "";
+	var sym = "⬇";
+	if (first > last)
+		sym = "⬆";
+	if (float == 1) {
+		last = parseFloat(last).toFixed(3);
+		first = parseFloat(first).toFixed(3);
+	}
+	return "<i>" + text + "</i>: " + last + " -> " + first + " " + sym + "\n";
+}
 
 function checkTeam() {
 	connection.query('SELECT id FROM team WHERE DATEDIFF(CURDATE(), CAST(tag_date As date)) > 15', function (err, rows, fields) {
