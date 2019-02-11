@@ -3262,8 +3262,8 @@ function generateReport(element, index, array) {
 	}
 	
 	if (cnt > 0) {
-		// bot.sendMessage(last_chat_id, report, html);
-		bot.sendMessage(20471035, report, html);
+		bot.sendMessage(last_chat_id, report, html);
+		//bot.sendMessage(20471035, report, html);
 		console.log("Data report sent for group " + last_chat_id);
 	} else
 		console.log("No data report for group " + last_chat_id);
