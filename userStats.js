@@ -76,7 +76,6 @@ var validLang = ["en", "it"];
 var lang_main_1 = [];
 var lang_main_2 = [];
 var lang_main_3 = [];
-var lang_main_4 = [];
 var lang_stats_userinfo = [];
 var lang_stats_usernotfound = [];
 var lang_stats_notfound = [];
@@ -98,8 +97,6 @@ lang_main_2["en"] = " messages counted";
 lang_main_2["it"] = " messaggi inviati";
 lang_main_3["en"] = " in this group";
 lang_main_3["it"] = " in questo gruppo";
-lang_main_4["en"] = " - <a href='https://storebot.me/bot/userstatstrackerbot'>Vote on Storebot</a>";
-lang_main_4["it"] = " - <a href='https://storebot.me/bot/userstatstrackerbot'>Vota sullo Storebot</a>";
 lang_stats_userinfo["en"] = "Send user informations";
 lang_stats_userinfo["it"] = "Invia informazioni utente";
 lang_stats_usernotfound["en"] = "User not found";
@@ -184,7 +181,7 @@ bot.onText(/^\/start/i, function (message) {
 			if (chat_cnt > 0)
 				extra = ", " + String(formatNumber(chat_cnt)) + lang_main_3[lang];
 					
-			bot.sendMessage(message.chat.id, lang_main_1[lang] + String(formatNumber(Math.round(global_cnt/1000)*1000)) + lang_main_2[lang] + extra + lang_main_4[lang], no_preview);
+			bot.sendMessage(message.chat.id, lang_main_1[lang] + String(formatNumber(Math.round(global_cnt/1000)*1000)) + lang_main_2[lang] + extra, no_preview);
 		});
 	});
 });

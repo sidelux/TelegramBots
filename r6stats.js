@@ -238,7 +238,7 @@ var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
 var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan","Maverick","Clash","Nomad","Kaid"];
 var lang_main = [];
-var lang_storebot = [];
+var lang_stats = [];
 var lang_startme = [];
 var lang_changed = [];
 var lang_invalid_lang = [];
@@ -502,8 +502,8 @@ var lang_report_header_month = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
-lang_storebot["it"] = "%n operatori registrati, %s statistiche memorizzate - <a href='https://storebot.me/bot/r6siegestatsbot'>Vota sullo Storebot</a>";
-lang_storebot["en"] = "%n operators registered, %s stats saved - <a href='https://storebot.me/bot/r6siegestatsbot'>Vote on Storebot</a>";
+lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate";
+lang_stats["en"] = "%n operators registered, %s stats saved";
 lang_startme["it"] = "Avviami in privato prima di usare il comando";
 lang_startme["en"] = "Start me in private mode before use";
 lang_changed["it"] = "Lingua modificata!";
@@ -1086,7 +1086,7 @@ bot.onText(/^\/start/i, function (message) {
 		connection.query("SELECT COUNT(1) As cnt FROM user UNION SELECT COUNT(1) As cnt FROM player_history", function (err, rows) {
 			if (err) throw err;
 
-			var stats_text = "\n" + lang_storebot[lang];
+			var stats_text = "\n" + lang_stats[lang];
 			stats_text = stats_text.replace("%n", formatNumber(rows[0].cnt));
 			stats_text = stats_text.replace("%s", formatNumber(rows[1].cnt));
 
