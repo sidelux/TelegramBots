@@ -584,8 +584,8 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
-lang_last_news["it"] = "<b>ULTIMI AGGIORNAMENTI:</b>\n08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
-lang_last_news["en"] = "<b>LATEST UPDATES:</b>\n02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
+lang_last_news["it"] = "<b>ULTIMI AGGIORNAMENTI:</b>\n22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
+lang_last_news["en"] = "<b>LATEST UPDATES:</b>\n02/22/19 - Added support for Gridlock and Mozzie\n02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata:";
