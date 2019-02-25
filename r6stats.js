@@ -46,8 +46,10 @@ class RainbowSixApi {
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
 
-						if (objResp.players[ubi_id] == undefined)
+						if (objResp.players[ubi_id] == undefined) {
+							console.log(objResp);
 							return reject("User not found (1) - " + username);
+						}
 
 						var objOps = objResp.players[ubi_id];
 						return resolve(objOps);
@@ -76,8 +78,10 @@ class RainbowSixApi {
 						if (objResp.error != undefined)
 							return reject(objResp.error.message);
 
-						if (objResp.players[ubi_id] == undefined)
+						if (objResp.players[ubi_id] == undefined) {
+							console.log(objResp);
 							return reject("User not found (0) - " + username);
+						}
 
 						objStats.profile_id = objResp.players[ubi_id].profile_id;
 						objStats.username = objResp.players[ubi_id].nickname;
