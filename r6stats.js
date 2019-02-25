@@ -1040,13 +1040,13 @@ var reportType = 0;
 var j = Schedule.scheduleJob('0 10 * * 1', function () {
 	console.log(getNow("it") + " Weekly report generation called from job");
 	reportType = 1;
-	reportProgress();
+	reportProgress(-1);
 });
 
 var j = Schedule.scheduleJob('0 10 1 * *', function () {
 	console.log(getNow("it") + " Monthly report generation called from job");
 	reportType = 2;
-	reportProgress();
+	reportProgress(-1);
 });
 
 bot.onText(/^\/start/i, function (message) {
@@ -3200,7 +3200,7 @@ bot.onText(/^\/report(?:@\w+)?/i, function (message, match) {
 	if (message.from.id == 20471035) {
 		console.log(getNow("it") + " Report generation called manually");
 		reportType = 1;
-		reportProgress();
+		reportProgress(message.chat.id);
 	}
 });
 
@@ -3214,8 +3214,13 @@ function updateChatId(from_id, chat_id) {
 	}
 }
 
-function reportProgress() {
-	connection.query('SELECT last_chat_id, lang FROM user WHERE last_chat_id IS NOT NULL AND report = 1 GROUP BY last_chat_id', function (err, rows, fields) {
+function reportProgress(chat_id) {
+	var query = "";
+	if (chat_id != -1)
+		query = "SELECT last_chat_id, lang FROM user WHERE last_chat_id = '" + chat_id + "' AND report = 1 GROUP BY last_chat_id";
+	else
+		query = "SELECT last_chat_id, lang FROM user WHERE last_chat_id IS NOT NULL AND report = 1 GROUP BY last_chat_id";
+	connection.query(query, function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -3244,10 +3249,10 @@ function generateReport(element, index, array) {
 	
 	var lastId;
 	var player;
-	var player_list = connection_sync.query('SELECT default_username, default_platform FROM user WHERE last_chat_id = "' + last_chat_id + '"');
+	var player_list = connection_sync.query('SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND last_chat_id = "' + last_chat_id + '"');
 	for (var i = 0, len = Object.keys(player_list).length; i < len; i++) {
 		player = connection_sync.query('SELECT username, platform, ranked_wl, ranked_kd, season_mmr FROM player_history WHERE username = "' + player_list[i].default_username + '" AND platform = "' + player_list[i].default_platform + '" AND insert_date BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL ' + intervalDays + ' DAY) AND CURRENT_DATE ORDER BY id DESC');
-		if (Object.keys(player).length > 5){
+		if (Object.keys(player).length > 1){
 			var lastId = Object.keys(player).length-1;
 			report_head = "\n<b>" + player[0].username + "</b> su " + decodePlatform(player[0].platform) + ":\n";
 			report_line = "";
@@ -3263,7 +3268,6 @@ function generateReport(element, index, array) {
 	
 	if (cnt > 0) {
 		bot.sendMessage(last_chat_id, report, html);
-		//bot.sendMessage(20471035, report, html);
 		console.log("Data report sent for group " + last_chat_id);
 	} else
 		console.log("No data report for group " + last_chat_id);
