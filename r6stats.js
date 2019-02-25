@@ -1934,9 +1934,13 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				platform = rows[0].default_platform;
 		}else{
 			if (match[1] == undefined){
-				if (message.reply_to_message != undefined)
-					username = message.reply_to_message.from.username;
-				else if (rows[0].default_username != null)
+				if (message.reply_to_message != undefined) {
+					var user = connection_sync.query("SELECT default_username FROM user WHERE account_id = " + message.reply_to_message.from.id);
+					if (Object.keys(user).length > 0)
+						username = user[0].default_username;
+					else
+						username = message.reply_to_message.from.username;
+				} else if (rows[0].default_username != null)
 					username = rows[0].default_username;
 				else{
 					bot.sendMessage(message.chat.id, lang_invalid_user[lang]);
