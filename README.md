@@ -4,7 +4,7 @@ Un archivio di bot creati da Edoardo Cortese con il modulo "node-telegram-bot-ap
 
 ## Lista Bot
 
-* [@compactorbot](http://telegram.me/compactorbot) - Compatta i messaggi consecutivi nei gruppi su Telegram!
+* [@Compactorbot](http://telegram.me/compactorbot) - Compatta i messaggi consecutivi nei gruppi su Telegram!
 * [@R6SiegeStatsbot](http://telegram.me/r6siegestatsbot) - Consulta le tue statistiche su Rainbow Six Siege, confrontale con gli altri giocatori e molto altro!
 * [@UserStatsTrackerbot](http://telegram.me/userstatstrackerbot) - Tieni traccia del conteggio dei messaggi inviati per ogni utente globalmente su Telegram!
 

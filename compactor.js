@@ -56,6 +56,9 @@ var mergeMessages = [];
 
 bot.on('message', function (message) {
 	if (message.chat.id < 0) {
+		if (message.text != undefined)		
+			if (message.text.startsWith("/"))
+				console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 		if ((message.from.is_bot == 0) && (message.text != undefined) && (message.text.indexOf("http") == -1)){
 			if ((message.reply_to_message == undefined) && (!message.text.startsWith("/")) && (message.forward_from == undefined)){
 				if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
@@ -100,3 +103,25 @@ bot.onText(/^\/check/i, function (message) {
 	} else
 		bot.sendMessage(message.chat.id, "You can use this command only in a group");
 });
+
+function addZero(i) {
+	if (i < 10)
+		i = "0" + i;
+	return i;
+}
+
+function getNow(lang, obj) {
+	var d = new Date();
+	obj = typeof obj !== 'undefined' ? obj : false;
+
+	var datetime;
+	if (lang == "it") {
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else if (lang == "en") {
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else
+		datetime = "Language not specified";
+	if (obj == true)
+		datetime = new Date(datetime);
+	return datetime;
+}
