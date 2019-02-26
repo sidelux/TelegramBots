@@ -73,9 +73,9 @@ bot.on('message', function (message) {
 						mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
 				} else
 					mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
-			}else
+			} else
 				mergeMessages[message.chat.id] = "";	// skip replies, commands and forwards
-		}else
+		} else
 			mergeMessages[message.chat.id] = "";	// skip bots
 	}
 });
