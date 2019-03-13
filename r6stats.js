@@ -2826,41 +2826,41 @@ function mapLoadout(itemOrig, lang){
 function mapRank(rank, lang){	
 	if (rank < 1399)
 		return lang_rank_copper4[lang];
-	else if ((rank >= 1400) && (rank < 1499))
+	else if ((rank >= 1399) && (rank < 1499))
 		return lang_rank_copper3[lang];
-	else if ((rank >= 1500) && (rank < 1599))
+	else if ((rank >= 1499) && (rank < 1599))
 		return lang_rank_copper2[lang];
-	else if ((rank >= 1600) && (rank < 1699))
+	else if ((rank >= 1599) && (rank < 1699))
 		return lang_rank_copper1[lang];
-	else if ((rank >= 1700) && (rank < 1799))
+	else if ((rank >= 1699) && (rank < 1799))
 		return lang_rank_bronze4[lang];
-	else if ((rank >= 1800) && (rank < 1899))
+	else if ((rank >= 1799) && (rank < 1899))
 		return lang_rank_bronze3[lang];
-	else if ((rank >= 1900) && (rank < 1999))
+	else if ((rank >= 1899) && (rank < 1999))
 		return lang_rank_bronze2[lang];
-	else if ((rank >= 2000) && (rank < 2099))
+	else if ((rank >= 1999) && (rank < 2099))
 		return lang_rank_bronze1[lang];
-	else if ((rank >= 2100) && (rank < 2199))
+	else if ((rank >= 2099) && (rank < 2199))
 		return lang_rank_silver4[lang];
-	else if ((rank >= 2200) && (rank < 2299))
+	else if ((rank >= 2199) && (rank < 2299))
 		return lang_rank_silver3[lang];
-	else if ((rank >= 2300) && (rank < 2399))
+	else if ((rank >= 2299) && (rank < 2399))
 		return lang_rank_silver2[lang];
-	else if ((rank >= 2400) && (rank < 2499))
+	else if ((rank >= 2399) && (rank < 2499))
 		return lang_rank_silver1[lang];
-	else if ((rank >= 2500) && (rank < 2699))
+	else if ((rank >= 2499) && (rank < 2699))
 		return lang_rank_gold4[lang];
-	else if ((rank >= 2700) && (rank < 2899))
+	else if ((rank >= 2699) && (rank < 2899))
 		return lang_rank_gold3[lang];
-	else if ((rank >= 2900) && (rank < 3099))
+	else if ((rank >= 2899) && (rank < 3099))
 		return lang_rank_gold2[lang];
-	else if ((rank >= 3100) && (rank < 3299))
+	else if ((rank >= 3099) && (rank < 3299))
 		return lang_rank_gold1[lang];
-	else if ((rank >= 3300) && (rank < 3699))
+	else if ((rank >= 3299) && (rank < 3699))
 		return lang_rank_platinum3[lang];
-	else if ((rank >= 3700) && (rank < 4099))
+	else if ((rank >= 3699) && (rank < 4099))
 		return lang_rank_platinum2[lang];
-	else if ((rank >= 4100) && (rank < 4499))
+	else if ((rank >= 4099) && (rank < 4499))
 		return lang_rank_platinum1[lang];
 	else
 		return lang_rank_diamond[lang];
