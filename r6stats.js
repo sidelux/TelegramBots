@@ -596,11 +596,11 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
-lang_last_news["it"] = 	"<b>ULTIMI AGGIORNAMENTI:</b>\n" +
+lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"11/03/19 - Completata l'integrazione di Gridlock e Mozzie e aggiunto il comando /r6info\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
-lang_last_news["en"] = 	"<b>LATEST UPDATES:</b>\n" +
+lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
 						"03/11/19 - Finished Gridlock and Mozzie integration and added /r6info command\n" +
 						"02/22/19 - Added support for Gridlock and Mozzie\n" +
 						"02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
@@ -2691,7 +2691,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operator");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /loadout");
 			return;
 		}
 
