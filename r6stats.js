@@ -2561,6 +2561,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 			return;
 		}
 		if (operatorList.indexOf(match[1]) == -1){
+			match[1] = jsUcfirst(match[1]);
 			var sim = stringSimilarity.findBestMatch(match[1], operatorList);
 			if (sim.bestMatch.rating >= 0.6)
 				match[1] = sim.bestMatch.target;
