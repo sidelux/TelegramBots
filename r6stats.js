@@ -32,7 +32,7 @@ var stringSimilarity = require('string-similarity');
 class RainbowSixApi {
 	constructor() {}
 
-	stats(username, platform, extra) {
+	stats(username, platform, season, extra) {
 		return new Promise((resolve, reject) => {
 
 			var endpoint;
@@ -67,7 +67,7 @@ class RainbowSixApi {
 			}else{
 				var objStats = {};
 
-				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
+				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&season=" + season + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
 					if(!error && response.statusCode == '200') {
 						var objResp = JSON.parse(body);
@@ -241,6 +241,7 @@ var validLang = ["en", "it"];
 var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
 var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan","Maverick","Clash","Nomad","Kaid","Mozzie","Gridlock"];
+var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon"];
 var lang_main = [];
 var lang_stats = [];
 var lang_startme = [];
@@ -510,6 +511,8 @@ var lang_info_notfound = [];
 var lang_info_notfound2 = [];
 var lang_info_result = [];
 
+var lang_seasons_intro = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate";
@@ -560,9 +563,10 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
+	"> '/seasons' - Permette di visualizzare la lista completa del rango ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
-	"> '/lastgraph' - Genere un grafico utilizzando l'ultimo parametro usato.\n" +
+	"> '/lastgraph' - Genera un grafico utilizzando l'ultimo parametro usato.\n" +
 	"> '/loadout <nome-operatore>' - Suggerisce un equipaggiamento per l'operatore specificato.\n" +
 	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
 	"> '/news <numero>' - Permette di visualizzare le ultime news ufficiali del gioco reperite da Steam.\n" +
@@ -581,6 +585,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
 	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
+	"> '/seasons' - Allow to print seasons ranks details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
 	"> '/lastgraph' - Generate a graph using last parameter used.\n" +
@@ -597,10 +602,12 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"26/03/19 - Aggiunto il comando /seasons\n" +
 						"11/03/19 - Completata l'integrazione di Gridlock e Mozzie e aggiunto il comando /r6info\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"03/26/19 - Added /seasons command\n" +
 						"03/11/19 - Finished Gridlock and Mozzie integration and added /r6info command\n" +
 						"02/22/19 - Added support for Gridlock and Mozzie\n" +
 						"02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
@@ -1057,6 +1064,9 @@ lang_info_notfound2["it"] = "Il nome utente e la piattaforma per l'utente selezi
 lang_info_notfound2["en"] = "Default username and platform for selected user are not memorized";
 lang_info_result["it"] = "Informazioni R6 per";
 lang_info_result["en"] = "R6 infos for";
+
+lang_seasons_intro["it"] = "<b>Classificazioni stagioni:</b>\n\n";
+lang_seasons_intro["en"] = "<b>Seasons ranking:</b>\n\n";
 
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1894,17 +1904,15 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 			bot.sendMessage(message.chat.id, lang_multiple_limit[lang], html);
 			return;
 		}
-		var responseStats = "";
+		
 		var text = "";
 		var textDone = 0;
 
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			for (i = 0; i < players.length; i++){
-				r6.stats(players[i], platform, 0).then(response => {
-					responseStats = response;
-
-					if (responseStats.level != undefined)
-						text += getDataLine(responseStats, lang) + "\n";
+				r6.stats(players[i], platform, -1, 0).then(response => {
+					if (response.level != undefined)
+						text += getDataLine(response, lang) + "\n";
 
 					textDone++;
 					if (textDone >= players.length)
@@ -2082,7 +2090,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				}
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username, platform, 0).then(response => {
+					r6.stats(username, platform, -1, 0).then(response => {
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
@@ -2092,7 +2100,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						}
 
 						var text = getData(responseStats, lang);
-						r6.stats(username, platform, 1).then(response => {
+						r6.stats(username, platform, -1, 1).then(response => {
 							var responseOps = response;
 
 							var ops = getOperators(responseOps);							
@@ -2370,7 +2378,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 
 		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(username1, platform, 0).then(response1 => {
+			r6.stats(username1, platform, -1, 0).then(response1 => {
 
 				if (response1.platform == undefined){
 					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + platform + ")", html);
@@ -2379,7 +2387,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 				}
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username2, platform, 0).then(response2 => {
+					r6.stats(username2, platform, -1, 0).then(response2 => {
 
 						if (response2.platform == undefined){
 							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + platform + ")", html);
@@ -2441,7 +2449,79 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 	});
 });
 
-bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (message, match) {
+bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /seasons");
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			return;
+		}
+
+		var default_username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			return;
+		}
+
+		var default_platform = rows[0].default_platform;
+		
+		console.log(getNow("it") + " Request seasons data for " + default_username + " on " + default_platform);
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			r6.stats(default_username, default_platform, -1, 0).then(response => {
+				var responseStats = response;
+				
+				if (responseStats.platform == undefined){
+					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+					console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
+					return;
+				}
+				
+				var lastSeason = responseStats.season_id;
+				var seasonArray = [];
+				var textDone = 0;
+				for(i = 1; i < lastSeason+1; i++){
+					r6.stats(default_username, default_platform, i, 0).then(response => {
+						if ((response.season_id != undefined) && (response.season_rank != 0)) {
+							seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + "\n";
+						}
+						textDone++;
+						if (textDone >= lastSeason)
+							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), html);
+					}).catch(error => {
+						textDone++;
+						if (textDone >= lastSeason)
+							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), html);
+					});
+				}
+			});
+		});
+	});
+});
+
+function sortSeasons(seasonArray){
+	var text = "";
+	seasonArray = seasonArray.reverse();
+	for(i = 0; i < seasonArray.length; i++){
+		if (seasonArray[i] != undefined)
+			text += seasonArray[i];
+	}
+	return text;
+}
+
+bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2472,7 +2552,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 
 		console.log(getNow("it") + " Request operators data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(default_username, default_platform, 1).then(response => {
+			r6.stats(default_username, default_platform, -1, 1).then(response => {
 				var text = "<b>" + lang_operator_title[lang] + " - " + lang_operator_plays[lang] + " - " + lang_operator_wins[lang] + " - " + lang_operator_losses[lang] + " - " + lang_operator_kills[lang] + " - " + lang_operator_deaths[lang] + " - " + lang_operator_playtime[lang] + " - " + lang_operator_specials[lang] + "</b>\n";
 
 				var operators = response;
@@ -2576,10 +2656,10 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 		console.log(getNow("it") + " Request operator data for " + operator_name + " from " + message.from.username);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 
-			r6.stats(default_username, default_platform, 2).then(response => {
+			r6.stats(default_username, default_platform, -1, 2).then(response => {
 				var operators_info = response;
 
-				r6.stats(default_username, default_platform, 1).then(response => {
+				r6.stats(default_username, default_platform, -1, 1).then(response => {
 
 					var operators = Object.keys(response);
 
@@ -3434,7 +3514,7 @@ function setAutoTrack(element, index, array) {
 	var username = element.default_username;
 	var platform = element.default_platform;
 
-	r6.stats(username, platform, 0).then(response => {
+	r6.stats(username, platform, -1, 0).then(response => {
 
 		var responseStats = response;
 
@@ -3451,7 +3531,7 @@ function setAutoTrack(element, index, array) {
 			}
 
 			if (toSave == 1){
-				r6.stats(username, platform, 1).then(response => {
+				r6.stats(username, platform, -1, 1).then(response => {
 					var responseOps = response;
 					if (toSave == 1)
 						saveData(responseStats, responseOps);
