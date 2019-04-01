@@ -90,6 +90,11 @@ class RainbowSixApi {
 						objStats.xp = objResp.players[ubi_id].xp;									
 						objStats.season_id = objResp.players[ubi_id].season;
 						objStats.season_rank = objResp.players[ubi_id].rank;
+						
+						var d = new Date();
+						if ((d.getDay() == 1) && (d.getMonth() == 3))
+							objStats.season_rank = 20;
+						
 						objStats.season_mmr = objResp.players[ubi_id].mmr;
 						objStats.season_max_mmr = objResp.players[ubi_id].max_mmr;
 
@@ -512,6 +517,7 @@ var lang_info_notfound2 = [];
 var lang_info_result = [];
 
 var lang_seasons_intro = [];
+var lang_rank_data = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -564,6 +570,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
 	"> '/seasons' - Permette di visualizzare la lista completa del rango ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
+	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
 	"> '/lastgraph' - Genera un grafico utilizzando l'ultimo parametro usato.\n" +
@@ -586,6 +593,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/seasons' - Allow to print seasons ranks details specified as parameter using /setusername and /setplatform.\n" +
+	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
 	"> '/lastgraph' - Generate a graph using last parameter used.\n" +
@@ -602,11 +610,13 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"01/04/19 - Aggiunto il comando /rank\n" +
 						"26/03/19 - Aggiunto il comando /seasons\n" +
 						"11/03/19 - Completata l'integrazione di Gridlock e Mozzie e aggiunto il comando /r6info\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"04/01/19 - Added /rank command\n" +
 						"03/26/19 - Added /seasons command\n" +
 						"03/11/19 - Finished Gridlock and Mozzie integration and added /r6info command\n" +
 						"02/22/19 - Added support for Gridlock and Mozzie\n" +
@@ -1068,6 +1078,9 @@ lang_info_result["en"] = "R6 infos for";
 lang_seasons_intro["it"] = "<b>Classificazioni stagioni:</b>\n\n";
 lang_seasons_intro["en"] = "<b>Seasons ranking:</b>\n\n";
 
+lang_rank_data["it"] = "<b>Il tuo rango:</b>";
+lang_rank_data["en"] = "<b>Your rank:</b>";
+
 callNTimes(3600000, function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
@@ -1082,7 +1095,7 @@ var j = Schedule.scheduleJob('0 10 * * 1', function () {
 	reportProgress(-1);
 });
 
-var j = Schedule.scheduleJob('0 10 1 * *', function () {
+var j = Schedule.scheduleJob('0 12 1 * *', function () {
 	console.log(getNow("it") + " Monthly report generation called from job");
 	reportType = 2;
 	reportProgress(-1);
@@ -2139,6 +2152,59 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 	});
 });
 
+bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank");
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			return;
+		}
+
+		var username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			return;
+		}
+
+		var platform = rows[0].default_platform;
+
+		console.log(getNow("it") + " Request rank data for " + username + " on " + platform);
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			bot.sendChatAction(message.chat.id, "typing").then(function () {
+				r6.stats(username, platform, -1, 0).then(response => {
+					var responseStats = response;
+
+					if (responseStats.platform == undefined){
+						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+						console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
+						return;
+					}
+
+					var text = getRankData(responseStats, lang);
+					bot.sendMessage(message.chat.id, text, html);
+				}).catch(error => {
+					console.log(error);
+					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+					console.log(getNow("it") + " User data not found for " + username + " on " + platform);
+				});
+			});
+		});
+	});
+});
+
 bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -2242,13 +2308,19 @@ function getData(response, lang){
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + "\n" +
+		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + icon + "\n" +
 		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + "\n" +
 		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + "\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
 		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure) + "\n" +
 		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage) + "\n" +
 		"<b>" + lang_mode_bomb[lang] + "</b>: " + formatNumber(response.mode_bomb) + "\n"; // a capo finale
+
+	return text;
+}
+
+function getRankData(response, lang){
+	var text = lang_rank_data[lang] + " " + numToRank(response.season_rank, lang) + " (" + lang_season_mmr[lang] + " " + Math.round(response.season_mmr) + ")";
 
 	return text;
 }
