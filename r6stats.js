@@ -2308,7 +2308,7 @@ function getData(response, lang){
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + icon + "\n" +
+		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + "\n" +
 		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + "\n" +
 		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + "\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
@@ -3455,8 +3455,16 @@ bot.onText(/^\/autotrack(?:@\w+)?/i, function (message, match) {
 
 bot.onText(/^\/report(?:@\w+)?/i, function (message, match) {
 	if (message.from.id == 20471035) {
-		console.log(getNow("it") + " Report generation called manually");
+		console.log(getNow("it") + " Weekly report generation called manually");
 		reportType = 1;
+		reportProgress(message.chat.id);
+	}
+});
+
+bot.onText(/^\/mreport(?:@\w+)?/i, function (message, match) {
+	if (message.from.id == 20471035) {
+		console.log(getNow("it") + " Monthly report generation called manually");
+		reportType = 2;
 		reportProgress(message.chat.id);
 	}
 });
