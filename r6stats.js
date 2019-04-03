@@ -46,10 +46,8 @@ class RainbowSixApi {
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
 
-						if (objResp.players[ubi_id] == undefined) {
-							console.log(objResp);
+						if (objResp.players[ubi_id] == undefined)
 							return reject("User not found (1) - " + username);
-						}
 
 						var objOps = objResp.players[ubi_id];
 						return resolve(objOps);
@@ -78,10 +76,8 @@ class RainbowSixApi {
 						if (objResp.error != undefined)
 							return reject(objResp.error.message);
 
-						if (objResp.players[ubi_id] == undefined) {
-							console.log(objResp);
+						if (objResp.players[ubi_id] == undefined)
 							return reject("User not found (0) - " + username);
-						}
 
 						objStats.profile_id = objResp.players[ubi_id].profile_id;
 						objStats.username = objResp.players[ubi_id].nickname;
@@ -106,9 +102,9 @@ class RainbowSixApi {
 						request.get(endpoint, (error, response, body) => {
 							if(!error && response.statusCode == '200') {
 								var objResp = JSON.parse(body);
-
+								
 								if (objResp.players[ubi_id] == undefined)
-									return reject("User stats not found (0) - " + username);
+									return reject("User stats empty - " + username);
 
 								objStats.ranked_plays = objResp.players[ubi_id].rankedpvp_matchplayed;
 								objStats.ranked_wins = objResp.players[ubi_id].rankedpvp_matchwon;
@@ -1081,7 +1077,7 @@ lang_seasons_intro["en"] = "<b>Seasons ranking:</b>\n\n";
 lang_rank_data["it"] = "<b>Il tuo rango:</b>";
 lang_rank_data["en"] = "<b>Your rank:</b>";
 
-callNTimes(3600000, function () {
+var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
 	checkTeam();
@@ -1089,13 +1085,13 @@ callNTimes(3600000, function () {
 
 var reportType = 0;
 
-var j = Schedule.scheduleJob('0 10 * * 1', function () {
+var j1 = Schedule.scheduleJob('0 10 * * 1', function () {
 	console.log(getNow("it") + " Weekly report generation called from job");
 	reportType = 1;
 	reportProgress(-1);
 });
 
-var j = Schedule.scheduleJob('0 12 1 * *', function () {
+var j2 = Schedule.scheduleJob('0 12 1 * *', function () {
 	console.log(getNow("it") + " Monthly report generation called from job");
 	reportType = 2;
 	reportProgress(-1);
@@ -1262,7 +1258,8 @@ function saveData(responseStats, responseOps){
 	var ops = getOperators(responseOps);
 
 	if (responseStats.profile_id == undefined){
-		console.log(getNow("it") + " Data undefined for " + responseStats.username + ", flagged with undefined_track = 1");
+		console.log(getNow("it") + " Data undefined for " + responseStats.username + ", flagged with undefined_track (user not exists)");
+		console.log(responseStats);
 		connection.query('UPDATE user SET undefined_track = 1 WHERE default_username = "' + responseStats.username + '"', function (err, rows) {
 			if (err) throw err;
 		});
@@ -1322,7 +1319,7 @@ function saveData(responseStats, responseOps){
 						 ops[10] + ',' +
 						 'NOW())', function (err, rows) {
 			if (err) throw err;
-			console.log(getNow("it") + " Saved user data for " + responseStats.username);
+			// console.log(getNow("it") + " Saved user data for " + responseStats.username);
 		});
 	}
 }
@@ -3452,8 +3449,12 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			console.log("Use this in reply mode");
 			return;
 		}
-		var text = message.reply_to_message.text.replace(/[^a-zA-Z0-9\-_\s]/g, "");
-		var author = message.reply_to_message.from.username;
+		var text = message.reply_to_message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, "");
+		var author;
+		if (message.reply_to_message.from.username != undefined)
+			author = "@" + message.reply_to_message.from.username;
+		else if (message.reply_to_message.from.first_name != undefined)
+			author = message.reply_to_message.from.first_name;
 		var response = "";
 		
 		if (text.search(/recluto|recluta/gmi) == -1){
@@ -3461,7 +3462,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			return;
 		}
 		var clanNameFound = "";
-		var clanName = text.match(/clan [\w ]+$|team [\w ]+$/gmi);
+		var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
 		if (clanName != null)
 			clanNameFound = " " + jsUcall(clanName[0]);
 		else {
@@ -3509,7 +3510,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			return;
 		}
 		
-		response += "\n<i>Contattare</i> @" + author
+		response += "\n<i>Contattare</i> " + author
 		// bot.deleteMessage(message.chat.id, message.message_id);
 		// bot.deleteMessage(message.chat.id, message.reply_to_message.message_id);
 		
@@ -3521,6 +3522,7 @@ bot.onText(/^\/autotrack(?:@\w+)?/i, function (message, match) {
 	if (message.from.id == 20471035) {
 		console.log(getNow("it") + " Autotrack called manually");
 		autoTrack();
+		bot.sendMessage(messsage.chat.id, "Done");
 	}
 });
 
@@ -3647,17 +3649,14 @@ function deleteTeam(element, index, array) {
 };
 
 function autoTrack(){
-	connection.query("SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL ORDER BY last_force_update DESC, last_update ASC, undefined_track ASC", function (err, rows, fields) {
+	connection.query("SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND undefined_track = 0 ORDER BY last_force_update DESC, last_update ASC", function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length > 0)
+		if (Object.keys(rows).length > 0){
+			console.log("Found " + Object.keys(rows).length + " users to check");
 			rows.forEach(setAutoTrack);
-		else {
-			connection.query("UPDATE user SET undefined_track = 0", function (err, rows, fields) {
-				if (err) throw err;
-				console.log("Resetting undefined track for all users...");
-			});
-		}
+		}else
+			console.log("No users found");
 	});
 }
 
@@ -3675,11 +3674,15 @@ function setAutoTrack(element, index, array) {
 			var toSave = 0;
 			if (Object.keys(rows).length == 0){
 				toSave = 1;
-				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (new)");
+				console.log(getNow("it") + " " + username + " on " + platform + " created");
 			}else if ((rows[0].ranked_playtime < responseStats.ranked_playtime) || (rows[0].casual_playtime < responseStats.casual_playtime)){
 				toSave = 1;
-				console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " saved (update)");
+				console.log(getNow("it") + " " + username + " on " + platform + " updated");
 			}
+			/*
+			else
+				console.log(getNow("it") + " " + username + " on " + platform + " skipped");
+			*/
 
 			if (toSave == 1){
 				r6.stats(username, platform, -1, 1).then(response => {
