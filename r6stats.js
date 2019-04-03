@@ -3446,6 +3446,77 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 	});
 });
 
+bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
+	if (message.from.id == 20471035) {
+		if (message.reply_to_message == undefined){
+			console.log("Use this in reply mode");
+			return;
+		}
+		var text = message.reply_to_message.text.replace(/[^a-zA-Z0-9\-_\s]/g, "");
+		var author = message.reply_to_message.from.username;
+		var response = "";
+		
+		if (text.search(/recluto|recluta/gmi) == -1){
+			console.log("Recruit text not found");
+			return;
+		}
+		var clanNameFound = "";
+		var clanName = text.match(/clan [\w ]+$|team [\w ]+$/gmi);
+		if (clanName != null)
+			clanNameFound = " " + jsUcall(clanName[0]);
+		else {
+			var team = text.search(/team/gmi);
+			if (team != -1)
+				response += "<b>Team</b>: Sì\n";
+			var clan = text.search(/clan/gmi);
+			if (clan != -1)
+				response += "<b>Clan</b>: Sì\n";
+		}
+		var header = "🔰 <b>Reclutamento" + clanNameFound + "</b> 🔰\n";
+		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi/gmi);
+		if (age != null)
+			response += "<b>Età</b>: " + age[0] + "\n";
+		var rank = text.match(/(platino|oro|argento) (\d){1}|(platino|oro|argento)/gmi);
+		if (rank != null) {
+			for (var i = 0; i < rank.length; i++)
+				rank[i] = jsUcfirst(rank[i].toLowerCase());
+			response += "<b>Rango</b>: " + rank.join(", ") + "\n";
+		}
+		var platform = text.match(/pc|ps4|xbox/gmi);
+		if (platform != null) {
+			for (var i = 0; i < platform.length; i++)
+				platform[i] = jsUcfirst(platform[i].toLowerCase());
+			response += "<b>Piattaforma</b>: " + platform.join(", ") + "\n";
+		} else
+			response += "<i>Specifica la piattaforma!</i>\n";
+		var rateo = text.match(/(\d).(\d)|(\d),(\d)/gmi);
+		if (rateo != null)
+			response += "<b>Rateo</b>: " + rateo[0] + "\n";
+		var competitive = text.search(/competitivo|esl|cw/gmi);
+		if (competitive != -1) {
+			var competitive_more = text.search(/esl|cw/gmi);
+			if (competitive_more != -1)
+				response += "<b>Competitivo</b>: " + jsUcfirst(competitive_more[0].toLowerCase()) + "\n";
+			else
+				response += "<b>Competitivo</b>: Sì\n";
+		}
+		var audition = text.search(/provino|provini/gmi);
+		if (audition != -1)
+			response += "<b>Provino</b>: Sì\n";
+		
+		if (response == ""){
+			console.log("Response empty");
+			return;
+		}
+		
+		response += "\n<i>Contattare</i> @" + author
+		// bot.deleteMessage(message.chat.id, message.message_id);
+		// bot.deleteMessage(message.chat.id, message.reply_to_message.message_id);
+		
+		bot.sendMessage(20471035, header + response, html);
+	}
+});
+
 bot.onText(/^\/autotrack(?:@\w+)?/i, function (message, match) {
 	if (message.from.id == 20471035) {
 		console.log(getNow("it") + " Autotrack called manually");
@@ -3710,9 +3781,8 @@ function getNow(lang, obj) {
 		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
 		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-	} else {
+	} else
 		datetime = "Error";
-	}
 	if (obj == true)
 		datetime = new Date(datetime);
 	return datetime;
@@ -3734,6 +3804,12 @@ function toDate(lang, date) {
 
 function jsUcfirst(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function jsUcall(string) {
+    return string.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1);
+    });
 }
 
 function addZero(i) {
