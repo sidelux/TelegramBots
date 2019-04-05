@@ -3444,7 +3444,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
-	if (message.from.id == 20471035) {
+	if ((message.from.id == 20471035) || (message.from.id == 200492030)) {
 		if (message.reply_to_message == undefined){
 			console.log("Use this in reply mode");
 			return;
@@ -3474,7 +3474,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 				response += "<b>Clan</b>: Sì\n";
 		}
 		var header = "🔰 <b>Reclutamento" + clanNameFound + "</b> 🔰\n";
-		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi/gmi);
+		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi|([1-3][0-9]){1}/gmi);
 		if (age != null)
 			response += "<b>Età</b>: " + age[0] + "\n";
 		var rank = text.match(/(platino|oro|argento) (\d){1}|(platino|oro|argento)/gmi);
@@ -3495,8 +3495,8 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			response += "<b>Rateo</b>: " + rateo[0] + "\n";
 		var competitive = text.search(/competitivo|esl|cw/gmi);
 		if (competitive != -1) {
-			var competitive_more = text.search(/esl|cw/gmi);
-			if (competitive_more != -1)
+			var competitive_more = text.match(/esl|cw/gmi);
+			if (competitive_more != null)
 				response += "<b>Competitivo</b>: " + jsUcfirst(competitive_more[0].toLowerCase()) + "\n";
 			else
 				response += "<b>Competitivo</b>: Sì\n";
@@ -3511,10 +3511,9 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		}
 		
 		response += "\n<i>Contattare</i> " + author
-		// bot.deleteMessage(message.chat.id, message.message_id);
 		// bot.deleteMessage(message.chat.id, message.reply_to_message.message_id);
 		
-		bot.sendMessage(20471035, header + response, html);
+		bot.sendMessage(message.from.id, header + response, html);
 	}
 });
 
