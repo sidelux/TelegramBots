@@ -71,19 +71,18 @@ bot.on("inline_query", function (query) {
 	try {
 		result = math.eval(data);
 	} catch(error) {
-		console.error("Math error: " + error.message);
 		return;
 	}
 	
-	console.log(getNow("it") + " Math query from " + query.from.username);
+	console.log(getNow("it") + " Math query from " + query.from.username + ": " + data);
 	
 	bot.answerInlineQuery(query.id, [{
 		id: '0',
 		type: 'article',
 		title: 'Math result',
-		description: result,
+		description: result.toString(),
 		message_text: "Math query: " + data + "\nResult: " + result
-	}]);
+	}], {cache_time: 0});
 });
 
 String.prototype.replaceAll = function (search, replacement) {
