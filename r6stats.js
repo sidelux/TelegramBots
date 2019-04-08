@@ -87,9 +87,11 @@ class RainbowSixApi {
 						objStats.season_id = objResp.players[ubi_id].season;
 						objStats.season_rank = objResp.players[ubi_id].rank;
 						
+						/*
 						var d = new Date();
 						if ((d.getDay() == 1) && (d.getMonth() == 3))
 							objStats.season_rank = 20;
+						*/
 						
 						objStats.season_mmr = objResp.players[ubi_id].mmr;
 						objStats.season_max_mmr = objResp.players[ubi_id].max_mmr;
@@ -3211,7 +3213,7 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang]);
 					return;
 				}
-				connection.query("INSERT INTO team (group_id, name) VALUES (" + message.chat.id + ",'" + team_name + "')", function (err, rows, fields) {
+				connection.query("INSERT INTO team (group_id, name, tag_date) VALUES (" + message.chat.id + ",'" + team_name + "', NOW())", function (err, rows, fields) {
 					if (err) throw err;
 					var team_id = rows.insertId;
 					var role = 0;
@@ -3449,7 +3451,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			console.log("Use this in reply mode");
 			return;
 		}
-		var text = message.reply_to_message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, "");
+		var text = message.reply_to_message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
 		var author;
 		if (message.reply_to_message.from.username != undefined)
 			author = "@" + message.reply_to_message.from.username;
@@ -3474,10 +3476,10 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 				response += "<b>Clan</b>: Sì\n";
 		}
 		var header = "🔰 <b>Reclutamento" + clanNameFound + "</b> 🔰\n";
-		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi|([1-3][0-9]){1}/gmi);
+		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi|(\s[1-3][0-9]\s){1}/gmi);
 		if (age != null)
 			response += "<b>Età</b>: " + age[0] + "\n";
-		var rank = text.match(/(platino|oro|argento) (\d){1}|(platino|oro|argento)/gmi);
+		var rank = text.match(/(platino|oro|argento) (\d){1}|(platino|oro|argento)(\d){1}|(platino|oro|argento)/gmi);
 		if (rank != null) {
 			for (var i = 0; i < rank.length; i++)
 				rank[i] = jsUcfirst(rank[i].toLowerCase());
@@ -3490,7 +3492,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			response += "<b>Piattaforma</b>: " + platform.join(", ") + "\n";
 		} else
 			response += "<i>Specifica la piattaforma!</i>\n";
-		var rateo = text.match(/(\d).(\d)|(\d),(\d)/gmi);
+		var rateo = text.match(/((\d)\.(\d))|((\d)\,(\d))/gmi);
 		if (rateo != null)
 			response += "<b>Rateo</b>: " + rateo[0] + "\n";
 		var competitive = text.search(/competitivo|esl|cw/gmi);
