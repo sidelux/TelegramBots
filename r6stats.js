@@ -516,6 +516,12 @@ var lang_info_result = [];
 
 var lang_seasons_intro = [];
 var lang_rank_data = [];
+var lang_search_mates = [];
+var lang_search_join = [];
+var lang_search_mates_lbl = [];
+var lang_search_already = [];
+var lang_search_ok = [];
+var lang_invalid_find = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -579,7 +585,8 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
-	"> '/r6info' - (in risposta) Consente di visualizzare le informazioni salvate dell'utente come username e piattaforma\n" +
+	"> '/r6info' - (in risposta) Consente di visualizzare le informazioni salvate dell'utente come username e piattaforma.\n" +
+	"> '/find <piattaforma>' - Crea un messaggio dove gli altri giocatori possono partecipare rendendosi disponibili.\n" +
 	"> '/team <nome-team> <utenti>' - Crea un team e fornisce la possibilità di taggarne tutti i membri.\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"> '/setreport' - Attiva o disattiva il report statistiche del gruppo in cui si è usato /stats l'ultima volta.\n" +
@@ -602,18 +609,21 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/lang <language>' - Change bot language.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
-	"> '/r6info' - (in reply) Allow to show infos about saved user like username and platform\n" +
+	"> '/r6info' - (in reply) Allow to show infos about saved user like username and platform.\n" +
+	"> '/find <platform>' - Make a message where other player can join.\n" +
 	"> '/team <team-name> <users>' - Create a team and offer the possibility to tag all members.\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"09/04/19 - Aggiunto il comando /find\n" +
 						"01/04/19 - Aggiunto il comando /rank\n" +
 						"26/03/19 - Aggiunto il comando /seasons\n" +
 						"11/03/19 - Completata l'integrazione di Gridlock e Mozzie e aggiunto il comando /r6info\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"04/09/19 - Added /find command\n" +
 						"04/01/19 - Added /rank command\n" +
 						"03/26/19 - Added /seasons command\n" +
 						"03/11/19 - Finished Gridlock and Mozzie integration and added /r6info command\n" +
@@ -1078,6 +1088,19 @@ lang_seasons_intro["en"] = "<b>Seasons ranking:</b>\n\n";
 
 lang_rank_data["it"] = "<b>Il tuo rango:</b>";
 lang_rank_data["en"] = "<b>Your rank:</b>";
+
+lang_search_mates["it"] = "sta cercando compagni su";
+lang_search_mates["en"] = "is looking for mates on";
+lang_search_join["it"] = "Partecipa!";
+lang_search_join["en"] = "Join!";
+lang_search_mates_lbl["it"] = "Partecipanti";
+lang_search_mates_lbl["en"] = "Mates";
+lang_search_already["it"] = "Stai già partecipando!";
+lang_search_already["en"] = "You are already joined!";
+lang_search_ok["it"] = "Partecipazione aggiunta!";
+lang_search_ok["en"] = "Join confirmed!";
+lang_invalid_find["it"] = "Specifica la piattaforma con /find <piattaforma>";
+lang_invalid_find["en"] = "Specify the platform with /find <platform>";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -3459,7 +3482,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			author = message.reply_to_message.from.first_name;
 		var response = "";
 		
-		if (text.search(/recluto|recluta/gmi) == -1){
+		if (text.search(/recluto|recluta|reclutiamo|cerchiamo/gmi) == -1){
 			console.log("Recruit text not found");
 			return;
 		}
@@ -3478,7 +3501,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		var header = "🔰 <b>Reclutamento" + clanNameFound + "</b> 🔰\n";
 		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi|(\s[1-3][0-9]\s){1}/gmi);
 		if (age != null)
-			response += "<b>Età</b>: " + age[0] + "\n";
+			response += "<b>Età</b>: " + age[0].trim() + "\n";
 		var rank = text.match(/(platino|oro|argento) (\d){1}|(platino|oro|argento)(\d){1}|(platino|oro|argento)/gmi);
 		if (rank != null) {
 			for (var i = 0; i < rank.length; i++)
@@ -3494,7 +3517,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			response += "<i>Specifica la piattaforma!</i>\n";
 		var rateo = text.match(/((\d)\.(\d))|((\d)\,(\d))/gmi);
 		if (rateo != null)
-			response += "<b>Rateo</b>: " + rateo[0] + "\n";
+			response += "<b>Rateo</b>: " + rateo[0].trim() + "\n";
 		var competitive = text.search(/competitivo|esl|cw/gmi);
 		if (competitive != -1) {
 			var competitive_more = text.match(/esl|cw/gmi);
@@ -3517,6 +3540,113 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		
 		bot.sendMessage(message.from.id, header + response, html);
 	}
+});
+
+bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) {
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /find");
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		var mark = {
+			parse_mode: "HTML"
+		};
+
+		if (match[1] != undefined){
+			var platform = match[1].toLowerCase();
+			if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
+				bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
+				return;
+			}
+		} else {
+			if (rows[0].default_platform != null)
+				var platform = rows[0].default_platform;
+			else {
+				bot.sendMessage(message.chat.id, lang_invalid_find[lang]);
+				return;
+			}
+		}
+		
+		var platform_txt = decodePlatform(platform);
+		var author;
+		if (rows[0].default_username != null)
+			author = rows[0].default_username;
+		else if (message.from.username != undefined)
+			author = "@" + message.from.username;
+		else if (message.from.first_name != undefined)
+			author = message.from.first_name;
+		
+		var iKeys = [];
+		iKeys.push([{
+			text: lang_search_join[lang],
+			callback_data: "find:" + lang
+		}]);
+		
+		var opt = {
+			parse_mode: "HTML",
+			reply_markup: {
+				inline_keyboard: iKeys
+			}
+		}
+		
+		bot.sendMessage(message.chat.id, "👀 " + jsUcfirst(author) + " " + lang_search_mates[lang] + " " + platform_txt + "!", opt);
+	});
+});
+
+bot.on('callback_query', function (message) {
+	var split = message.data.split(":");
+	var lang = split[1];
+	
+	connection.query("SELECT default_username FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+	
+		var name;
+		if ((Object.keys(rows).length > 0) && (rows[0].default_username != null))
+			name = rows[0].default_username;
+		else if (message.from.username != undefined)
+			name = "@" + message.from.username;
+		else if (message.from.first_name != undefined)
+			name = message.from.first_name;
+		
+		var newtext = message.message.text;
+		if (newtext.toLowerCase().indexOf(name.toLowerCase()) != -1){
+			bot.answerCallbackQuery(message.id, {text: lang_search_already[lang]});
+			return;
+		}
+
+		name = jsUcfirst(name);
+		
+		if (message.message.text.indexOf(lang_search_mates_lbl[lang]) == -1)
+			newtext += "\n" + lang_search_mates_lbl[lang] + ": " + name;
+		else
+			newtext += ", " + name;		
+
+		var iKeys = [];
+		iKeys.push([{
+			text: lang_search_join[lang],
+			callback_data: "find:" + lang
+		}]);
+
+		bot.editMessageText(newtext, {
+			chat_id: message.message.chat.id,
+			message_id: message.message.message_id,
+			parse_mode: "HTML",
+			reply_markup: {
+				inline_keyboard: iKeys
+			}
+		});
+
+		bot.answerCallbackQuery(message.id, {text: lang_search_ok[lang]});
+	});
 });
 
 bot.onText(/^\/autotrack(?:@\w+)?/i, function (message, match) {
