@@ -1715,6 +1715,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 
 						preview = "";
 						if (challengesPreview[i] != null){
+							challengesPreview[i] = challengesPreview[i].replace("uat-", "");
 							if (challengesPreview[i].startsWith("https"))
 								preview = " | <a href='" + challengesPreview[i] + "'>" + lang_challenges_preview[lang] + "</a>";
 							else
