@@ -2041,6 +2041,9 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 		console.log(getNow("it") + " Request user data for " + username + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			connection.query('UPDATE user SET last_stats = NOW() WHERE account_id = ' + message.from.id, function (err, rows) {
+				if (err) throw err;
+			});
 			connection.query('SELECT * FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC', function (err, rows) {
 				if (err) throw err;
 
