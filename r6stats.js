@@ -3496,11 +3496,13 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			clanNameFound = " " + jsUcall(clanName[0]);
 		else {
 			var team = text.search(/team/gmi);
-			if (team != -1)
-				response += "<b>Team</b>: Sì\n";
 			var clan = text.search(/clan/gmi);
-			if (clan != -1)
-				response += "<b>Clan</b>: Sì\n";
+			if ((team != -1) || (clan != -1)) {
+				if (team != -1)
+					response += "<b>Tipo gruppo</b>: Team\n";
+				else
+					response += "<b>Tipo gruppo</b>: Clan\n";
+			}
 		}
 		var header = "🔰 <b>Reclutamento" + clanNameFound + "</b> 🔰\n";
 		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi|(\s[1-3][0-9]\s){1}/gmi);
