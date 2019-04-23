@@ -528,6 +528,11 @@ var lang_daily_report_header = [];
 var lang_daily_report_activated = [];
 var lang_daily_report_deactivated = [];
 
+var lang_inline_invite_join = [];
+var lang_inline_invite_title = [];
+var lang_inline_invite_desc = [];
+var lang_inline_invite_text = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate";
@@ -596,7 +601,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"> '/setreport' - Attiva o disattiva il report statistiche del gruppo in cui si è usato /stats l'ultima volta.\n" +
 	"> '/setdailyreport' - Attiva o disattiva il report statistiche giornaliero del giocatore.\n" +
-	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats!\n\nPer ulteriori informazioni contatta @fenix45.";
+	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats oppure invitare qualcuno nel gruppo italiano!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
 	"> '/mstats <username1>,<username2>,etc. - Allow to print a short stats for multiple specified users.\n" +
@@ -623,6 +628,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"23/04/19 - Aggiunta la possibilità di invitare qualcuno nel gruppo scrivendo 'invite' in inline\n" +
 						"21/04/19 - Aggiunto il comando /setdailyreport con la relativa funzione automatica\n" +
 						"09/04/19 - Aggiunto il comando /find\n" +
 						"01/04/19 - Aggiunto il comando /rank\n" +
@@ -1120,6 +1126,16 @@ lang_daily_report_activated["en"] = "Daily report activated";
 lang_daily_report_deactivated["it"] = "Report giornaliero disattivato";
 lang_daily_report_deactivated["en"] = "Daily report deactivated";
 
+lang_inline_invite_join["it"] = "Entra nel Gruppo!";
+lang_inline_invite_join["en"] = "Join the Group!";
+lang_inline_invite_title["it"] = "Pubblica invito";
+lang_inline_invite_title["en"] = "Publish invite";
+lang_inline_invite_desc["it"] = "Pubblica l'invito al gruppo di R6";
+lang_inline_invite_desc["en"] = "Publish invite for R6 group";
+//lang_inline_invite_text["it"] = "Entra nel gruppo *Rainbow Six Siege Italy* e partecipa al contest per vincere una copia di Rainbow Six Siege per PC!\nIl contest terminerà a breve, affrettati!";
+lang_inline_invite_text["it"] = "🇮🇹 Entra nel gruppo *Rainbow Six Siege Italy*! 🇮🇹\nConfronta le tue statistiche con altri giocatori provenienti da tutte le piattaforme 🎮, forma team 👥, discuti aggiornamenti 💬, partecipa a contest 💰 e tanto altro!\n🔥 Ti aspettiamo 🔥";
+lang_inline_invite_text["en"] = "English version not available";
+
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
@@ -1216,6 +1232,26 @@ bot.on("inline_query", function (query) {
 			}
 		}else
 			lang = rows[0].lang;
+		
+		if (data == "invite"){
+			
+			var iKeys = [];
+			iKeys.push([{text: lang_inline_invite_join["it"], url: "https://t.me/Rainbow6SItaly"}]);
+			
+			// force it language cause of groups
+			bot.answerInlineQuery(query.id, [{
+				id: '0',
+				type: 'article',
+				title: lang_inline_invite_title["it"],
+				description: lang_inline_invite_desc["it"],
+				message_text: lang_inline_invite_text["it"],
+				parse_mode: "Markdown",
+				reply_markup: {
+					inline_keyboard: iKeys
+				}
+			}], {cache_time: 0});
+			return;
+		}
 
 		var split = data.split(",");
 		if (split[1] == undefined){
@@ -1592,13 +1628,12 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 			lang_complex = "en-us";
 
 		var platform_complex = 0;
-		if (platform == "uplay"){
+		if (platform == "uplay")
 			platform_complex = 9;
-		}else if (platform == "psn"){
+		else if (platform == "psn")
 			platform_complex = 47;
-		}else if (platform == "xbl"){
+		else if (platform == "xbl")
 			platform_complex = 43;
-		}
 
 		console.log("Request server status from " + message.from.username);
 		var url = "https://support.ubi.com/" + lang_complex + "/Games/2559?platform=" + platform_complex;
@@ -3779,8 +3814,10 @@ function generateDailyReport(element, index, array) {
 		report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1);
 		report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1);
 		report_line += calculateSym(lang_season_mmr[lang], player[0].season_mmr, player[lastId].season_mmr, 1);
-		if (report_line != "")
+		if (report_line != "") {
+			console.log("Daily report sent for user " + username + " on " + platform);
 			bot.sendMessage(account_id, report + report_head + report_line, html);
+		}
 	}
 }
 
@@ -3838,7 +3875,7 @@ function generateReport(element, index, array) {
 
 	if (cnt > 0) {
 		bot.sendMessage(last_chat_id, report, html);
-		console.log("Data report sent for group " + last_chat_id);
+		console.log("Weekly/Monthly report sent for group " + last_chat_id);
 	} else
 		console.log("No data report for group " + last_chat_id);
 }
