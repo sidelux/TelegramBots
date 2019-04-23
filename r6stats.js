@@ -1234,6 +1234,8 @@ bot.on("inline_query", function (query) {
 			lang = rows[0].lang;
 		
 		if (data == "invite"){
+			var account_id = query.from.id;
+			var username = query.from.username;
 			
 			var iKeys = [];
 			iKeys.push([{text: lang_inline_invite_join["it"], url: "https://t.me/Rainbow6SItaly"}]);
@@ -1249,7 +1251,14 @@ bot.on("inline_query", function (query) {
 				reply_markup: {
 					inline_keyboard: iKeys
 				}
-			}], {cache_time: 0});
+			}], {cache_time: 0}).then(function (result) {
+				if (result == true){
+					var username_insert = (username == undefined ? 'NULL' : '"' + username + '"');
+					connection.query('INSERT INTO invite_history (account_id, username) VALUES (' + account_id + ', ' + username_insert + ')', function (err, rows) {
+						if (err) throw err;
+					});
+				}
+			});
 			return;
 		}
 
