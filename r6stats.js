@@ -1133,7 +1133,7 @@ lang_inline_invite_title["en"] = "Publish invite";
 lang_inline_invite_desc["it"] = "Pubblica l'invito al gruppo di R6";
 lang_inline_invite_desc["en"] = "Publish invite for R6 group";
 //lang_inline_invite_text["it"] = "Entra nel gruppo *Rainbow Six Siege Italy* e partecipa al contest per vincere una copia di Rainbow Six Siege per PC!\nIl contest terminerà a breve, affrettati!";
-lang_inline_invite_text["it"] = "🇮🇹 Entra nel gruppo *Rainbow Six Siege Italy*! 🇮🇹\nConfronta le tue statistiche con altri giocatori provenienti da tutte le piattaforme 🎮, forma team 👥, discuti aggiornamenti 💬, partecipa a contest 💰 e tanto altro!\n🔥 Ti aspettiamo 🔥";
+lang_inline_invite_text["it"] = "🇮🇹 Entra nel gruppo *Rainbow Six Siege Italy*! 🇮🇹\n\nConfronta le tue statistiche con altri giocatori provenienti da tutte le piattaforme 🎮, forma team 👥, discuti aggiornamenti 💬, partecipa a contest 💰 e tanto altro!\n\n🔥 Ti aspettiamo 🔥";
 lang_inline_invite_text["en"] = "English version not available";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
