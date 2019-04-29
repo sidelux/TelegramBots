@@ -365,6 +365,7 @@ var lang_title_mode = [];
 var lang_mode_secure = [];
 var lang_mode_hostage = [];
 var lang_mode_bomb = [];
+var lang_points = [];
 
 var ability_operatorpvp_phoneshacked = [];
 var ability_operatorpvp_attackerdrone_diminishedrealitymode = [];
@@ -827,6 +828,8 @@ lang_mode_hostage["it"] = "Ostaggio";
 lang_mode_hostage["en"] = "Hostage";
 lang_mode_bomb["it"] = "Bombe";
 lang_mode_bomb["en"] = "Bomb";
+lang_points["it"] = "punti";
+lang_points["en"] = "points";
 
 ability_operatorpvp_phoneshacked["it"] = "Telefoni hackerati";
 ability_operatorpvp_phoneshacked["en"] = "Phones hacked";
@@ -2434,9 +2437,9 @@ function getData(response, lang){
 		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + "\n" +
 		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + "\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
-		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure) + "\n" +
-		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage) + "\n" +
-		"<b>" + lang_mode_bomb[lang] + "</b>: " + formatNumber(response.mode_bomb) + "\n"; // a capo finale
+		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure) + " " + lang_points[lang] + "\n" +
+		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage) + " " + lang_points[lang] + "\n" +
+		"<b>" + lang_mode_bomb[lang] + "</b>: " + formatNumber(response.mode_bomb) + " " + lang_points[lang] + "\n"; // a capo finale
 
 	return text;
 }
