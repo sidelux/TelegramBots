@@ -2979,16 +2979,18 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 			bot.sendMessage(message.chat.id, lang_operator_no_name[lang]);
 			return;
 		}
+		
+		operator_name = jsUcfirst(match[1]);
+		
 		if (operatorList.indexOf(match[1]) == -1){
-			var sim = stringSimilarity.findBestMatch(match[1], operatorList);
+			var sim = stringSimilarity.findBestMatch(operator_name, operatorList);
 			if (sim.bestMatch.rating >= 0.6)
-				match[1] = sim.bestMatch.target;
+				operator_name = sim.bestMatch.target;
 			else{
 				bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
 				return;
 			}
 		}
-		operator_name = jsUcfirst(match[1]);
 
 		console.log(getNow("it") + " Request best loadout for " + operator_name + " from " + message.from.username);
 		var endpoint = "https://pastebin.com/raw/kAKZKUuq";
