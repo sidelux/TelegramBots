@@ -60,7 +60,7 @@ bot.on('message', function (message) {
 			if (message.text.startsWith("/"))
 				console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 		if ((message.from.is_bot == 0) && (message.text != undefined) && (message.text.indexOf("http") == -1)){
-			if ((message.reply_to_message == undefined) && (!message.text.startsWith("/")) && (message.forward_from == undefined)){
+			if ((message.reply_to_message == undefined) && (!message.text.startsWith("/")) && (message.forward_date == undefined)){
 				if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
 					if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 						bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);

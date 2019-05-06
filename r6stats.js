@@ -538,14 +538,14 @@ lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also 
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate";
 lang_stats["en"] = "%n operators registered, %s stats saved";
-lang_startme["it"] = "Avviami in privato prima di usare il comando";
+lang_startme["it"] = "Avviami in privato per utilizzare il comando";
 lang_startme["en"] = "Start me in private mode before use";
 lang_changed["it"] = "Lingua modificata!";
 lang_changed["en"] = "Language changed!";
 lang_invalid_lang["it"] = "Lingua non valida. Lingue disponibili: ";
 lang_invalid_lang["en"] = "Invalid language. Available languages: ";
-lang_invalid_user["it"] = "Nome utente non valido, esempio: /stats username,piattaforma.";
-lang_invalid_user["en"] = "Invalid username, example: /stats username,platform.";
+lang_invalid_user["it"] = "Nome utente non specificato, esempio: /stats username,piattaforma.";
+lang_invalid_user["en"] = "Username not specified, example: /stats username,platform.";
 lang_invalid_user_1["it"] = "Nome utente non valido.";
 lang_invalid_user_1["en"] = "Invalid username.";
 lang_default_user_changed["it"] = "Nome utente predefinito modificato!";
@@ -1617,8 +1617,8 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /status");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -1673,8 +1673,8 @@ bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /news");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -1735,8 +1735,8 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /challenges");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -2012,8 +2012,11 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /mstats");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
+			rows[0].force_update = 0;
+			rows[0].default_username = null;
+			rows[0].default_platform = null;
 		}
 
 		var lang = rows[0].lang;
@@ -2081,8 +2084,12 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /stats");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
+			rows[0].undefined_track = 0;
+			rows[0].force_update = 0;
+			rows[0].default_username = null;
+			rows[0].default_platform = null;
 		}
 
 		var lang = rows[0].lang;
@@ -2339,8 +2346,8 @@ bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, mat
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /r6info");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -2556,8 +2563,9 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /compare");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
+			rows[0].default_platform = null;
 		}
 
 		var lang = rows[0].lang;
@@ -2969,8 +2977,8 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /loadout");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3180,8 +3188,8 @@ bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /groups");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3203,8 +3211,8 @@ bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match)
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3249,8 +3257,8 @@ bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3294,8 +3302,8 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3407,8 +3415,8 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /team");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3500,8 +3508,8 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /search");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3549,8 +3557,8 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /top");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var mark = {
