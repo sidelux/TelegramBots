@@ -2440,9 +2440,8 @@ function getData(response, lang){
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_rank[lang] + "</b>: " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + "\n" +
-		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + "\n" +
-		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + "\n" +
+		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + " (" + mapRank(response.season_mmr, lang) + ")\n" +
+		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + " (" + mapRank(response.season_max_mmr, lang) + ")\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
 		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure) + " " + lang_points[lang] + "\n" +
 		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage) + " " + lang_points[lang] + "\n" +
@@ -3828,7 +3827,7 @@ function generateDailyReport(element, index, array) {
 	var cnt = 0;
 
 	var lastId;
-	var player = connection_sync.query('SELECT username, platform, ranked_wl, ranked_kd, season_mmr FROM player_history WHERE username = "' + username + '" AND platform = "' + platform + '" AND insert_date BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY) AND CURRENT_DATE ORDER BY id DESC');
+	var player = connection_sync.query('SELECT username, platform, ranked_wl, ranked_kd, season_mmr FROM player_history WHERE username = "' + username + '" AND platform = "' + platform + '" AND insert_date BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 2 DAY) AND CURRENT_DATE ORDER BY id DESC');
 	if (Object.keys(player).length > 1){
 		var lastId = Object.keys(player).length-1;
 		report_head = "\n<b>" + player[0].username + "</b> " + lang_on[lang] + " " + decodePlatform(player[0].platform) + ":\n";
