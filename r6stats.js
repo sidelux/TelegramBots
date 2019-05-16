@@ -243,11 +243,12 @@ var no_preview = {
 var validLang = ["en", "it"];
 var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
-var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan","Maverick","Clash","Nomad","Kaid","Mozzie","Gridlock"];
-var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon"];
+var operatorList = ["Alibi","Maestro","Finka","Lion","Vigil","Dokkaebi","Zofia","Ela","Ying","Lesion","Mira","Jackal","Hibana","Echo","Caveira","Capitao","Blackbeard","Valkyrie","Buck","Frost","Mute","Sledge","Smoke","Thatcher","Ash","Castle","Pulse","Thermite","Montagne","Twitch","Doc","Rook","Jager","Bandit","Blitz","IQ","Fuze","Glaz","Tachanka","Kapkan","Maverick","Clash","Nomad","Kaid","Mozzie","Gridlock","Nokk"];
+var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon", "Phantom Sight"];
 var lang_main = [];
 var lang_stats = [];
 var lang_startme = [];
+var lang_only_groups = [];
 var lang_changed = [];
 var lang_invalid_lang = [];
 var lang_invalid_user = [];
@@ -483,6 +484,8 @@ var lang_private = [];
 var lang_extra_info = [];
 var lang_invalid_multiple = [];
 var lang_multiple_limit = [];
+var lang_dist_noplayers = [];
+var lang_dist = [];
 
 var lang_rank_copper4 = [];
 var lang_rank_copper3 = [];
@@ -540,6 +543,8 @@ lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate";
 lang_stats["en"] = "%n operators registered, %s stats saved";
 lang_startme["it"] = "Avviami in privato per utilizzare il comando";
 lang_startme["en"] = "Start me in private mode before use";
+lang_only_groups["it"] = "Questo comando funziona solo nei gruppi";
+lang_only_groups["en"] = "This command work only in groups";
 lang_changed["it"] = "Lingua modificata!";
 lang_changed["en"] = "Language changed!";
 lang_invalid_lang["it"] = "Lingua non valida. Lingue disponibili: ";
@@ -598,6 +603,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
 	"> '/r6info' - (in risposta) Consente di visualizzare le informazioni salvate dell'utente come username e piattaforma.\n" +
 	"> '/find <piattaforma>' - Crea un messaggio dove gli altri giocatori possono partecipare rendendosi disponibili.\n" +
+	"> '/dist' - Visualizza la lista della distribuzione giocatori per piattaforma del gruppo attuale.\n" +
 	"> '/team <nome-team> <utenti>' - Crea un team e fornisce la possibilità di taggarne tutti i membri.\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"> '/setreport' - Attiva o disattiva il report statistiche del gruppo in cui si è usato /stats l'ultima volta.\n" +
@@ -623,12 +629,14 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
 	"> '/r6info' - (in reply) Allow to show infos about saved user like username and platform.\n" +
 	"> '/find <platform>' - Make a message where other player can join.\n" +
+	"> '/dist' - Show platform distribution for platforms for actual group.\n" +
 	"> '/team <team-name> <users>' - Create a team and offer the possibility to tag all members.\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"16/05/19 - Aggiunto il comando /dist per visualizzare la distribuzione del giocatori per piattaforma relativa al gruppo attuale\n" +
 						"23/04/19 - Aggiunta la possibilità di invitare qualcuno nel gruppo scrivendo 'invite' in inline\n" +
 						"21/04/19 - Aggiunto il comando /setdailyreport con la relativa funzione automatica\n" +
 						"09/04/19 - Aggiunto il comando /find\n" +
@@ -638,6 +646,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"05/16/19 - Added /dist command to show platform distribution for actual group\n" +
 						"04/21/19 - Added /setdailyreport command with relative automatic function\n" +
 						"04/09/19 - Added /find command\n" +
 						"04/01/19 - Added /rank command\n" +
@@ -1041,6 +1050,10 @@ lang_invalid_multiple["it"] = "Username non specificati, esempio: /mstats userna
 lang_invalid_multiple["en"] = "Username not specified, example: /mstats username1,username2,etc.";
 lang_multiple_limit["it"] = "Puoi specificare massimo 5 giocatori";
 lang_multiple_limit["en"] = "You can define at least 5 players";
+lang_dist_noplayers["it"] = "Non ci giocatori collegati a questo gruppo";
+lang_dist_noplayers["en"] = "No players linked at this group";
+lang_dist["it"] = "Distribuzione giocatori per questo gruppo";
+lang_dist["en"] = "Player distribution for this group";
 
 lang_rank_copper4["it"] = "Rame IV";
 lang_rank_copper4["en"] = "Copper IV";
@@ -3543,6 +3556,47 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 			if (message.chat.id < 0)
 				bot.sendMessage(message.chat.id, lang_private[lang]);
 			bot.sendMessage(message.from.id, list);
+		});
+	});
+});
+
+bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+		}
+
+		var lang = rows[0].lang;
+
+		var mark = {
+			parse_mode: "HTML"
+		};
+		
+		if (message.chat.id > 0) {
+			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			return;
+		}
+
+		connection.query("SELECT default_platform, COUNT(default_platform) As num, (SELECT COUNT(default_platform) FROM user WHERE last_chat_id = '" + message.chat.id + "' AND default_platform IS NOT NULL) As num_tot FROM user WHERE last_chat_id = '" + message.chat.id + "' AND default_platform IS NOT NULL GROUP BY default_platform", function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, lang_dist_noplayers[lang]);
+				return;
+			}
+
+			var list = "<b>" + lang_dist[lang] + "</b>";
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+				list += "\n" + decodePlatform(rows[i].default_platform) + ": " + Math.round(rows[i].num/rows[i].num_tot*100) + "%";
+
+			bot.sendMessage(message.chat.id, list, html);
 		});
 	});
 });
