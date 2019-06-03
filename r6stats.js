@@ -591,7 +591,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
 	"> '/seasons' - Permette di visualizzare la lista completa del rango ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
-	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori utilizzando come piattaforma quella specificata utilizzando /setplatform.\n" +
+	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
 	"> '/lastgraph' - Genera un grafico utilizzando l'ultimo parametro usato.\n" +
 	"> '/loadout <nome-operatore>' - Suggerisce un equipaggiamento per l'operatore specificato.\n" +
@@ -617,7 +617,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/seasons' - Allow to print seasons ranks details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
-	"> '/compare <username1>,<username2>' - Allow to compare two players stats using platform specified using /setplatform.\n" +
+	"> '/compare <username1>,<username2>' - Allow to compare two players stats.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
 	"> '/lastgraph' - Generate a graph using last parameter used.\n" +
 	"> '/loadout <operator-name>' - Suggest a full loadout for specified operator.\n" +
@@ -636,6 +636,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"03/06/19 - Aggiunta la possibilità di utilzzare il comando /compare anche se i giocatori sono su piattaforme differenti\n" +
 						"16/05/19 - Aggiunto il comando /dist per visualizzare la distribuzione del giocatori per piattaforma relativa al gruppo attuale\n" +
 						"23/04/19 - Aggiunta la possibilità di invitare qualcuno nel gruppo scrivendo 'invite' in inline\n" +
 						"21/04/19 - Aggiunto il comando /setdailyreport con la relativa funzione automatica\n" +
@@ -646,6 +647,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"06/03/19 - Added possibility to use /compare command also with player's platform are different\n" +
 						"05/16/19 - Added /dist command to show platform distribution for actual group\n" +
 						"04/21/19 - Added /setdailyreport command with relative automatic function\n" +
 						"04/09/19 - Added /find command\n" +
@@ -2586,29 +2588,43 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 			return;
 		}
 
-		var platform = "uplay";
-		if (rows[0].default_platform != null)
-			platform = rows[0].default_platform;
+		var user1platform = "uplay";
+		var user2platform = "uplay";
+		if (rows[0].default_platform != null){
+			user1platform = rows[0].default_platform;
+			user2platform = user1platform;
+		}
 
 		var username1 = match[1].trim();
 		var username2 = match[2].trim();
+		
+		var user1info = connection_sync.query("SELECT default_platform FROM user WHERE default_username = '" + username1 + "'");
+		if (Object.keys(user1info).length > 0){
+			if (user1info[0].default_platform != null)
+				user1platform = user1info[0].default_platform;
+		}
+		var user2info = connection_sync.query("SELECT default_platform FROM user WHERE default_username = '" + username2 + "'");
+		if (Object.keys(user2info).length > 0){
+			if (user2info[0].default_platform != null)
+				user2platform = user2info[0].default_platform;
+		}
 
-		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + platform);
+		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + user1platform + " and " + user2platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(username1, platform, -1, 0).then(response1 => {
+			r6.stats(username1, user1platform, -1, 0).then(response1 => {
 
 				if (response1.platform == undefined){
-					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + platform + ")", html);
-					console.log(getNow("it") + " User data 1 (compare) undefined for " + username1 + " on " + platform);
+					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", html);
+					console.log(getNow("it") + " User data 1 (compare) undefined for " + username1 + " on " + user1platform);
 					return;
 				}
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username2, platform, -1, 0).then(response2 => {
+					r6.stats(username2, user2platform, -1, 0).then(response2 => {
 
 						if (response2.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + platform + ")", html);
-							console.log(getNow("it") + " User data 2 (compare) undefined for " + username2 + " on " + platform);
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", html);
+							console.log(getNow("it") + " User data 2 (compare) undefined for " + username2 + " on " + user2platform);
 							return;
 						}
 
