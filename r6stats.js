@@ -41,7 +41,7 @@ class RainbowSixApi {
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
 					if(!error && response.statusCode == '200') {
-						var objResp = JSON.parse(body);
+						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));
 
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
@@ -57,7 +57,7 @@ class RainbowSixApi {
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
 					if(!error && response.statusCode == '200') {
-						var objResp = JSON.parse(body);
+						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));
 						var objOps = objResp.operators;
 						return resolve(objOps);
 					}
@@ -428,6 +428,8 @@ var ability_operatorpvp_Kaid_Electroclaw_Hatches = [];
 var ability_operatorpvp_Nomad_Assist = [];
 var ability_operatorpvp_mozzie_droneshacked = [];
 var ability_operatorpvp_gridlock_traxdeployed = [];
+var ability_operatorpvp_Nokk_Cameras_Deceived = [];
+var ability_operatorpvp_Warden_Kills_During_Ability = [];
 
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
@@ -962,6 +964,10 @@ ability_operatorpvp_mozzie_droneshacked["it"] = "Droni hackerati";
 ability_operatorpvp_mozzie_droneshacked["en"] = "Drones hacked";
 ability_operatorpvp_gridlock_traxdeployed["it"] = "Trax piazzati";
 ability_operatorpvp_gridlock_traxdeployed["en"] = "Trax deployed";
+ability_operatorpvp_Nokk_Cameras_Deceived["it"] = "Videocamere disturbate";
+ability_operatorpvp_Nokk_Cameras_Deceived["en"] = "Deceived cameras";
+ability_operatorpvp_Warden_Kills_During_Ability["it"] = "Uccisioni con abilità";
+ability_operatorpvp_Warden_Kills_During_Ability["en"] = "Kills during ability";
 
 lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
 lang_loadout_intro["en"] = "Recommended loadout for";
@@ -2918,6 +2924,8 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 					var found = 0;
 					var validSpecials = 0;
 					for (i = 0; i < operators.length; i++){
+						if (operators[i] == "nakk")
+							operators[i] = "nokk";
 						if (operators[i] == operator_name.toLowerCase()){
 							name = jsUcfirst(operators[i]);
 							role = operators_info[operators[i]].category;
