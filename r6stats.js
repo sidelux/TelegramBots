@@ -638,6 +638,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
 						"03/06/19 - Aggiunta la possibilità di utilzzare il comando /compare anche se i giocatori sono su piattaforme differenti\n" +
 						"16/05/19 - Aggiunto il comando /dist per visualizzare la distribuzione del giocatori per piattaforma relativa al gruppo attuale\n" +
 						"23/04/19 - Aggiunta la possibilità di invitare qualcuno nel gruppo scrivendo 'invite' in inline\n" +
@@ -649,6 +650,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"06/07/19 - Added full support for new operators Nokk and Warden\n" +
 						"06/03/19 - Added possibility to use /compare command also with player's platform are different\n" +
 						"05/16/19 - Added /dist command to show platform distribution for actual group\n" +
 						"04/21/19 - Added /setdailyreport command with relative automatic function\n" +
