@@ -591,7 +591,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
-	"> '/seasons' - Permette di visualizzare la lista completa del rango ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
+	"> '/seasons' - Permette di visualizzare la lista completa del rango massimo ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
@@ -617,7 +617,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
 	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
-	"> '/seasons' - Allow to print seasons ranks details specified as parameter using /setusername and /setplatform.\n" +
+	"> '/seasons' - Allow to print seasons max ranks details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
@@ -2736,7 +2736,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				for(i = 1; i < lastSeason+1; i++){
 					r6.stats(default_username, default_platform, i, 0).then(response => {
 						if ((response.season_id != undefined) && (response.season_rank != 0)) {
-							seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + numToRank(response.season_rank, lang, Math.round(response.season_mmr)) + "\n";
+							seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + mapRank(Math.round(response.season_max_mmr), lang) + "\n";
 						}
 						textDone++;
 						if (textDone >= lastSeason)
