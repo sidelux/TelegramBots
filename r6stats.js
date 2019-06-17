@@ -662,7 +662,7 @@ lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
 						"02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
-lang_rank["it"] = "Classifica per rapporto U/M in Classificata:";
+lang_rank["it"] = "Classifica per rapporto U/M in Classificata per questo gruppo:";
 lang_rank["en"] = "Leaderboard for ranked K/D:";
 lang_time["it"] = "Ultimo aggiornamento:";
 lang_time["en"] = "Last update:";
@@ -1060,7 +1060,7 @@ lang_invalid_multiple["it"] = "Username non specificati, esempio: /mstats userna
 lang_invalid_multiple["en"] = "Username not specified, example: /mstats username1,username2,etc.";
 lang_multiple_limit["it"] = "Puoi specificare massimo 5 giocatori";
 lang_multiple_limit["en"] = "You can define at least 5 players";
-lang_dist_noplayers["it"] = "Non ci giocatori collegati a questo gruppo";
+lang_dist_noplayers["it"] = "Non ci sono giocatori collegati a questo gruppo";
 lang_dist_noplayers["en"] = "No players linked at this group";
 lang_dist["it"] = "Distribuzione giocatori per questo gruppo";
 lang_dist["en"] = "Player distribution for this group";
@@ -3647,8 +3647,14 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 		var text = "<b>" + lang_rank[rows[0].lang] + "</b>\n";
 		var c = 1;
 		var size = 25;
+		
+		var group_id = message.chat.id;
+		if (group_id > 0){
+			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
+			return;
+		}
 
-		connection.query('SELECT username, platform, ranked_kd As points FROM player_history WHERE id IN (SELECT MAX(id) FROM player_history GROUP BY username, platform) GROUP BY username, platform ORDER BY ranked_kd DESC', function (err, rows, fields) {
+		connection.query('SELECT username, platform, ranked_kd As points FROM player_history P, user U WHERE U.last_chat_id = "' + group_id + '" AND U.default_username = P.username AND P.id IN (SELECT MAX(id) FROM player_history GROUP BY username, platform) GROUP BY username, platform ORDER BY ranked_kd DESC', function (err, rows, fields) {
 			if (err) throw err;
 			for (var i = 0; i < size; i++){
 				text += c + "° <b>" + rows[i].username + "</b> on " + decodePlatform(rows[i].platform) + " (" + rows[i].points + ")\n";
