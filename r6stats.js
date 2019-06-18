@@ -668,7 +668,7 @@ lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata per questo gruppo:";
-lang_rank["en"] = "Leaderboard for ranked K/D:";
+lang_rank["en"] = "Leaderboard for ranked K/D for this group:";
 lang_time["it"] = "Ultimo aggiornamento:";
 lang_time["en"] = "Last update:";
 lang_update_ok["it"] = "Al prossimo '/stats' il tuo profilo verrà aggiornato!";
@@ -1199,7 +1199,7 @@ var j2 = Schedule.scheduleJob('0 12 1 * *', function () {
 });
 
 bot.onText(/^\/start/i, function (message) {
-
+	var options = {disable_web_page_preview: true, parse_mode: "HTML", reply_to_message_id: message.message_id};
 	if ((message.chat.id < 0) && (message.text.indexOf("@") != -1) && (message.text.indexOf("r6siegestatsbot") == -1))
 		return;
 
@@ -1243,7 +1243,7 @@ bot.onText(/^\/start/i, function (message) {
 				var time = new Date(stats.mtime);
 				var time_text = "\n<i>" + lang_time[lang] + " " + toDate(lang, time) + "</i>";
 
-				bot.sendMessage(message.chat.id, lang_main[lang] + "\n" + default_text + last_news + stats_text + time_text, no_preview);
+				bot.sendMessage(message.chat.id, lang_main[lang] + "\n" + default_text + last_news + stats_text + time_text, options);
 			});
 		});
 	});
@@ -1493,6 +1493,7 @@ function decodePlatform(platform){
 }
 
 bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1501,30 +1502,31 @@ bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /lang");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /lang", options);
 			return;
 		}
 
 		var errMsg = lang_invalid_lang[rows[0].lang] + validLang.join(", ");
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, errMsg);
+			bot.sendMessage(message.chat.id, errMsg, options);
 			return;
 		}
 		match[1] = match[1].toLowerCase();
 		if (validLang.indexOf(match[1]) == -1){
-			bot.sendMessage(message.chat.id, errMsg);
+			bot.sendMessage(message.chat.id, errMsg, options);
 			return;
 		}
 
 		var lang = match[1];
 		connection.query("UPDATE user SET lang = '" + lang + "' WHERE account_id = " + message.from.id, function (err, rows) {
 			if (err) throw err;
-			bot.sendMessage(message.chat.id, lang_changed[lang]);
+			bot.sendMessage(message.chat.id, lang_changed[lang], options);
 		});
 	});
 });
 
 bot.onText(/^\/setusername(?:@\w+)? (.+)|^\/setusername(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1533,26 +1535,27 @@ bot.onText(/^\/setusername(?:@\w+)? (.+)|^\/setusername(?:@\w+)?/i, function (me
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setusername");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setusername", options);
 			return;
 		}
 
 		var lang = rows[0].lang;
 
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_invalid_user_1[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_user_1[lang], options);
 			return;
 		}
 
 		var user = match[1].toLowerCase().trim();
 		connection.query("UPDATE user SET default_username = '" + user + "' WHERE account_id = " + message.from.id, function (err, rows) {
 			if (err) throw err;
-			bot.sendMessage(message.chat.id, lang_default_user_changed[lang]);
+			bot.sendMessage(message.chat.id, lang_default_user_changed[lang], options);
 		});
 	});
 });
 
 bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1561,30 +1564,39 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setplatform");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setplatform", options);
 			return;
 		}
 
 		var lang = rows[0].lang;
 
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_invalid_platform[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_platform[lang], options);
 			return;
 		}
 
 		var platform = match[1].toLowerCase().trim();
+		
+		if (platform == "ps4")
+			platform = "psn";
+		else if (platform == "pc")
+			platform = "uplay";
+		else if (platform == "xbox")
+			platform = "xbl";
+		
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
-			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
 			return;
 		}
 		connection.query("UPDATE user SET default_platform = '" + platform + "' WHERE account_id = " + message.from.id, function (err, rows) {
 			if (err) throw err;
-			bot.sendMessage(message.chat.id, lang_default_platform_changed[lang]);
+			bot.sendMessage(message.chat.id, lang_default_platform_changed[lang], options);
 		});
 	});
 });
 
 bot.onText(/^\/setreport(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, report FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1593,7 +1605,7 @@ bot.onText(/^\/setreport(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setreport");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setreport", options);
 			return;
 		}
 
@@ -1602,18 +1614,19 @@ bot.onText(/^\/setreport(?:@\w+)?/i, function (message, match) {
 		if (rows[0].report == 1) {
 			connection.query("UPDATE user SET report = 0 WHERE account_id = " + message.from.id, function (err, rows) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, lang_report_deactivated[lang]);
+				bot.sendMessage(message.chat.id, lang_report_deactivated[lang], options);
 			});
 		} else {
 			connection.query("UPDATE user SET report = 1 WHERE account_id = " + message.from.id, function (err, rows) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, lang_report_activated[lang]);
+				bot.sendMessage(message.chat.id, lang_report_activated[lang], options);
 			});
 		}
 	});
 });
 
 bot.onText(/^\/setdailyreport(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, daily_report FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1622,7 +1635,7 @@ bot.onText(/^\/setdailyreport(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setdailyreport");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setdailyreport", options);
 			return;
 		}
 
@@ -1631,18 +1644,19 @@ bot.onText(/^\/setdailyreport(?:@\w+)?/i, function (message, match) {
 		if (rows[0].daily_report == 1) {
 			connection.query("UPDATE user SET daily_report = 0 WHERE account_id = " + message.from.id, function (err, rows) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, lang_daily_report_deactivated[lang]);
+				bot.sendMessage(message.chat.id, lang_daily_report_deactivated[lang], options);
 			});
 		} else {
 			connection.query("UPDATE user SET daily_report = 1 WHERE account_id = " + message.from.id, function (err, rows) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, lang_daily_report_activated[lang]);
+				bot.sendMessage(message.chat.id, lang_daily_report_activated[lang], options);
 			});
 		}
 	});
 });
 
 bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1657,13 +1671,13 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 
 		var lang = rows[0].lang;
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_invalid_platform[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_platform[lang], options);
 			return;
 		}
 
 		var platform = match[1].toLowerCase();
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
-			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
 			return;
 		}
 
@@ -1692,13 +1706,14 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 				var status = "";
 				while (matches = regex.exec(body))
 					status = matches[2];
-				bot.sendMessage(message.chat.id, decodePlatform(platform) + " Server Status: " + status);
+				bot.sendMessage(message.chat.id, decodePlatform(platform) + " Server Status: " + status, options);
 			});
 		});
 	});
 });
 
 bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
+	var options = {disable_web_page_preview: true, parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1749,11 +1764,11 @@ bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
 					text += "<b>" + item.title + "</b>\n\n" + stripContent(item.content) + "\n\n<i>" + lang_news_date[lang] + toDate(lang, d) + "</i> " + readall + "\n\n";
 					if (num > 0){
 						if (index === (num-1)){
-							bot.sendMessage(message.chat.id, text, no_preview);
+							bot.sendMessage(message.chat.id, text, options);
 							return;
 						}
 					} else if (index === 4)
-						bot.sendMessage(message.chat.id, text, no_preview);
+						bot.sendMessage(message.chat.id, text, options);
 				});
 			})();
 		});
@@ -1761,6 +1776,7 @@ bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
+	var options = {disable_web_page_preview: true, parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1864,7 +1880,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 						text += "<b>" + challengesName[i] + "</b>" + preview + "\n" + challengesDescription[i] + "\n" + lang_challenges_rewards[lang] + ": " + challengesReward[i] + "\n\n";
 					}
 
-					bot.sendMessage(message.chat.id, text, no_preview);
+					bot.sendMessage(message.chat.id, text, options);
 				}
 			});
 		});
@@ -1872,6 +1888,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform, last_graph FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1880,21 +1897,21 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, fu
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /graph");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /graph", options);
 			return;
 		}
 
 		var lang = rows[0].lang;
 
 		if (rows[0].default_username == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
 		}
 
 		var default_username = rows[0].default_username;
 
 		if (rows[0].default_platform == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
 			return;
 		}
 
@@ -1904,19 +1921,19 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, fu
 		if (message.text.indexOf("/lastgraph") == -1){
 			var errMsg = lang_graph_no_param[lang] + validParam.join(", ")
 			if (match[1] == undefined){
-				bot.sendMessage(message.chat.id, errMsg);
+				bot.sendMessage(message.chat.id, errMsg, options);
 				return;
 			}
 			match[1] = match[1].toLowerCase();
 			if (validParam.indexOf(match[1]) == -1){
-				bot.sendMessage(message.chat.id, errMsg);
+				bot.sendMessage(message.chat.id, errMsg, options);
 				return;
 			}
 
 			param = match[1];
 		} else {
 			if (rows[0].last_graph == null){
-				bot.sendMessage(message.chat.id, lang_no_validgraph[lang]);
+				bot.sendMessage(message.chat.id, lang_no_validgraph[lang], options);
 				return;
 			}
 			param = rows[0].last_graph;
@@ -1937,7 +1954,7 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, fu
 				if (err) throw err;
 
 				if (Object.keys(rows).length <= 5){
-					bot.sendMessage(message.chat.id, lang_graph_no_data[lang]);
+					bot.sendMessage(message.chat.id, lang_graph_no_data[lang], options);
 					return;
 				}
 
@@ -1976,6 +1993,7 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, fu
 });
 
 bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT default_username, default_platform, lang, force_update, last_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -1984,7 +2002,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /update");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /update", options);
 			return;
 		}
 
@@ -1996,7 +2014,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 		var diffMin = Math.ceil(timeDiff / (1000 * 60)); 
 
 		if (diffMin < 180){
-			bot.sendMessage(message.chat.id, lang_update_err[lang]);
+			bot.sendMessage(message.chat.id, lang_update_err[lang], options);
 			return;
 		}
 
@@ -2019,25 +2037,26 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 				diffMin = Math.ceil(timeDiff / (1000 * 60)); 
 
 				if (diffMin < 180){
-					bot.sendMessage(message.chat.id, lang_update_err_3[lang]);
+					bot.sendMessage(message.chat.id, lang_update_err_3[lang], options);
 					return;
 				}
 			}
 
 			if (force_update == 1){
-				bot.sendMessage(message.chat.id, lang_update_err_2[lang]);
+				bot.sendMessage(message.chat.id, lang_update_err_2[lang], options);
 				return;
 			}
 
 			connection.query("UPDATE user SET force_update = 1, last_force_update = NOW() WHERE account_id = " + message.from.id, function (err, rows) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, lang_update_ok[lang]);
+				bot.sendMessage(message.chat.id, lang_update_ok[lang], options);
 			});
 		});
 	});
 });
 
 bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2056,7 +2075,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 		var lang = rows[0].lang;
 
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_invalid_multiple[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_multiple[lang], options);
 			return;
 		}
 
@@ -2073,7 +2092,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 			return players.indexOf(elem) == pos;
 		})
 		if (players.length > 5){
-			bot.sendMessage(message.chat.id, lang_multiple_limit[lang], html);
+			bot.sendMessage(message.chat.id, lang_multiple_limit[lang], options);
 			return;
 		}
 		
@@ -2088,11 +2107,11 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 
 					textDone++;
 					if (textDone >= players.length)
-						bot.sendMessage(message.chat.id, text, html);
+						bot.sendMessage(message.chat.id, text, options);
 				}).catch(error => {
 					textDone++;
 					if (textDone >= players.length)
-						bot.sendMessage(message.chat.id, text, html);
+						bot.sendMessage(message.chat.id, text, options);
 				});
 			}
 		});
@@ -2100,16 +2119,18 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 });
 
 bot.onText(/^\/checklang/, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	var lang = defaultLang;
 	if (message.from.language_code != undefined){
 		if (validLang.indexOf(message.from.language_code) != -1)
 			lang = message.from.language_code;
 	}
 
-	bot.sendMessage(message.from.id, message.from.language_code + " - " + lang);
+	bot.sendMessage(message.from.id, message.from.language_code + " - " + lang, options);
 });
 
 bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?|^\/!stats(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2156,7 +2177,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				} else if (rows[0].default_username != null)
 					username = rows[0].default_username;
 				else{
-					bot.sendMessage(message.chat.id, lang_invalid_user[lang]);
+					bot.sendMessage(message.chat.id, lang_invalid_user[lang], options);
 					return;
 				}
 			}else
@@ -2171,6 +2192,13 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 		username = username.trim();
 		platform = platform.trim();
+		
+		if (platform == "ps4")
+			platform = "psn";
+		else if (platform == "pc")
+			platform = "uplay";
+		else if (platform == "xbox")
+			platform = "xbl";
 
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
@@ -2264,7 +2292,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					var text = getData(response, lang);
 					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang);
 
-					bot.sendMessage(message.chat.id, text + insert_date + extra_info, html);
+					bot.sendMessage(message.chat.id, text + insert_date + extra_info, options);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				}
@@ -2274,7 +2302,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
 							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 							return;
 						}
@@ -2293,7 +2321,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 								});
 							}
 
-							bot.sendMessage(message.chat.id, text + "\n" + extra_info, html);
+							bot.sendMessage(message.chat.id, text + "\n" + extra_info, options);
 
 							if (forceSave == 1){
 								connection.query("UPDATE user SET force_update = 0, last_update = NOW() WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2305,12 +2333,12 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 							console.log(getNow("it") + " User data served for " + username + " on " + platform);
 						}).catch(error => {
 							console.log(error);
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
 							console.log(getNow("it") + " User data operators not found for " + username + " on " + platform);
 						});
 					}).catch(error => {
 						console.log(error);
-						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
 						console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 					});
 				});
@@ -2320,6 +2348,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 });
 
 bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2328,21 +2357,21 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank", options);
 			return;
 		}
 
 		var lang = rows[0].lang;
 		
 		if (rows[0].default_username == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
 		}
 
 		var username = rows[0].default_username;
 
 		if (rows[0].default_platform == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
 			return;
 		}
 
@@ -2355,16 +2384,16 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 					var responseStats = response;
 
 					if (responseStats.platform == undefined){
-						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
 						console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 						return;
 					}
 
 					var text = getRankData(responseStats, lang);
-					bot.sendMessage(message.chat.id, text, html);
+					bot.sendMessage(message.chat.id, text, options);
 				}).catch(error => {
 					console.log(error);
-					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
 					console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 				});
 			});
@@ -2373,6 +2402,7 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2410,12 +2440,12 @@ bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, mat
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, lang_info_notfound[lang]);
+				bot.sendMessage(message.chat.id, lang_info_notfound[lang], options);
 				return;
 			}
 			
 			if ((rows[0].default_username == null) && (rows[0].default_platform == null)){
-				bot.sendMessage(message.chat.id, lang_info_notfound2[lang]);
+				bot.sendMessage(message.chat.id, lang_info_notfound2[lang], options);
 				return;
 			}
 			
@@ -2435,7 +2465,7 @@ bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, mat
 					insert_date = "\n\n<i>" + lang_insert_date[lang] + insert_date + "</i>";
 				}
 
-				bot.sendMessage(message.chat.id, "<b>" + lang_info_result[lang] + " " + username + "</b>\n\n" + lang_username[lang] + ": " + default_username + "\n" + lang_platform[lang] + ": " + decodePlatform(default_platform) + insert_date, html);
+				bot.sendMessage(message.chat.id, "<b>" + lang_info_result[lang] + " " + username + "</b>\n\n" + lang_username[lang] + ": " + default_username + "\n" + lang_platform[lang] + ": " + decodePlatform(default_platform) + insert_date, options);
 			});
 		});
 	});
@@ -2589,6 +2619,7 @@ function getOperatorsText(most_played, most_played_name, most_wins, most_wins_na
 }
 
 bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2604,7 +2635,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 
 		var lang = rows[0].lang;
 		if ((match[1] == undefined) || (match[2] == undefined)){
-			bot.sendMessage(message.chat.id, lang_invalid_user_2[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_user_2[lang], options);
 			return;
 		}
 
@@ -2634,7 +2665,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 			r6.stats(username1, user1platform, -1, 0).then(response1 => {
 
 				if (response1.platform == undefined){
-					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", html);
+					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", options);
 					console.log(getNow("it") + " User data 1 (compare) undefined for " + username1 + " on " + user1platform);
 					return;
 				}
@@ -2643,7 +2674,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 					r6.stats(username2, user2platform, -1, 0).then(response2 => {
 
 						if (response2.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", html);
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", options);
 							console.log(getNow("it") + " User data 2 (compare) undefined for " + username2 + " on " + user2platform);
 							return;
 						}
@@ -2688,14 +2719,14 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 							"<b>" + lang_mode_hostage[lang] + "</b>: " + compare(response1.mode_hostage, response2.mode_hostage, "number") + "\n" +
 							"<b>" + lang_mode_bomb[lang] + "</b>: " + compare(response1.mode_bomb, response2.mode_bomb, "number");
 
-						bot.sendMessage(message.chat.id, text, html);
+						bot.sendMessage(message.chat.id, text, options);
 					}).catch(error => {
-						bot.sendMessage(message.chat.id, error, html);
+						bot.sendMessage(message.chat.id, error, options);
 						console.log(getNow("it") + " User data not found for " + username2 + " on " + platform);
 					});
 				});
 			}).catch(error => {
-				bot.sendMessage(message.chat.id, error, html);
+				bot.sendMessage(message.chat.id, error, options);
 				console.log(getNow("it") + " User data not found for " + username1 + " on " + platform);
 			});
 		});
@@ -2703,6 +2734,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 });
 
 bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2711,21 +2743,21 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /seasons");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /seasons", options);
 			return;
 		}
 
 		var lang = rows[0].lang;
 		
 		if (rows[0].default_username == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
 		}
 
 		var default_username = rows[0].default_username;
 
 		if (rows[0].default_platform == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
 			return;
 		}
 
@@ -2737,7 +2769,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				var responseStats = response;
 				
 				if (responseStats.platform == undefined){
-					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", html);
+					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
 					console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 					return;
 				}
@@ -2752,11 +2784,11 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 						}
 						textDone++;
 						if (textDone >= lastSeason)
-							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), html);
+							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
 					}).catch(error => {
 						textDone++;
 						if (textDone >= lastSeason)
-							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), html);
+							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
 					});
 				}
 			});
@@ -2775,6 +2807,7 @@ function sortSeasons(seasonArray){
 }
 
 bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2783,21 +2816,21 @@ bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operators");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operators", options);
 			return;
 		}
 
 		var lang = rows[0].lang;
 
 		if (rows[0].default_username == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
 		}
 
 		var default_username = rows[0].default_username;
 
 		if (rows[0].default_platform == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
 			return;
 		}
 
@@ -2849,10 +2882,10 @@ bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
 					text += " - " + formatNumber(sum);
 					text += "\n";
 				}
-				bot.sendMessage(message.chat.id, text + lang_operator_extra[lang], html);
+				bot.sendMessage(message.chat.id, text + lang_operator_extra[lang], options);
 			}).catch(error => {
 				console.log(error);
-				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + default_platform + ")", html);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + default_platform + ")", options);
 				console.log(getNow("it") + " Operators data not found for " + default_username + " on " + default_platform);
 			});
 		});
@@ -2860,6 +2893,7 @@ bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
 });
 
 bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2868,21 +2902,21 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operator");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operator", options);
 			return;
 		}
 
 		var lang = rows[0].lang;
 
 		if (rows[0].default_username == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
 		}
 
 		var default_username = rows[0].default_username;
 
 		if (rows[0].default_platform == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang]);
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
 			return;
 		}
 
@@ -2890,7 +2924,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 
 		var operator_name;
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_operator_no_name[lang]);
+			bot.sendMessage(message.chat.id, lang_operator_no_name[lang], options);
 			return;
 		}
 		if (operatorList.indexOf(match[1]) == -1){
@@ -2899,7 +2933,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 			if (sim.bestMatch.rating >= 0.6)
 				match[1] = sim.bestMatch.target;
 			else{
-				bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+				bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options);
 				return;
 			}
 		}
@@ -2982,7 +3016,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 					}
 
 					if (found == 0){
-						bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+						bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options);
 						return;
 					}
 
@@ -2998,7 +3032,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 					for (j = 0; j < validSpecials; j++)
 						text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
 
-					bot.sendMessage(message.chat.id, text, html);
+					bot.sendMessage(message.chat.id, text, options);
 
 					/* invio immagine badge
 					if (message.chat.id > 0)
@@ -3006,12 +3040,12 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 					*/
 				}).catch(error => {
 					console.log(error);
-					bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", html);
+					bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", options);
 					console.log(getNow("it") + " Operators data not found for " + operator_name + " from " + message.from.username);
 				});
 			}).catch(error => {
 				console.log(error);
-				bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", html);
+				bot.sendMessage(message.chat.id, lang_operator_not_found[lang] + " (" + default_platform + ")", options);
 				console.log(getNow("it") + " Operators info data not found for " + operator_name + " from " + message.from.username);
 			});
 		});
@@ -3019,6 +3053,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 });
 
 bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3034,7 +3069,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 		var lang = rows[0].lang;
 		var operator_name;
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_operator_no_name[lang]);
+			bot.sendMessage(message.chat.id, lang_operator_no_name[lang], options);
 			return;
 		}
 		
@@ -3045,7 +3080,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 			if (sim.bestMatch.rating >= 0.6)
 				operator_name = sim.bestMatch.target;
 			else{
-				bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+				bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options);
 				return;
 			}
 		}
@@ -3058,7 +3093,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				var equip = resp[operator_name];
 
 				if (equip == undefined){
-					bot.sendMessage(message.chat.id, lang_operator_not_found[lang]);
+					bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options);
 					return;
 				}
 
@@ -3110,7 +3145,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 
 				text += "\n<b>" + lang_loadout_utility[lang] + "</b>: " + mapLoadout(utility, lang);
 
-				bot.sendMessage(message.chat.id, text, html);
+				bot.sendMessage(message.chat.id, text, options);
 			}
 		});
 	});
@@ -3205,6 +3240,7 @@ function mapRank(rank, lang){
 }
 
 bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3213,8 +3249,8 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /help");
-			return;
+			rows[0] = {};
+			rows[0].lang = lang;
 		}
 
 		var lang = rows[0].lang;
@@ -3225,11 +3261,12 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 
 		if (message.chat.id < 0)
 			bot.sendMessage(message.chat.id, lang_private[lang]);
-		bot.sendMessage(message.from.id, lang_help[lang], mark);
+		bot.sendMessage(message.from.id, lang_help[lang], options);
 	});
 });
 
 bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3248,11 +3285,12 @@ bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
 			parse_mode: "HTML"
 		};
 
-		bot.sendMessage(message.chat.id, lang_groups[lang], mark);
+		bot.sendMessage(message.chat.id, lang_groups[lang], options);
 	});
 });
 
 bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match) {
+	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3292,13 +3330,14 @@ bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match)
 				}
 			}
 
-			bot.sendMessage(message.chat.id, lang_team_intro[lang] + team_list, mark);
+			bot.sendMessage(message.chat.id, lang_team_intro[lang] + team_list, options);
 
 		});
 	});
 });
 
 bot.onText(/^\/ttag(?:@\w+)? (.+)/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3314,7 +3353,7 @@ bot.onText(/^\/ttag(?:@\w+)? (.+)/i, function (message, match) {
 		var lang = rows[0].lang;
 
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
 			return;
 		}
 
@@ -3327,7 +3366,7 @@ bot.onText(/^\/ttag(?:@\w+)? (.+)/i, function (message, match) {
 		connection.query("SELECT id FROM team WHERE group_id = '" + message.chat.id + "' AND name = '" + team_name + "'", function (err, rows) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, lang_team_notfound[lang], html);
+				bot.sendMessage(message.chat.id, lang_team_notfound[lang], options);
 				return;
 			}
 			var team_id = rows[0].id;
@@ -3337,7 +3376,7 @@ bot.onText(/^\/ttag(?:@\w+)? (.+)/i, function (message, match) {
 				for (var i = 0; i < Object.keys(rows).length; i++)
 					text += "@" + rows[i].username + ", ";
 				text = text.slice(0, -2) + "!";
-				bot.sendMessage(message.chat.id, text, mark);
+				bot.sendMessage(message.chat.id, text, options);
 
 				connection.query("UPDATE team SET tag_date = NOW() WHERE id = " + team_id, function (err, rows) {
 					if (err) throw err;
@@ -3348,6 +3387,7 @@ bot.onText(/^\/ttag(?:@\w+)? (.+)/i, function (message, match) {
 });
 
 bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3363,7 +3403,7 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 		var lang = rows[0].lang;
 
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
 			return;
 		}
 
@@ -3377,18 +3417,18 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 			if (err) throw err;
 			var team_id = rows[0].id;
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, lang_team_notfound[lang], html);
+				bot.sendMessage(message.chat.id, lang_team_notfound[lang], options);
 				return;
 			}
 			connection.query("SELECT U.default_username, U.default_platform FROM team_member T, user U WHERE T.username = U.last_username AND T.team_id = " + team_id, function (err, rows) {
 				if (err) throw err;
 				var len = Object.keys(rows).length;
 				if (len == 0){
-					bot.sendMessage(message.chat.id, lang_team_notmembers[lang], html);
+					bot.sendMessage(message.chat.id, lang_team_notmembers[lang], options);
 					return;
 				}
 				if (len > 5){
-					bot.sendMessage(message.chat.id, lang_team_numlimit[lang], html);
+					bot.sendMessage(message.chat.id, lang_team_numlimit[lang], options);
 					return;
 				}
 				var textDone = 0;
@@ -3401,11 +3441,11 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 
 							textDone++;
 							if (textDone >= len)
-								bot.sendMessage(message.chat.id, text, html);
+								bot.sendMessage(message.chat.id, text, options);
 						}).catch(error => {
 							textDone++;
 							if (textDone >= len)
-								bot.sendMessage(message.chat.id, text, html);
+								bot.sendMessage(message.chat.id, text, options);
 						});
 					}
 				});
@@ -3419,6 +3459,7 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 });
 
 bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3434,13 +3475,13 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 		var lang = rows[0].lang;
 
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
 			return;
 		}
 
 		var parts = message.text.split(" ");
 		if (parts.length < 3){
-			bot.sendMessage(message.chat.id, lang_team_invalid_syntax[lang]);
+			bot.sendMessage(message.chat.id, lang_team_invalid_syntax[lang], options);
 			return;
 		}
 
@@ -3449,12 +3490,12 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 
 		var re = new RegExp("^[a-zA-Z0-9àèìòù\\-_ ]{1,64}$");
 		if (re.test(team_name) == false) {
-			bot.sendMessage(message.chat.id, lang_team_invalid_name[lang]);
+			bot.sendMessage(message.chat.id, lang_team_invalid_name[lang], options);
 			return;
 		}
 
 		if (members.indexOf("@") != -1){
-			bot.sendMessage(message.chat.id, lang_team_invalid_at[lang]);
+			bot.sendMessage(message.chat.id, lang_team_invalid_at[lang], options);
 			return;
 		}
 
@@ -3471,7 +3512,7 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 
 			if (Object.keys(rows).length == 0){
 				if (arr_members.length > 10){
-					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang]);
+					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang], options);
 					return;
 				}
 				connection.query("INSERT INTO team (group_id, name, tag_date, stats_date) VALUES (" + message.chat.id + ",'" + team_name + "', NOW(), NOW())", function (err, rows, fields) {
@@ -3493,20 +3534,20 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 						}
 					}
 
-					bot.sendMessage(message.chat.id, lang_team_created[lang] + ", " + added + " " + lang_team_users_added[lang] + "!");
+					bot.sendMessage(message.chat.id, lang_team_created[lang] + ", " + added + " " + lang_team_users_added[lang] + "!", options);
 				});
 				return;
 			} else {
 				var team_id = rows[0].id;
 				var member_permission = connection_sync.query("SELECT username FROM team_member WHERE team_id = " + team_id + " AND role = 1");
 				if (member_permission[0].username != message.from.username){
-					bot.sendMessage(message.chat.id, lang_team_only_leader[lang]);
+					bot.sendMessage(message.chat.id, lang_team_only_leader[lang], options);
 					return;
 				}
 				var member_cnt = connection_sync.query("SELECT COUNT(id) As cnt FROM team_member WHERE team_id = " + team_id);
 				member_cnt = member_cnt[0].cnt;
 				if (member_cnt+(arr_members.length-1) > 10){
-					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang]);
+					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang], options);
 					return;
 				}
 				var role = 0;
@@ -3525,13 +3566,14 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 					}
 				}
 
-				bot.sendMessage(message.chat.id, added + " " + lang_team_users_added[lang] + "!");
+				bot.sendMessage(message.chat.id, added + " " + lang_team_users_added[lang] + "!", options);
 			}
 		});
 	});
 });
 
 bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3547,13 +3589,13 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 		var lang = rows[0].lang;
 
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
 			return;
 		}
 
 		var parts = message.text.split(" ");
 		if (parts.length < 3){
-			bot.sendMessage(message.chat.id, lang_team_invalid_syntax[lang]);
+			bot.sendMessage(message.chat.id, lang_team_invalid_syntax[lang], options);
 			return;
 		}
 
@@ -3562,12 +3604,12 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 
 		var re = new RegExp("^[a-zA-Z0-9àèìòù\\-_ ]{1,64}$");
 		if (re.test(team_name) == false) {
-			bot.sendMessage(message.chat.id, lang_team_invalid_name[lang]);
+			bot.sendMessage(message.chat.id, lang_team_invalid_name[lang], options);
 			return;
 		}
 
 		if (members.indexOf("@") != -1){
-			bot.sendMessage(message.chat.id, lang_team_invalid_at[lang]);
+			bot.sendMessage(message.chat.id, lang_team_invalid_at[lang], options);
 			return;
 		}
 
@@ -3582,12 +3624,12 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, lang_team_not_exists[lang]);
+				bot.sendMessage(message.chat.id, lang_team_not_exists[lang], options);
 			} else {
 				var team_id = rows[0].id;
 				var member_permission = connection_sync.query("SELECT username FROM team_member WHERE team_id = " + team_id + " AND role = 1");
 				if (member_permission[0].username != message.from.username){
-					bot.sendMessage(message.chat.id, lang_team_not_leader_del[lang]);
+					bot.sendMessage(message.chat.id, lang_team_not_leader_del[lang], options);
 					return;
 				}
 				var member_cnt = connection_sync.query("SELECT COUNT(id) As cnt FROM team_member WHERE team_id = " + team_id);
@@ -3597,7 +3639,7 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 					var member = connection_sync.query("SELECT role FROM team_member WHERE team_id = " + team_id + " AND username = '" + arr_members[i] + "'");
 					if (Object.keys(member).length > 0){
 						if (arr_members[i] == message.from.username){
-							bot.sendMessage(message.chat.id, lang_team_remove_yourself[lang]);
+							bot.sendMessage(message.chat.id, lang_team_remove_yourself[lang], options);
 							continue;
 						}
 						connection.query("DELETE FROM team_member WHERE team_id = " + team_id + " AND username = '" + arr_members[i] + "'", function (err, rows, fields) {
@@ -3618,13 +3660,14 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 					team_deleted = " " + lang_team_deleted[lang];
 				}
 
-				bot.sendMessage(message.chat.id, removed + " " + lang_team_user_removed[lang] + team_deleted + "!");
+				bot.sendMessage(message.chat.id, removed + " " + lang_team_user_removed[lang] + team_deleted + "!", options);
 			}
 		});
 	});
 });
 
 bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3644,13 +3687,13 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 		};
 
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_invalid_platform[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_platform[lang], options);
 			return;
 		}
 
 		var platform = match[1].toLowerCase();
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
-			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
+			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
 			return;
 		}
 
@@ -3658,7 +3701,7 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, lang_search_noplayers[lang]);
+				bot.sendMessage(message.chat.id, lang_search_noplayers[lang], options);
 				return;
 			}
 
@@ -3667,13 +3710,14 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 				list += "\n" + rows[i].default_username;
 
 			if (message.chat.id < 0)
-				bot.sendMessage(message.chat.id, lang_private[lang]);
-			bot.sendMessage(message.from.id, list);
+				bot.sendMessage(message.chat.id, lang_private[lang], options);
+			bot.sendMessage(message.from.id, list, options);
 		});
 	});
 });
 
 bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3693,7 +3737,7 @@ bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
 		};
 		
 		if (message.chat.id > 0) {
-			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
 			return;
 		}
 
@@ -3701,7 +3745,7 @@ bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, lang_dist_noplayers[lang]);
+				bot.sendMessage(message.chat.id, lang_dist_noplayers[lang], options);
 				return;
 			}
 
@@ -3709,12 +3753,13 @@ bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 				list += "\n" + decodePlatform(rows[i].default_platform) + ": " + Math.round(rows[i].num/rows[i].num_tot*100) + "%";
 
-			bot.sendMessage(message.chat.id, list, html);
+			bot.sendMessage(message.chat.id, list, options);
 		});
 	});
 });
 
 bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3737,7 +3782,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 		
 		var group_id = message.chat.id;
 		if (group_id > 0){
-			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
 			return;
 		}
 
@@ -3748,7 +3793,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 				c++;
 			}
 
-			bot.sendMessage(message.chat.id, text, html);
+			bot.sendMessage(message.chat.id, text, options);
 		});
 	});
 });
@@ -3830,6 +3875,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3838,7 +3884,7 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /find");
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /find", options);
 			return;
 		}
 
@@ -3851,14 +3897,14 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 		if (match[1] != undefined){
 			var platform = match[1].toLowerCase();
 			if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
-				bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
+				bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
 				return;
 			}
 		} else {
 			if (rows[0].default_platform != null)
 				var platform = rows[0].default_platform;
 			else {
-				bot.sendMessage(message.chat.id, lang_invalid_find[lang]);
+				bot.sendMessage(message.chat.id, lang_invalid_find[lang], options);
 				return;
 			}
 		}
@@ -3880,6 +3926,7 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 		
 		var opt = {
 			parse_mode: "HTML",
+			reply_to_message_id: message.message_id,
 			reply_markup: {
 				inline_keyboard: iKeys
 			}
