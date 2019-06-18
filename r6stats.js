@@ -476,9 +476,12 @@ var lang_team_remove_yourself = [];
 var lang_team_deleted = [];
 var lang_team_user_removed = [];
 var lang_team_call = [];
+var lang_team_stats = [];
 var lang_team_intro = [];
 var lang_team_no_team = [];
-var lang_team_only_groups = [];
+var lang_team_notfound = [];
+var lang_team_notmembers = [];
+var lang_team_numlimit = [];
 
 var lang_search_noplayers = [];
 var lang_search_found = [];
@@ -638,6 +641,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
 						"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
 						"03/06/19 - Aggiunta la possibilità di utilzzare il comando /compare anche se i giocatori sono su piattaforme differenti\n" +
 						"16/05/19 - Aggiunto il comando /dist per visualizzare la distribuzione del giocatori per piattaforma relativa al gruppo attuale\n" +
@@ -650,6 +654,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"06/18/19 - Added /tstats command for team stats (and renamed /tagteam in /ttag)\n" +
 						"06/07/19 - Added full support for new operators Nokk and Warden\n" +
 						"06/03/19 - Added possibility to use /compare command also with player's platform are different\n" +
 						"05/16/19 - Added /dist command to show platform distribution for actual group\n" +
@@ -1041,12 +1046,18 @@ lang_team_user_removed["it"] = "utenti rimossi";
 lang_team_user_removed["en"] = "users removed";
 lang_team_call["it"] = "chiama i suoi compagni di team";
 lang_team_call["en"] = "call his teammates";
-lang_team_intro["it"] = "Benvenuto nella gestione dei <b>Team</b>.\nI team sono legati al gruppo in cui si creano.\n\nPuoi crearlo ed aggiungere utenti con:\n/addteam <i>nome_team</i> <i>nickname,nickname,nickname</i>\nCreandolo ne sarai il leader\n\nPuoi rimuovere gli utenti con:\n/delteam <i>nome_team</i> <i>nickname,nickname,nickname</i>\nQuando un team non ha più utenti viene cancellato\n\nPer taggare tutti i compagni di team:\n/tagteam <i>nome_team</i>\nDopo 15 giorni che non viene taggato, il team viene cancellato\n\n<b>Team creati:</b>";
-lang_team_intro["en"] = "Welcome to <b>Team</b> manage.\nTeams are linked with groups where they are created.\n\nYou can create it and add users with:\n/addteam <i>team_name</i> <i>nickname,nickname,nickname</i>\nCreating it you will be the leader\n\nYou can remove users with:\n/delteam <i>team_name</i> <i>nickname,nickname,nickname</i>\nWhen a team have no more users it will be deleted\n\nYou can tag all your teammates with:\n/tagteam <i>team_name</i>\nAfter 15 days that a team has not been tagged, it will be automatically deleted\n\nCreated teams:";
+lang_team_stats["it"] = "visualizza le stats del suo team";
+lang_team_stats["en"] = "show his teammates stats";
+lang_team_intro["it"] = "Benvenuto nella gestione dei <b>Team</b>.\nI team sono legati al gruppo in cui si creano.\n\nPuoi crearlo ed aggiungere utenti con:\n/addteam <i>nome_team</i> <i>nickname,nickname,nickname</i>\nCreandolo ne sarai il leader\n\nPuoi rimuovere gli utenti con:\n/delteam <i>nome_team</i> <i>nickname,nickname,nickname</i>\nQuando un team non ha più utenti viene cancellato\n\nPer taggare tutti i compagni di team:\n/ttag <i>nome_team</i>\n\nPer ottenere statistiche abbreviate di tutti i compagni di team:\n/tstats <i>nome_team</i>\nDopo 15 giorni che non viene taggato o richieste le statistiche, il team viene cancellato\n\n<b>Team creati:</b>";
+lang_team_intro["en"] = "Welcome to <b>Team</b> manage.\nTeams are linked with groups where they are created.\n\nYou can create it and add users with:\n/addteam <i>team_name</i> <i>nickname,nickname,nickname</i>\nCreating it you will be the leader\n\nYou can remove users with:\n/delteam <i>team_name</i> <i>nickname,nickname,nickname</i>\nWhen a team have no more users it will be deleted\n\nYou can tag all your teammates with:\n/ttag <i>team_name</i>\n\nYou can show all teammates stats with:\n/tstats <i>team_name</i>\nAfter 15 days that a team has not been tagged or showed stats, it will be automatically deleted\n\nCreated teams:";
 lang_team_no_team["it"] = "Non hai creato nessun team";
 lang_team_no_team["en"] = "No teams created";
-lang_team_only_groups["it"] = "Questo comando può essere usato solo nei gruppi";
-lang_team_only_groups["en"] = "This command can be used only in groups";
+lang_team_notfound["it"] = "Il gruppo inserito non esiste";
+lang_team_notfound["en"] = "Group specified not exists";
+lang_team_notmembers["it"] = "Nessun utente del team è associato al bot, riprova dopo aver fatto usare loro il comando /stats almeno una volta";
+lang_team_notmembers["en"] = "No team user linked to bot, retry after use of command /stats at least once";
+lang_team_numlimit["it"] = "Puoi visualizzare le statistiche al massimo di un team composto da 5 membri";
+lang_team_numlimit["en"] = "You can show stats for a team of maximum 5 members";
 
 lang_search_noplayers["it"] = "Non ci sono giocatori per la piattaforma e la lingua selezionata";
 lang_search_noplayers["en"] = "No players for selected platform and language";
@@ -2167,6 +2178,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 		}
 
 		updateChatId(message.from.id, message.chat.id);
+		updateUsername(message.from.id, message.from.username);
 
 		console.log(getNow("it") + " Request user data for " + username + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -3286,7 +3298,7 @@ bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match)
 	});
 });
 
-bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
+bot.onText(/^\/ttag(?:@\w+)? (.+)/i, function (message, match) {
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3302,7 +3314,56 @@ bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
 		var lang = rows[0].lang;
 
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
+			return;
+		}
+
+		var mark = {
+			parse_mode: "HTML"
+		};
+
+		var team_name = match[1];
+
+		connection.query("SELECT id FROM team WHERE group_id = '" + message.chat.id + "' AND name = '" + team_name + "'", function (err, rows) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, lang_team_notfound[lang], html);
+				return;
+			}
+			var team_id = rows[0].id;
+			connection.query("SELECT username FROM team_member WHERE username != '" + message.from.username + "' AND team_id = " + team_id, function (err, rows) {
+				if (err) throw err;
+				var text = "<b>" + message.from.username + "</b> " + lang_team_call[lang] + ": ";
+				for (var i = 0; i < Object.keys(rows).length; i++)
+					text += "@" + rows[i].username + ", ";
+				text = text.slice(0, -2) + "!";
+				bot.sendMessage(message.chat.id, text, mark);
+
+				connection.query("UPDATE team SET tag_date = NOW() WHERE id = " + team_id, function (err, rows) {
+					if (err) throw err;
+				});
+			});
+		});
+	});
+});
+
+bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+		}
+
+		var lang = rows[0].lang;
+
+		if (message.chat.id > 0){
+			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
 			return;
 		}
 
@@ -3315,15 +3376,41 @@ bot.onText(/^\/tagteam(?:@\w+)? (.+)/i, function (message, match) {
 		connection.query("SELECT id FROM team WHERE group_id = '" + message.chat.id + "' AND name = '" + team_name + "'", function (err, rows) {
 			if (err) throw err;
 			var team_id = rows[0].id;
-			connection.query("SELECT username FROM team_member WHERE username != '" + message.from.username + "' AND team_id = " + team_id, function (err, rows) {
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, lang_team_notfound[lang], html);
+				return;
+			}
+			connection.query("SELECT U.default_username, U.default_platform FROM team_member T, user U WHERE T.username = U.last_username AND T.team_id = " + team_id, function (err, rows) {
 				if (err) throw err;
-				var text = "<b>" + message.from.username + "</b> " + lang_team_call[lang] + ": ";
-				for (var i = 0; i < Object.keys(rows).length; i++)
-					text += "@" + rows[i].username + ", ";
-				text = text.slice(0, -2) + "!";
-				bot.sendMessage(message.chat.id, text, mark);
+				var len = Object.keys(rows).length;
+				if (len == 0){
+					bot.sendMessage(message.chat.id, lang_team_notmembers[lang], html);
+					return;
+				}
+				if (len > 5){
+					bot.sendMessage(message.chat.id, lang_team_numlimit[lang], html);
+					return;
+				}
+				var textDone = 0;
+				var text = "<b>" + message.from.username + "</b> " + lang_team_stats[lang] + ":\n";
+				bot.sendChatAction(message.chat.id, "typing").then(function () {
+					for (i = 0; i < len; i++){
+						r6.stats(rows[i].default_username, rows[i].default_platform, -1, 0).then(response => {
+							if (response.level != undefined)
+								text += getDataLine(response, lang) + "\n";
 
-				connection.query("UPDATE team SET tag_date = NOW() WHERE id = " + team_id, function (err, rows) {
+							textDone++;
+							if (textDone >= len)
+								bot.sendMessage(message.chat.id, text, html);
+						}).catch(error => {
+							textDone++;
+							if (textDone >= len)
+								bot.sendMessage(message.chat.id, text, html);
+						});
+					}
+				});
+
+				connection.query("UPDATE team SET stats_date = NOW() WHERE id = " + team_id, function (err, rows) {
 					if (err) throw err;
 				});
 			});
@@ -3347,7 +3434,7 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 		var lang = rows[0].lang;
 
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
 			return;
 		}
 
@@ -3387,7 +3474,7 @@ bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
 					bot.sendMessage(message.chat.id, lang_team_invalid_count[lang]);
 					return;
 				}
-				connection.query("INSERT INTO team (group_id, name, tag_date) VALUES (" + message.chat.id + ",'" + team_name + "', NOW())", function (err, rows, fields) {
+				connection.query("INSERT INTO team (group_id, name, tag_date, stats_date) VALUES (" + message.chat.id + ",'" + team_name + "', NOW(), NOW())", function (err, rows, fields) {
 					if (err) throw err;
 					var team_id = rows.insertId;
 					var role = 0;
@@ -3460,7 +3547,7 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 		var lang = rows[0].lang;
 
 		if (message.chat.id > 0){
-			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
 			return;
 		}
 
@@ -3650,7 +3737,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 		
 		var group_id = message.chat.id;
 		if (group_id > 0){
-			bot.sendMessage(message.chat.id, lang_team_only_groups[lang]);
+			bot.sendMessage(message.chat.id, lang_only_groups[lang]);
 			return;
 		}
 
@@ -3890,6 +3977,14 @@ function updateChatId(from_id, chat_id) {
 	}
 }
 
+function updateUsername(from_id, username) {
+	if (username != undefined){
+		connection.query('UPDATE user SET last_username = "' + username + '" WHERE account_id = ' + from_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	}
+}
+
 function reportDailyProgress() {
 	var query = "SELECT account_id, default_username, default_platform, lang FROM user WHERE daily_report = 1 AND default_username IS NOT NULL AND default_platform IS NOT NULL";
 	connection.query(query, function (err, rows, fields) {
@@ -4001,7 +4096,7 @@ function calculateSym(text, first, last, float) {
 }
 
 function checkTeam() {
-	connection.query('SELECT id FROM team WHERE DATEDIFF(CURDATE(), CAST(tag_date As date)) > 15', function (err, rows, fields) {
+	connection.query('SELECT id FROM team WHERE DATEDIFF(CURDATE(), CAST(tag_date As date)) > 15 OR DATEDIFF(CURDATE(), CAST(stats_date As date)) > 15', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
