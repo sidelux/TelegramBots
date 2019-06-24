@@ -1073,8 +1073,8 @@ lang_multiple_limit["it"] = "Puoi specificare massimo 5 giocatori";
 lang_multiple_limit["en"] = "You can define at least 5 players";
 lang_dist_noplayers["it"] = "Non ci sono giocatori collegati a questo gruppo";
 lang_dist_noplayers["en"] = "No players linked at this group";
-lang_dist["it"] = "Distribuzione giocatori per questo gruppo";
-lang_dist["en"] = "Player distribution for this group";
+lang_dist["it"] = "Distribuzione giocatori memorizzati per questo gruppo";
+lang_dist["en"] = "Distribution of saved players for this group";
 
 lang_rank_copper4["it"] = "Rame IV";
 lang_rank_copper4["en"] = "Copper IV";
