@@ -269,6 +269,7 @@ var lang_news_date = [];
 var lang_operator_no_name = [];
 var lang_operator_not_found = [];
 var lang_help = [];
+var lang_config = [];
 var lang_last_news = [];
 var lang_groups = [];
 var lang_rank = [];
@@ -592,7 +593,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/stats <username>,<piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
 	"> '/mstats <username1>,<username2>,ecc. - Permette di visualizzare statistiche brevi per la lista di utenti specificata.\n" +
 	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
-	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform.\n" +
+	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform inviandola in privato.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
 	"> '/seasons' - Permette di visualizzare la lista completa del rango massimo ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
@@ -613,13 +614,14 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"> '/setreport' - Attiva o disattiva il report statistiche del gruppo in cui si è usato /stats l'ultima volta.\n" +
 	"> '/setdailyreport' - Attiva o disattiva il report statistiche giornaliero del giocatore.\n" +
+	"> '/config' - Mostra la guida per la prima configurazione del bot.\n" +
 	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats oppure invitare qualcuno nel gruppo italiano!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
 	"> '/mstats <username1>,<username2>,etc. - Allow to print a short stats for multiple specified users.\n" +
 	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
 	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
-	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform.\n" +
+	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform sending it in private mode.\n" +
 	"> '/seasons' - Allow to print seasons max ranks details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats.\n" +
@@ -639,7 +641,10 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
+	"> '/config' - Show guide for bot's first configuration.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
+lang_config["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Prima di tutto avvia il bot IN PRIVATO;\n2. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n3. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n4. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
+lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. First of all, start the bot IN PRIVATE CHAT;\n2. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n3. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n4. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
 						"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
@@ -2882,7 +2887,9 @@ bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
 					text += " - " + formatNumber(sum);
 					text += "\n";
 				}
-				bot.sendMessage(message.chat.id, text + lang_operator_extra[lang], options);
+				if (message.chat.id < 0)
+					bot.sendMessage(message.chat.id, lang_private[lang], options);
+				bot.sendMessage(message.from.id, text + lang_operator_extra[lang], options);
 			}).catch(error => {
 				console.log(error);
 				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + default_platform + ")", options);
@@ -3265,6 +3272,32 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 	});
 });
 
+bot.onText(/^\/config(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+		}
+
+		var lang = rows[0].lang;
+
+		var mark = {
+			parse_mode: "Markdown"
+		};
+		
+		if (message.chat.id < 0)
+			bot.sendMessage(message.chat.id, lang_private[lang]);
+		bot.sendMessage(message.from.id, lang_config[lang], options);
+	});
+});
+
 bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
@@ -3290,7 +3323,7 @@ bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match) {
-	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3331,7 +3364,6 @@ bot.onText(/^\/team(?:@\w+)? (.+)|^\/team(?:@\w+)?$/i, function (message, match)
 			}
 
 			bot.sendMessage(message.chat.id, lang_team_intro[lang] + team_list, options);
-
 		});
 	});
 });
@@ -3824,7 +3856,9 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			var team = text.search(/team/gmi);
 			var clan = text.search(/clan/gmi);
 			if ((team != -1) || (clan != -1)) {
-				if (team != -1)
+				if ((team != -1) && (team != -1))
+					response += "<b>Tipo gruppo</b>: Team e Clan\n";
+				else if (team != -1)
 					response += "<b>Tipo gruppo</b>: Team\n";
 				else
 					response += "<b>Tipo gruppo</b>: Clan\n";
@@ -3838,24 +3872,43 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		if (rank != null) {
 			for (var i = 0; i < rank.length; i++)
 				rank[i] = jsUcfirst(rank[i].toLowerCase());
+			rank = uniq(rank);
 			response += "<b>Rango</b>: " + rank.join(", ") + "\n";
 		}
 		var platform = text.match(/pc|ps4|xbox/gmi);
 		if (platform != null) {
 			for (var i = 0; i < platform.length; i++)
 				platform[i] = jsUcfirst(platform[i].toLowerCase());
+			platform = uniq(platform);
 			response += "<b>Piattaforma</b>: " + platform.join(", ") + "\n";
 		} else
 			response += "<i>Specifica la piattaforma!</i>\n";
 		var rateo = text.match(/((\d)\.(\d))|((\d)\,(\d))/gmi);
 		if (rateo != null)
 			response += "<b>Rateo</b>: " + rateo[0].trim() + "\n";
+		else {
+			var regexp = RegExp('([0-9]) di kd', 'gmi');
+			var rateo = regexp.exec(text);
+			if (rateo != null)
+				response += "<b>Rateo U/M</b>: " + rateo[1].trim() + "\n";
+		}
+		var regexp = RegExp('livello ([0-9]+)|lv ([0-9]+)', 'gmi');
+		var lev = regexp.exec(text);
+		if (lev != null){
+			if (lev[1] != undefined)
+				response += "<b>Livello</b>: " + lev[1].trim() + "\n";
+			else if (lev[2] != undefined)
+				response += "<b>Livello</b>: " + lev[2].trim() + "\n";
+		}
 		var competitive = text.search(/competitivo|esl|cw|go4|ladder/gmi);
 		if (competitive != -1) {
 			var competitive_more = text.match(/esl|cw|go4|ladder/gmi);
-			if (competitive_more != null)
-				response += "<b>Competitivo</b>: " + jsUcfirst(competitive_more[0].toLowerCase()) + "\n";
-			else
+			if (competitive_more != null) {
+				for (var i = 0; i < competitive_more.length; i++)
+					competitive_more[i] = jsUcfirst(competitive_more[i].toLowerCase());
+				competitive_more = uniq(competitive_more);
+				response += "<b>Competitivo</b>: " + competitive_more.join(", ") + "\n";
+			} else
 				response += "<b>Competitivo</b>: Sì\n";
 		}
 		var audition = text.search(/provino|provini/gmi);
