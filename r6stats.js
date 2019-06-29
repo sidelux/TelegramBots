@@ -1254,6 +1254,11 @@ bot.onText(/^\/start/i, function (message) {
 	});
 });
 
+bot.on('message', function (message) {
+	if (message.chat.id == -1001246584843)
+		parse(message);
+});
+
 bot.on("inline_query", function (query) {
 	var data = query.query;
 
@@ -3292,8 +3297,6 @@ bot.onText(/^\/config(?:@\w+)?/i, function (message, match) {
 			parse_mode: "Markdown"
 		};
 		
-		if (message.chat.id < 0)
-			bot.sendMessage(message.chat.id, lang_private[lang]);
 		bot.sendMessage(message.from.id, lang_config[lang], options);
 	});
 });
@@ -3830,100 +3833,107 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 	});
 });
 
+function parse(message){
+	if (message.reply_to_message != undefined)
+		message = message.reply_to_message;
+	if (message.text == undefined)
+		return;
+	var text = message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
+	var author;
+	if (message.from.username != undefined)
+		author = "@" + message.from.username;
+	else if (message.from.first_name != undefined)
+		author = message.from.first_name;
+	var response = "";
+
+	if (text.search(/recluto|recluta|reclutiamo|cerchiamo/gmi) == -1)
+		return;
+	var clanNameFound = "";
+	var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
+	if (clanName != null)
+		clanNameFound = " " + jsUcall(clanName[0]);
+	else {
+		var team = text.search(/team/gmi);
+		var clan = text.search(/clan/gmi);
+		if ((team != -1) || (clan != -1)) {
+			if ((team != -1) && (clan != -1))
+				response += "<b>Tipo gruppo</b>: Team e Clan\n";
+			else if (team != -1)
+				response += "<b>Tipo gruppo</b>: Team\n";
+			else
+				response += "<b>Tipo gruppo</b>: Clan\n";
+		}
+	}
+	var header = "🔰 <b>Reclutamento" + clanNameFound + "</b> 🔰\n";
+	var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi|(\s[1-3][0-9]\s){1}/gmi);
+	if (age != null)
+		response += "<b>Età</b>: " + age[0].trim() + "\n";
+	var rank = text.match(/(platino|oro|argento) (\d){1}|(platino|oro|argento)(\d){1}|(platino|oro|argento)/gmi);
+	if (rank != null) {
+		for (var i = 0; i < rank.length; i++)
+			rank[i] = jsUcfirst(rank[i].toLowerCase());
+		rank = uniq(rank);
+		response += "<b>Rango</b>: " + rank.join(", ") + "\n";
+	}
+	var platform = text.match(/pc|ps4|xbox/gmi);
+	if (platform != null) {
+		for (var i = 0; i < platform.length; i++)
+			platform[i] = jsUcfirst(platform[i].toLowerCase());
+		platform = uniq(platform);
+		response += "<b>Piattaforma</b>: " + platform.join(", ") + "\n";
+	} else
+		response += "<i>Specifica la piattaforma!</i>\n";
+	var rateo = text.match(/((\d)\.(\d))|((\d)\,(\d))/gmi);
+	if (rateo != null)
+		response += "<b>Rateo</b>: " + rateo[0].trim() + "\n";
+	else {
+		var regexp = RegExp('([0-9]) di kd', 'gmi');
+		var rateo = regexp.exec(text);
+		if (rateo != null)
+			response += "<b>Rateo U/M</b>: " + rateo[1].trim() + "\n";
+	}
+	var regexp = RegExp('livello ([0-9]+)|lv ([0-9]+)', 'gmi');
+	var lev = regexp.exec(text);
+	if (lev != null){
+		if (lev[1] != undefined)
+			response += "<b>Livello</b>: " + lev[1].trim() + "\n";
+		else if (lev[2] != undefined)
+			response += "<b>Livello</b>: " + lev[2].trim() + "\n";
+	}
+	var competitive = text.search(/competitivo|esl|cw|go4|ladder/gmi);
+	if (competitive != -1) {
+		var competitive_more = text.match(/esl|cw|go4|ladder/gmi);
+		if (competitive_more != null) {
+			for (var i = 0; i < competitive_more.length; i++)
+				competitive_more[i] = jsUcfirst(competitive_more[i].toLowerCase());
+			competitive_more = uniq(competitive_more);
+			response += "<b>Competitivo</b>: " + competitive_more.join(", ") + "\n";
+		} else
+			response += "<b>Competitivo</b>: Sì\n";
+	}
+	var audition = text.search(/provino|provini/gmi);
+	if (audition != -1)
+		response += "<b>Provino</b>: Sì\n";
+
+	if (response == ""){
+		console.log("Response empty");
+		return;
+	}
+
+	response += "\n<i>Contattare</i> " + author
+	// bot.deleteMessage(message.chat.id, message.message_id);
+
+	bot.sendMessage(-1001326797846, header + response, html);
+}
+
 bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 	if ((message.from.id == 20471035) || (message.from.id == 200492030)) {
 		if (message.reply_to_message == undefined){
 			console.log("Use this in reply mode");
 			return;
 		}
-		var text = message.reply_to_message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
-		var author;
-		if (message.reply_to_message.from.username != undefined)
-			author = "@" + message.reply_to_message.from.username;
-		else if (message.reply_to_message.from.first_name != undefined)
-			author = message.reply_to_message.from.first_name;
-		var response = "";
 		
-		if (text.search(/recluto|recluta|reclutiamo|cerchiamo/gmi) == -1){
-			console.log("Recruit text not found");
-			return;
-		}
-		var clanNameFound = "";
-		var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
-		if (clanName != null)
-			clanNameFound = " " + jsUcall(clanName[0]);
-		else {
-			var team = text.search(/team/gmi);
-			var clan = text.search(/clan/gmi);
-			if ((team != -1) || (clan != -1)) {
-				if ((team != -1) && (team != -1))
-					response += "<b>Tipo gruppo</b>: Team e Clan\n";
-				else if (team != -1)
-					response += "<b>Tipo gruppo</b>: Team\n";
-				else
-					response += "<b>Tipo gruppo</b>: Clan\n";
-			}
-		}
-		var header = "🔰 <b>Reclutamento" + clanNameFound + "</b> 🔰\n";
-		var age = text.match(/(\d){2} anni|età (\d){2}|(\d){2} in su|(\d){2} in poi|(\s[1-3][0-9]\s){1}/gmi);
-		if (age != null)
-			response += "<b>Età</b>: " + age[0].trim() + "\n";
-		var rank = text.match(/(platino|oro|argento) (\d){1}|(platino|oro|argento)(\d){1}|(platino|oro|argento)/gmi);
-		if (rank != null) {
-			for (var i = 0; i < rank.length; i++)
-				rank[i] = jsUcfirst(rank[i].toLowerCase());
-			rank = uniq(rank);
-			response += "<b>Rango</b>: " + rank.join(", ") + "\n";
-		}
-		var platform = text.match(/pc|ps4|xbox/gmi);
-		if (platform != null) {
-			for (var i = 0; i < platform.length; i++)
-				platform[i] = jsUcfirst(platform[i].toLowerCase());
-			platform = uniq(platform);
-			response += "<b>Piattaforma</b>: " + platform.join(", ") + "\n";
-		} else
-			response += "<i>Specifica la piattaforma!</i>\n";
-		var rateo = text.match(/((\d)\.(\d))|((\d)\,(\d))/gmi);
-		if (rateo != null)
-			response += "<b>Rateo</b>: " + rateo[0].trim() + "\n";
-		else {
-			var regexp = RegExp('([0-9]) di kd', 'gmi');
-			var rateo = regexp.exec(text);
-			if (rateo != null)
-				response += "<b>Rateo U/M</b>: " + rateo[1].trim() + "\n";
-		}
-		var regexp = RegExp('livello ([0-9]+)|lv ([0-9]+)', 'gmi');
-		var lev = regexp.exec(text);
-		if (lev != null){
-			if (lev[1] != undefined)
-				response += "<b>Livello</b>: " + lev[1].trim() + "\n";
-			else if (lev[2] != undefined)
-				response += "<b>Livello</b>: " + lev[2].trim() + "\n";
-		}
-		var competitive = text.search(/competitivo|esl|cw|go4|ladder/gmi);
-		if (competitive != -1) {
-			var competitive_more = text.match(/esl|cw|go4|ladder/gmi);
-			if (competitive_more != null) {
-				for (var i = 0; i < competitive_more.length; i++)
-					competitive_more[i] = jsUcfirst(competitive_more[i].toLowerCase());
-				competitive_more = uniq(competitive_more);
-				response += "<b>Competitivo</b>: " + competitive_more.join(", ") + "\n";
-			} else
-				response += "<b>Competitivo</b>: Sì\n";
-		}
-		var audition = text.search(/provino|provini/gmi);
-		if (audition != -1)
-			response += "<b>Provino</b>: Sì\n";
-		
-		if (response == ""){
-			console.log("Response empty");
-			return;
-		}
-		
-		response += "\n<i>Contattare</i> " + author
-		// bot.deleteMessage(message.chat.id, message.reply_to_message.message_id);
-		
-		bot.sendMessage(message.from.id, header + response, html);
+		parse(message);
 	}
 });
 
