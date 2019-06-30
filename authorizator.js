@@ -84,11 +84,7 @@ bot.on('message', function (message) {
 	if ((message.text != undefined) && (message.text.startsWith("/") && !(message.text.startsWith("//"))))
 		console.log(getNow("it") + " - " + (message.from.username == undefined ? message.from.id : message.from.username) + ": " + message.text);
 	
-	// Nuovo membro
-	if (message.new_chat_members != undefined) {
-		
-	}
-	
+	/* troppo pesante?
 	if (message.chat.id < 0){
 		bot.getChat(message.chat.id).then(function (data) {
 			connection.query('UPDATE user_group SET group_title = "' + data.title + '" WHERE group_chat_id = "' + data.id + '"', function (err, rows, fields) {
@@ -96,6 +92,7 @@ bot.on('message', function (message) {
 			});
 		});
 	}
+	*/
 	
 	// Configurazione
 	if (message.new_chat_members != undefined) {
@@ -118,10 +115,12 @@ bot.on('message', function (message) {
 								return;
 							}
 
-							connection.query('INSERT INTO user_group (user_id, group_chat_id) VALUES (' + user_id + ', "' + message.chat.id + '")', function (err, rows, fields) {
-								if (err) throw err;
-								bot.sendMessage(message.from.id, "Hai associato il gruppo <b>" + message.chat.title + "</b>, ora impostalo come amministratore in modo che possa agire sugli utenti.", html);
-								bot.sendMessage(message.chat.id, message.from.username + " hai completato l'associazione con questo gruppo, ora continua la configurazione in privato.");
+							bot.getChat(message.chat.id).then(function (data) {
+								connection.query('INSERT INTO user_group (user_id, group_chat_id, group_title) VALUES (' + user_id + ', "' + message.chat.id + '", "' + escape(data.title) + '")', function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(message.from.id, "Hai associato il gruppo <b>" + message.chat.title + "</b>, ora impostalo come amministratore in modo che possa agire sugli utenti.", html);
+									bot.sendMessage(message.chat.id, message.from.username + " hai completato l'associazione con questo gruppo, ora continua la configurazione in privato.");
+								});
 							});
 						});
 					});
@@ -131,12 +130,30 @@ bot.on('message', function (message) {
 				}
 			});
 		} else if (message.new_chat_member.is_bot == false){
-			var options = {can_send_messages: false, can_send_media_messages: false, can_send_other_messages: false, can_add_web_page_previews: false};
-			bot.restrictChatMember(message.chat.id, message.new_chat_member.id, options).then(function (data) {
-				if (data == true){
-					// mutato
-				} else {
-					// errore
+			connection.query('SELECT active FROM user_group WHERE group_chat_id = "' + message.chat.id + '"', function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) 
+					return;
+				
+				var active = rows[0].active;
+				if (active == 1){
+					var options = {can_send_messages: false, can_send_media_messages: false, can_send_other_messages: false, can_add_web_page_previews: false};
+					bot.restrictChatMember(message.chat.id, message.new_chat_member.id, options).then(function (data) {
+						if (data == true){
+							// mutato
+							var iKeys = [];
+							iKeys.push([{
+								text: "Avvia",
+								url: "https://telegram.me/authorizatorbot?start=" + message.chat.id
+							}]);
+							bot.sendMessage(message.chat.id, "Avvia il bot in privato cliccando sul pulsante sottostante e segui le istruzioni per essere smutato.", {
+								parse_mode: 'Markdown',
+								reply_markup: {
+									inline_keyboard: iKeys
+								}
+							});
+						}
+					});
 				}
 			});
 		}
@@ -162,7 +179,7 @@ bot.onText(/^\/config/, function (message) {
 	connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
 		var user_id = rows[0].id;
-		connection.query('SELECT group_chat_id FROM user_group WHERE user_id = ' + user_id, function (err, rows, fields) {
+		connection.query('SELECT group_chat_id, group_title FROM user_group WHERE user_id = ' + user_id, function (err, rows, fields) {
 			if (err) throw err;
 			
 			if (Object.keys(rows).length == 0){
@@ -173,7 +190,7 @@ bot.onText(/^\/config/, function (message) {
 			var iKeys = [];
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				iKeys.push([{
-					text: "Gruppo",
+					text: rows[i].group_title,
 					callback_data: "manage:" + rows[i].group_chat_id
 				}]);
 			}
@@ -188,21 +205,153 @@ bot.onText(/^\/config/, function (message) {
 	});
 });
 
-bot.onText(/^\/start$|^\/start@authorizatorbot/, function (message) {
-	connection.query('SELECT 1 FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+bot.onText(/^\/start$|^\/start@authorizatorbot|^\/start (.+)/, function (message, match) {
+	var rows = connection_sync.query('SELECT 1 FROM user WHERE account_id = ' + message.from.id);
+	if (Object.keys(rows).length == 0)
+		connection_sync.query('INSERT INTO user (account_id) VALUES (' + message.from.id + ')');
+	
+	if (match[1] != undefined){
+		var group_chat_id = match[1];
+		connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
-		if (Object.keys(rows).length == 0) {
-			connection.query('INSERT INTO user (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
+			var user_id = rows[0].id;
+			connection.query('SELECT active, button FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Il gruppo per l'accesso non esiste.");
+					return;
+				}
+
+				connection.query('SELECT validated, button FROM user_validated WHERE user_id = ' + user_id + ' AND group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
+					if (err) throw err;
+					
+					if (Object.keys(rows).length == 0) {
+						connection.query('INSERT INTO user_validated (user_id, group_chat_id) VALUES (' + user_id + ', "' + group_chat_id + '")', function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
+					
+					// validazione
+				});
 			});
-		}
-	});
-	bot.sendMessage(message.chat.id, "Benvenuto");
+		});
+	} else {
+		bot.sendMessage(message.chat.id, "Benvenuto...");
+	}
 });
 
 bot.on('callback_query', function (message) {
-	console.log(message);
-	bot.answerCallbackQuery(message.id, {text: 'Ok'});
+	var data = message.data;
+	if (data.indexOf(":") == -1)
+		return;
+	var split = data.split(":");
+	var function_name = split[0];
+	var group_chat_id = split[1];
+	connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+		if (err) throw err;
+		var user_id = rows[0].id;
+		connection.query('SELECT active, button FROM user_group WHERE group_chat_id = "' + group_chat_id + '" AND user_id = ' + user_id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.answerCallbackQuery(message.id, {text: 'Non sei autorizzato a gestire questo gruppo.'});
+				return;
+			}
+			
+			var active = rows[0].active;
+			var button = rows[0].button;
+			
+			if (function_name == "manage"){
+				var iKeys = [];
+				if (active == 1){
+					iKeys.push([{
+						text: "Disattiva mute automatico",
+						callback_data: "active:" + group_chat_id
+					}]);
+				} else {
+					iKeys.push([{
+						text: "Attiva mute automatico",
+						callback_data: "active:" + group_chat_id
+					}]);
+				}
+				if (button == 1){
+					iKeys.push([{
+						text: "Disattiva pulsante",
+						callback_data: "button:" + group_chat_id
+					}]);
+				} else {
+					iKeys.push([{
+						text: "Attiva pulsante",
+						callback_data: "button:" + group_chat_id
+					}]);
+				}
+
+				bot.editMessageText("Gestione del gruppo", {
+					chat_id: message.message.chat.id,
+					message_id: message.message.message_id,
+					parse_mode: 'HTML',
+					reply_markup: {
+						inline_keyboard: iKeys
+					}
+				});
+				
+				bot.answerCallbackQuery(message.id, {text: 'Ok'});
+			} else if (function_name == "active"){
+				var iKeys = [];
+				iKeys.push([{
+					text: "Indietro",
+					callback_data: "manage:" + group_chat_id
+				}]);
+
+				bot.editMessageText("Gestione del gruppo", {
+					chat_id: message.message.chat.id,
+					message_id: message.message.message_id,
+					parse_mode: 'HTML',
+					reply_markup: {
+						inline_keyboard: iKeys
+					}
+				});
+				
+				if (active == 1){
+					connection.query('UPDATE user_group SET active = 0 WHERE group_chat_id = "' + group_chat_id + '" AND user_id = ' + user_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+					bot.answerCallbackQuery(message.id, {text: 'Mute automatico disattivato!'});
+				} else {
+					connection.query('UPDATE user_group SET active = 1 WHERE group_chat_id = "' + group_chat_id + '" AND user_id = ' + user_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+					bot.answerCallbackQuery(message.id, {text: 'Mute automatico attivato!'});
+				}
+			} else if (function_name == "button"){
+				var iKeys = [];
+				iKeys.push([{
+					text: "Indietro",
+					callback_data: "manage:" + group_chat_id
+				}]);
+
+				bot.editMessageText("Gestione del gruppo", {
+					chat_id: message.message.chat.id,
+					message_id: message.message.message_id,
+					parse_mode: 'HTML',
+					reply_markup: {
+						inline_keyboard: iKeys
+					}
+				});
+				
+				if (active == 1){
+					connection.query('UPDATE user_group SET button = 0 WHERE group_chat_id = "' + group_chat_id + '" AND user_id = ' + user_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+					bot.answerCallbackQuery(message.id, {text: 'Validazione pulsante disattivata!'});
+				} else {
+					connection.query('UPDATE user_group SET button = 1 WHERE group_chat_id = "' + group_chat_id + '" AND user_id = ' + user_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+					bot.answerCallbackQuery(message.id, {text: 'Validazione pulsante attivata!'});
+				}
+			}
+		});
+	});
 });
 
 // Funzioni

@@ -3834,8 +3834,6 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 });
 
 function parse(message){
-	if (message.reply_to_message != undefined)
-		message = message.reply_to_message;
 	if (message.text == undefined)
 		return;
 	var text = message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
@@ -3933,7 +3931,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			return;
 		}
 		
-		parse(message);
+		parse(message.reply_to_message);
 	}
 });
 
