@@ -1255,8 +1255,12 @@ bot.onText(/^\/start/i, function (message) {
 });
 
 bot.on('message', function (message) {
-	if (message.chat.id == -1001246584843)
-		parse(message);
+	if (message.chat.id == -1001246584843) {
+		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+		var res = parse(message);
+		if (res == "platform")
+			bot.sendMessage(message.chat.id, "Specifica la piattaforma nel reclutamento!", options);
+	}
 });
 
 bot.on("inline_query", function (query) {
@@ -3880,7 +3884,7 @@ function parse(message){
 		platform = uniq(platform);
 		response += "<b>Piattaforma</b>: " + platform.join(", ") + "\n";
 	} else
-		response += "<i>Specifica la piattaforma!</i>\n";
+		return "platform";
 	var rateo = text.match(/((\d)\.(\d))|((\d)\,(\d))/gmi);
 	if (rateo != null)
 		response += "<b>Rateo</b>: " + rateo[0].trim() + "\n";
