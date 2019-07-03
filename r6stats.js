@@ -1260,6 +1260,21 @@ bot.on('message', function (message) {
 		var res = parse(message);
 		if (res == "platform")
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma nel reclutamento!", options);
+		if (res == "ok") {
+			var iKeys = [];
+			iKeys.push([{
+				text: "Vai al Canale 👥",
+				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
+			}]);
+			var opt =	{
+							parse_mode: 'Markdown',
+							reply_to_message_id: message.message_id,
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						};
+			bot.sendMessage(message.chat.id, "Reclutamento postato nel *Canale Reclutamenti*!\n_Questa funzionalità è in test_", opt);
+		}
 	}
 });
 
@@ -3926,6 +3941,8 @@ function parse(message){
 	// bot.deleteMessage(message.chat.id, message.message_id);
 
 	bot.sendMessage(-1001326797846, header + response, html);
+	
+	return "ok";
 }
 
 bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {

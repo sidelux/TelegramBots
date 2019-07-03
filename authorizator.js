@@ -20,6 +20,7 @@ var https = require('https');
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var captchaPng = require('captchapng');
+var striptags = require('striptags');
 
 console.log('Connecting bot...');
 
@@ -85,16 +86,6 @@ bot.on('message', function (message) {
 	if ((message.text != undefined) && (message.text.startsWith("/") && !(message.text.startsWith("//"))))
 		console.log(getNow("it") + " - " + (message.from.username == undefined ? message.from.id : message.from.username) + ": " + message.text);
 
-	/* troppo pesante?
-	if (message.chat.id < 0){
-		bot.getChat(message.chat.id).then(function (data) {
-			connection.query('UPDATE user_group SET group_title = "' + data.title + '" WHERE group_chat_id = "' + data.id + '"', function (err, rows, fields) {
-				if (err) throw err;
-			});
-		});
-	}
-	*/
-
 	// Configurazione
 	if (message.new_chat_members != undefined) {
 		if (message.new_chat_member.username = "authorizatorbot"){
@@ -131,12 +122,13 @@ bot.on('message', function (message) {
 				}
 			});
 		} else if (message.new_chat_member.is_bot == false){
-			connection.query('SELECT active FROM user_group WHERE group_chat_id = "' + message.chat.id + '"', function (err, rows, fields) {
+			connection.query('SELECT active, welcome_msg FROM user_group WHERE group_chat_id = "' + message.chat.id + '"', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) 
 					return;
 
 				var active = rows[0].active;
+				var welcome_msg = rows[0].welcome_msg;
 				if (active == 1){
 					connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 						if (err) throw err;
@@ -153,8 +145,10 @@ bot.on('message', function (message) {
 											text: "Avvia",
 											url: "https://telegram.me/authorizatorbot?start=" + message.chat.id
 										}]);
-										bot.sendMessage(message.chat.id, "Avvia il bot in privato cliccando sul pulsante sottostante e segui le istruzioni per validarti ed essere smutato in questo gruppo.", {
-											parse_mode: 'Markdown',
+										if (welcome_msg == null)
+											welcome_msg = "Avvia il bot in privato cliccando sul pulsante sottostante e segui le istruzioni per validarti ed essere smutato in questo gruppo!";
+										bot.sendMessage(message.chat.id, welcome_msg, {
+											parse_mode: 'HTML',
 											reply_markup: {
 												inline_keyboard: iKeys
 											}
@@ -170,9 +164,32 @@ bot.on('message', function (message) {
 			});
 		}
 	}
+	
+	if (message.chat.id > 0){
+		connection.query('SELECT id, edit_welcome_group FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0)
+				return;
+			var user_id = rows[0].id;
+
+			if (rows[0].edit_welcome_group != null){
+				connection.query('UPDATE user_group SET welcome_msg = "' + message.text + '" WHERE id = ' + rows[0].edit_welcome_group, function (err, rows, fields) {
+					if (err) throw err;
+					connection.query("UPDATE user SET edit_welcome_group = NULL WHERE id = " + user_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Messaggio di benvenuto impostato!\nPuoi continuare ad impostare il bot tramite i pulsanti in alto.");
+					});
+				});
+			}
+		});
+	}
 });
 
 bot.onText(/^\/new/, function (message) {
+	if (message.chat.id < 0){
+		bot.sendMessage(message.chat.id, "La configurazione può essere effettuata solamente in chat privata.");
+		return;
+	}
 	var iKeys = [];
 	iKeys.push([{
 		text: "Aggiungi ad un gruppo",
@@ -187,34 +204,11 @@ bot.onText(/^\/new/, function (message) {
 	});
 });
 
-/*
-bot.onText(/^\/test/, function (message) {
-	var num = parseInt(Math.random()*900000+100000);
-	var img = new captchaPng(300, 100, num);
-	img.color(0, 0, 0, 0);
-	img.color(80, 80, 80, 255);
-
-	var iKeys = [];
-	iKeys.push([{
-		text: "Ok",
-		callback_data: "captcha:" + num
-	}]);
-
-	var fileOpts = {
-		filename: 'image',
-		contentType: 'image/png',
-		caption: '*1*23',
-		parse_mode: 'Markdown',
-		reply_markup: {
-			inline_keyboard: iKeys
-		}
-	};
-
-	bot.sendPhoto(message.chat.id, Buffer.from(img.getBase64(), 'base64'), fileOpts);
-});
-*/
-
-bot.onText(/^\/config/, function (message) {
+bot.onText(/^\/config$/, function (message) {
+	if (message.chat.id < 0){
+		bot.sendMessage(message.chat.id, "La configurazione può essere effettuata solamente in chat privata.");
+		return;
+	}
 	connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
 		var user_id = rows[0].id;
@@ -251,9 +245,10 @@ bot.onText(/^\/start$|^\/start@authorizatorbot|^\/start (.+)/, function (message
 
 	if (match[1] != undefined){
 		var group_chat_id = match[1];
-		connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+		connection.query('SELECT id, phone FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 			if (err) throw err;
 			var user_id = rows[0].id;
+			var phone = rows[0].phone;
 			connection.query('SELECT button, propic, username, captcha FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
@@ -401,14 +396,16 @@ bot.on('callback_query', function (message) {
 	connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
 		var user_id = rows[0].id;
-		connection.query('SELECT user_id, group_title, active, button, propic, username, captcha FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
+		connection.query('SELECT id, user_id, group_title, welcome_msg, active, button, propic, username, captcha FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 			if (err) throw err;
 			if ((rows[0].user_id != user_id) && (function_name == "manage")) {
 				bot.answerCallbackQuery(message.id, {text: 'Non sei autorizzato a gestire questo gruppo.'});
 				return;
 			}
 
+			var group_id = rows[0].id;
 			var group_title = rows[0].group_title;
+			var welcome_msg = rows[0].welcome_msg;
 			var active = rows[0].active;
 			var button = rows[0].button;
 			var propic = rows[0].propic;
@@ -469,7 +466,63 @@ bot.on('callback_query', function (message) {
 					bot.answerCallbackQuery(message.id, "Captcha non corrispondente!");
 				}
 			} else {
-				if (function_name != "manage"){
+				if (function_name == "welcome") {
+					var iKeys = [];
+					iKeys.push([{
+						text: "🔙 Menu",
+						callback_data: "clean:" + group_chat_id
+					}]);
+					if (welcome_msg != null) {
+						iKeys.push([{
+							text: "🚫 Cancella",
+							callback_data: "welcomedel:" + group_chat_id
+						}]);
+					}
+					
+					connection.query('UPDATE user SET edit_welcome_group = ' + group_id + ' WHERE id = ' + user_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+					
+					if (welcome_msg == null)
+						welcome_msg = "<i>Non impostato</i>";
+					
+					if (welcome_msg.length > 500)
+						welcome_msg = striptags(welcome_msg).substr(0, 500) + "...";
+					
+					bot.editMessageText("Invia il testo che vorresti utilizzare all'ingresso degli utenti nel tuo gruppo.\nPuoi usare anche {user}, che verrà sostituito dal nome in caso mancasse.\nPuoi usare anche l'html.\n\nMessaggio di benvenuto attuale:\n" + welcome_msg, {
+						chat_id: message.message.chat.id,
+						message_id: message.message.message_id,
+						parse_mode: 'HTML',
+						reply_markup: {
+							inline_keyboard: iKeys
+						}
+					});
+					
+					bot.answerCallbackQuery(message.id);
+					return;
+				} else if (function_name == "welcomedel") {
+					var iKeys = [];
+					iKeys.push([{
+						text: "🔙 Menu",
+						callback_data: "clean:" + group_chat_id
+					}]);
+					
+					connection.query('UPDATE user_group SET welcome_msg = NULL WHERE user_id = ' + user_id + ' AND group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
+						if (err) throw err;
+					});
+					
+					bot.editMessageText("Messaggio di benvenuto cancellato!", {
+						chat_id: message.message.chat.id,
+						message_id: message.message.message_id,
+						parse_mode: 'HTML',
+						reply_markup: {
+							inline_keyboard: iKeys
+						}
+					});
+					
+					bot.answerCallbackQuery(message.id);
+					return;
+				} else if (function_name != "manage") {
 					var param_value;
 					var param_desc;
 					if (function_name == "active"){
@@ -512,14 +565,34 @@ bot.on('callback_query', function (message) {
 							bot.answerCallbackQuery(message.id, {text: 'Username obbligatorio attivato!'});
 						}
 						username = !username;
+					} else if (function_name == "captcha"){
+						param_desc = "<b>Captcha</b>";
+						if (captcha == 1){
+							param_value = 0;
+							bot.answerCallbackQuery(message.id, {text: 'Captcha disattivato!'});
+						} else {
+							param_value = 1;
+							bot.answerCallbackQuery(message.id, {text: 'Captcha attivato!'});
+						}
+						captcha = !captcha;
 					}
-
-					connection.query('UPDATE user_group SET ' + function_name + ' = ' + param_value + ' WHERE group_chat_id = "' + group_chat_id + '" AND user_id = ' + user_id, function (err, rows, fields) {
-						if (err) throw err;
-					});
+					
+					if (function_name != "clean"){
+						connection.query('UPDATE user_group SET ' + function_name + ' = ' + param_value + ' WHERE group_chat_id = "' + group_chat_id + '" AND user_id = ' + user_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else {
+						connection.query('UPDATE user SET edit_welcome_group = NULL WHERE id = ' + user_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
 				}
 
 				var iKeys = [];
+				iKeys.push([{
+					text: "💬 Messaggio di benvenuto",
+					callback_data: "welcome:" + group_chat_id
+				}]);
 				if (active == 1){
 					iKeys.push([{
 						text: "✅ Mute automatico",
@@ -562,6 +635,17 @@ bot.on('callback_query', function (message) {
 					iKeys.push([{
 						text: "🚫 Username obbligatorio",
 						callback_data: "username:" + group_chat_id
+					}]);
+				}
+				if (captcha == 1){
+					iKeys.push([{
+						text: "✅ Captcha",
+						callback_data: "captcha:" + group_chat_id
+					}]);
+				} else {
+					iKeys.push([{
+						text: "🚫 Captcha",
+						callback_data: "captcha:" + group_chat_id
 					}]);
 				}
 
