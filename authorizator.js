@@ -177,7 +177,7 @@ bot.on('message', function (message) {
 					if (err) throw err;
 					connection.query("UPDATE user SET edit_welcome_group = NULL WHERE id = " + user_id, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Messaggio di benvenuto impostato!\nPuoi continuare ad impostare il bot tramite i pulsanti in alto.");
+						bot.sendMessage(message.chat.id, "Messaggio di benvenuto impostato!\nPuoi continuare ad impostare il bot tramite i pulsanti del messaggio precedente.");
 					});
 				});
 			}
@@ -228,7 +228,7 @@ bot.onText(/^\/config$/, function (message) {
 				}]);
 			}
 
-			bot.sendMessage(message.chat.id, "Seleziona il gruppo da gestire", {
+			bot.sendMessage(message.chat.id, "Seleziona il gruppo da gestire.\nPotrai attivare o disattivare il bot, aggiungerne validazioni ed altro.", {
 				parse_mode: 'Markdown',
 				reply_markup: {
 					inline_keyboard: iKeys
@@ -249,7 +249,7 @@ bot.onText(/^\/start$|^\/start@authorizatorbot|^\/start (.+)/, function (message
 			if (err) throw err;
 			var user_id = rows[0].id;
 			var phone = rows[0].phone;
-			connection.query('SELECT button, propic, username, captcha FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
+			connection.query('SELECT button, propic, username, captcha, lang FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Il gruppo per l'accesso non esiste.");
@@ -260,6 +260,7 @@ bot.onText(/^\/start$|^\/start@authorizatorbot|^\/start (.+)/, function (message
 				var propic_req = rows[0].propic;
 				var username_req = rows[0].username;
 				var captcha_req = rows[0].captcha;
+				var lang_req = rows[0].lang;
 
 				var reqN = 0;
 				if (button_req == 1)
@@ -270,8 +271,10 @@ bot.onText(/^\/start$|^\/start@authorizatorbot|^\/start (.+)/, function (message
 					reqN++;
 				else if (captcha_req == 1)
 					reqN++;
+				else if (lang_req == 1)
+					reqN++;
 
-				connection.query('SELECT button, propic, username, captcha FROM user_validated WHERE user_id = ' + user_id + ' AND group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
+				connection.query('SELECT button, propic, username, captcha, lang FROM user_validated WHERE user_id = ' + user_id + ' AND group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
@@ -288,6 +291,7 @@ bot.onText(/^\/start$|^\/start@authorizatorbot|^\/start (.+)/, function (message
 					var propic = rows[0].propic;
 					var username = rows[0].username;
 					var captcha = rows[0].captcha;
+					var lang = rows[0].lang;
 
 					if ((button == 0) && (button_req == 1)){
 						var iKeys = [];
@@ -376,11 +380,40 @@ bot.onText(/^\/start$|^\/start@authorizatorbot|^\/start (.+)/, function (message
 
 						bot.sendPhoto(message.chat.id, Buffer.from(img.getBase64(), 'base64'), fileOpts);
 					}
+					
+					if ((lang == 0) && (lang_req == 1)){
+						var iKeys = [];
+						iKeys.push([{
+							text: "🔐 Completa",
+							callback_data: "lang_val:" + group_chat_id
+						}]);
+
+						bot.sendMessage(message.chat.id, "Verrà controllata la tua lingua impostata, clicca il pulsante sottostante per completare questa azione.", {
+							parse_mode: 'Markdown',
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						});
+					}
 				});
 			});
 		});
 	} else {
-		bot.sendMessage(message.chat.id, "Benvenuto...");
+		connection.query('SELECT COUNT(id) As cnt FROM user_group', function (err, rows, fields) {
+			if (err) throw err;
+			var group_cnt = rows[0].cnt;
+			
+			connection.query('SELECT COUNT(id) As cnt FROM user_validated', function (err, rows, fields) {
+			if (err) throw err;
+				var user_cnt = rows[0].cnt;
+			
+				fs.stat("authorizator.js", function(err, stats){
+					var time = new Date(stats.mtime);
+
+					bot.sendMessage(message.chat.id, "Benvenuto in *Authorizator*!\n\nPuoi collegare un nuovo gruppo con il comando /new ed entrare nella gestione con il comando /config.\n\n" + formatNumber(group_cnt) + " gruppi collegati, " + formatNumber(user_cnt) + " utenti autorizzati\n_Ultimo aggiornamento: " + toDate("it", time) + "_", mark);
+				});
+			});
+		});
 	}
 });
 
@@ -396,7 +429,7 @@ bot.on('callback_query', function (message) {
 	connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
 		var user_id = rows[0].id;
-		connection.query('SELECT id, user_id, group_title, welcome_msg, active, button, propic, username, captcha FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
+		connection.query('SELECT id, user_id, group_title, welcome_msg, active, button, propic, username, captcha, lang FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 			if (err) throw err;
 			if ((rows[0].user_id != user_id) && (function_name == "manage")) {
 				bot.answerCallbackQuery(message.id, {text: 'Non sei autorizzato a gestire questo gruppo.'});
@@ -411,6 +444,7 @@ bot.on('callback_query', function (message) {
 			var propic = rows[0].propic;
 			var username = rows[0].username;
 			var captcha = rows[0].captcha;
+			var lang = rows[0].lang;
 
 			if (function_name == "button_val") {
 				connection.query('UPDATE user_validated SET button = 1 WHERE user_id = ' + user_id + ' AND group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
@@ -464,6 +498,16 @@ bot.on('callback_query', function (message) {
 					});
 				} else {
 					bot.answerCallbackQuery(message.id, "Captcha non corrispondente!");
+				}
+			} else if (function_name == "lang_val") {
+				if (message.from.language_code == lang){
+					bot.editMessageText("Azione completata ✅", {
+						chat_id: message.message.chat.id,
+						message_id: message.message.message_id,
+						parse_mode: 'HTML'
+					});
+				} else {
+					bot.answerCallbackQuery(message.id, "Lingua non corrispondente!");
 				}
 			} else {
 				if (function_name == "welcome") {
@@ -524,9 +568,7 @@ bot.on('callback_query', function (message) {
 					return;
 				} else if (function_name != "manage") {
 					var param_value;
-					var param_desc;
 					if (function_name == "active"){
-						param_desc = "<b>Mute automatico</b>";
 						if (active == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: 'Mute automatico disattivato!'});
@@ -536,7 +578,6 @@ bot.on('callback_query', function (message) {
 						}
 						active = !active;
 					} else if (function_name == "button"){
-						param_desc = "<b>Pulsante</b>";
 						if (button == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: 'Pulsante disattivato!'});
@@ -546,7 +587,6 @@ bot.on('callback_query', function (message) {
 						}
 						button = !button;
 					} else if (function_name == "propic"){
-						param_desc = "<b>Immagine del profilo obbligatoria</b>";
 						if (propic == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: 'Immagine profilo obbligatoria disattivata!'});
@@ -556,7 +596,6 @@ bot.on('callback_query', function (message) {
 						}
 						propic = !propic;
 					} else if (function_name == "username"){
-						param_desc = "<b>Username obbligatorio</b>";
 						if (username == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: 'Username obbligatorio disattivato!'});
@@ -566,7 +605,6 @@ bot.on('callback_query', function (message) {
 						}
 						username = !username;
 					} else if (function_name == "captcha"){
-						param_desc = "<b>Captcha</b>";
 						if (captcha == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: 'Captcha disattivato!'});
@@ -575,6 +613,21 @@ bot.on('callback_query', function (message) {
 							bot.answerCallbackQuery(message.id, {text: 'Captcha attivato!'});
 						}
 						captcha = !captcha;
+					} else if (function_name == "lang"){
+						if (message.from.language_code == undefined){
+							bot.answerCallbackQuery(message.id, {text: 'Imposta la lingua del tuo client!'});
+							return;
+						}
+						var langcode = message.from.language_code;
+						if (lang != null){
+							param_value = "NULL";
+							lang = null;
+							bot.answerCallbackQuery(message.id, {text: 'Controllo lingua disattivato!'});
+						} else {
+							param_value = "'" + langcode + "'";
+							lang = langcode;
+							bot.answerCallbackQuery(message.id, {text: 'Controllo lingua attivato (' + langcode + ')!'});
+						}
 					}
 					
 					if (function_name != "clean"){
@@ -648,6 +701,17 @@ bot.on('callback_query', function (message) {
 						callback_data: "captcha:" + group_chat_id
 					}]);
 				}
+				if (lang != null){
+					iKeys.push([{
+						text: "✅ Lingua",
+						callback_data: "lang:" + group_chat_id
+					}]);
+				} else {
+					iKeys.push([{
+						text: "🚫 Lingua",
+						callback_data: "lang:" + group_chat_id
+					}]);
+				}
 
 				// solo per test
 				/*
@@ -698,5 +762,15 @@ function getNow(lang, obj) {
 		var datetime = "Lingua non specificata";
 	if (obj == true)
 		datetime = new Date(datetime);
+	return datetime;
+}
+
+function toDate(lang, d) {
+	if (lang == "it") {
+		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else if (lang == "en") {
+		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	} else
+		var datetime = "Lingua non specificata";
 	return datetime;
 }
