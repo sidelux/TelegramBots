@@ -1263,7 +1263,7 @@ bot.on('message', function (message) {
 		if (res == "ok") {
 			var iKeys = [];
 			iKeys.push([{
-				text: "Vai al Canale 👥",
+				text: "Vai al Canale 🔰",
 				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
 			}]);
 			var opt =	{
@@ -1273,7 +1273,7 @@ bot.on('message', function (message) {
 								inline_keyboard: iKeys
 							}
 						};
-			bot.sendMessage(message.chat.id, "Reclutamento postato nel *Canale Reclutamenti*!\n_Questa funzionalità è in test_", opt);
+			bot.sendMessage(message.chat.id, "Reclutamento postato nel *Canale Reclutamenti*!\n_Questa funzionalità è in test, in seguito il messaggio principale verrà eliminato automaticamente_", opt);
 		}
 	}
 });
