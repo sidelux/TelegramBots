@@ -1256,7 +1256,7 @@ bot.onText(/^\/start/i, function (message) {
 
 bot.on('message', function (message) {
 	if (message.chat.id == -1001246584843) {
-		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+		var options = {parse_mode: "HTML"};
 		var res = parse(message);
 		if (res == "platform")
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma nel reclutamento!", options);
@@ -1267,13 +1267,13 @@ bot.on('message', function (message) {
 				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
 			}]);
 			var opt =	{
-							parse_mode: 'Markdown',
+							parse_mode: 'HTML',
 							reply_to_message_id: message.message_id,
 							reply_markup: {
 								inline_keyboard: iKeys
 							}
 						};
-			bot.sendMessage(message.chat.id, "Reclutamento postato nel *Canale Reclutamenti*!\n_Questa funzionalità è in test, in seguito il messaggio principale verrà eliminato automaticamente_", opt);
+			bot.sendMessage(message.chat.id, message.from.username + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
 		}
 	}
 });
@@ -3852,7 +3852,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 	});
 });
 
-function parse(message){
+function parse(message, force = 0){
 	if (message.text == undefined)
 		return;
 	var text = message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
@@ -3863,7 +3863,7 @@ function parse(message){
 		author = message.from.first_name;
 	var response = "";
 
-	if (text.search(/recluto|recluta|reclutiamo|cerchiamo/gmi) == -1)
+	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo/gmi) == -1) && (force == 0))
 		return;
 	var clanNameFound = "";
 	var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
@@ -3892,6 +3892,7 @@ function parse(message){
 		rank = uniq(rank);
 		response += "<b>Rango</b>: " + rank.join(", ") + "\n";
 	}
+	var miss_plat = 0;
 	var platform = text.match(/pc|ps4|xbox/gmi);
 	if (platform != null) {
 		for (var i = 0; i < platform.length; i++)
@@ -3899,7 +3900,7 @@ function parse(message){
 		platform = uniq(platform);
 		response += "<b>Piattaforma</b>: " + platform.join(", ") + "\n";
 	} else
-		return "platform";
+		miss_plat = 1;
 	var rateo = text.match(/((\d)\.(\d))|((\d)\,(\d))/gmi);
 	if (rateo != null)
 		response += "<b>Rateo</b>: " + rateo[0].trim() + "\n";
@@ -3936,9 +3937,12 @@ function parse(message){
 		console.log("Response empty");
 		return;
 	}
+	
+	if (miss_plat == 1)
+		return "platform";
 
 	response += "\n<i>Contattare</i> " + author
-	// bot.deleteMessage(message.chat.id, message.message_id);
+	bot.deleteMessage(message.chat.id, message.message_id);
 
 	bot.sendMessage(-1001326797846, header + response, html);
 	
@@ -3952,7 +3956,28 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			return;
 		}
 		
-		parse(message.reply_to_message);
+		var options = {parse_mode: "HTML"};
+		
+		var res = parse(message.reply_to_message, 1);
+		if (res == "platform")
+			bot.sendMessage(message.chat.id, "Specifica la piattaforma nel reclutamento!", options);
+		if (res == "ok") {
+			var iKeys = [];
+			iKeys.push([{
+				text: "Vai al Canale 🔰",
+				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
+			}]);
+			var opt =	{
+							parse_mode: 'HTML',
+							reply_to_message_id: message.reply_to_message.message_id,
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						};
+			bot.sendMessage(message.chat.id, message.reply_to_message.message_id.from.username + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+			
+			bot.deleteMessage(message.chat.id, message.message_id);
+		}
 	}
 });
 

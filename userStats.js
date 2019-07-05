@@ -149,7 +149,6 @@ bot.on('message', function (message) {
 });
 
 bot.onText(/^\/start/i, function (message) {
-
 	if ((message.chat.id < 0) && (message.text.indexOf("@") != -1) && (message.text.indexOf("userstatstrackerbot") == -1))
 		return;
 
@@ -320,8 +319,8 @@ bot.on("inline_query", function (query) {
 			description: lang_stats_userfound[lang],
 			message_text: 	"<b>" + lang_stats_username[lang] + ":</b> " + rows[0].last_username + " (" + rows[0].account_id + ")\n" +
 			"<b>" + lang_stats_msgcount[lang] + ":</b> " + formatNumber(rows[0].message_count) + "\n" +
-			"<b>" + lang_stats_creation[lang] + ":</b> " + toDate("en", new Date(rows[0].creation_date)) + "\n" +
-			"<b>" + lang_stats_update[lang] + ":</b> " + toDate("en", new Date(rows[0].update_date)),
+			"<b>" + lang_stats_creation[lang] + ":</b> " + toDate(lang, new Date(rows[0].creation_date)) + "\n" +
+			"<b>" + lang_stats_update[lang] + ":</b> " + toDate(lang, new Date(rows[0].update_date)),
 			parse_mode: "HTML"
 		}]);
 	});
