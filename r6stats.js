@@ -3969,12 +3969,12 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			}]);
 			var opt =	{
 							parse_mode: 'HTML',
-							reply_to_message_id: message.reply_to_message.message_id,
 							reply_markup: {
 								inline_keyboard: iKeys
 							}
 						};
-			bot.sendMessage(message.chat.id, message.reply_to_message.message_id.from.username + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+			
+			bot.sendMessage(message.chat.id, message.reply_to_message.from.username + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
 			
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
