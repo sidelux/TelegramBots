@@ -1256,7 +1256,7 @@ bot.onText(/^\/start/i, function (message) {
 
 bot.on('message', function (message) {
 	if (message.chat.id == -1001246584843) {
-		var options = {parse_mode: "HTML"};
+		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 		var res = parse(message);
 		if (res == "platform")
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma nel reclutamento!", options);
@@ -1268,7 +1268,6 @@ bot.on('message', function (message) {
 			}]);
 			var opt =	{
 							parse_mode: 'HTML',
-							reply_to_message_id: message.message_id,
 							reply_markup: {
 								inline_keyboard: iKeys
 							}
@@ -3956,7 +3955,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			return;
 		}
 		
-		var options = {parse_mode: "HTML"};
+		var options = {parse_mode: "HTML", reply_to_message_id: message.reply_to_message.message_id};
 		
 		var res = parse(message.reply_to_message, 1);
 		if (res == "platform")
