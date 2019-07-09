@@ -1259,7 +1259,7 @@ bot.on('message', function (message) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 		var res = parse(message);
 		if (res == "platform")
-			bot.sendMessage(message.chat.id, "Specifica la piattaforma nel reclutamento!", options);
+			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
 		if (res == "ok") {
 			var iKeys = [];
 			iKeys.push([{
@@ -3862,7 +3862,7 @@ function parse(message, force = 0){
 		author = message.from.first_name;
 	var response = "";
 
-	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo/gmi) == -1) && (force == 0))
+	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo|provini|provino/gmi) == -1) && (force == 0))
 		return;
 	var clanNameFound = "";
 	var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
@@ -3959,7 +3959,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		
 		var res = parse(message.reply_to_message, 1);
 		if (res == "platform")
-			bot.sendMessage(message.chat.id, "Specifica la piattaforma nel reclutamento!", options);
+			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
 		if (res == "ok") {
 			var iKeys = [];
 			iKeys.push([{
