@@ -270,6 +270,7 @@ var lang_operator_no_name = [];
 var lang_operator_not_found = [];
 var lang_help = [];
 var lang_config = [];
+var lang_config_private = [];
 var lang_last_news = [];
 var lang_groups = [];
 var lang_rank = [];
@@ -278,6 +279,7 @@ var lang_update_ok = [];
 var lang_update_err = [];
 var lang_update_err_2 = [];
 var lang_update_err_3 = [];
+var lang_config_inline = [];
 
 var lang_username = [];
 var lang_platform = [];
@@ -645,6 +647,8 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_config["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Prima di tutto avvia il bot IN PRIVATO;\n2. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n3. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n4. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. First of all, start the bot IN PRIVATE CHAT;\n2. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n3. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n4. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
+lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
+lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
 						"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
@@ -684,6 +688,8 @@ lang_update_err_2["it"] = "Il tuo profilo è già pronto per l'aggiornamento";
 lang_update_err_2["en"] = "Your profile is already prepared for update";
 lang_update_err_3["it"] = "Puoi aggiornare il profilo manualmente solo ogni 3 ore dalle ultime stats salvate";
 lang_update_err_3["en"] = "You can update your profile only every 3 hours after last saved stats";
+lang_config_inline["it"] = "Configura il bot";
+lang_config_inline["en"] = "Configure bot";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -1203,7 +1209,7 @@ var j2 = Schedule.scheduleJob('0 12 1 * *', function () {
 	reportProgress(-1);
 });
 
-bot.onText(/^\/start/i, function (message) {
+bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 	var options = {disable_web_page_preview: true, parse_mode: "HTML", reply_to_message_id: message.message_id};
 	if ((message.chat.id < 0) && (message.text.indexOf("@") != -1) && (message.text.indexOf("r6siegestatsbot") == -1))
 		return;
@@ -1230,6 +1236,14 @@ bot.onText(/^\/start/i, function (message) {
 					default_text = "\n" + lang_default[lang] + rows[0].default_username + "\n";
 				else if (rows[0].default_platform != null)
 					default_text = "\n" + lang_default[lang] + rows[0].default_platform + "\n";
+			}
+		}
+		
+		if (match[1] != undefined) {
+			if (match[1] == "config") {
+				var opt = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+				bot.sendMessage(message.from.id, lang_config_private[lang], opt);
+				return;
 			}
 		}
 
@@ -2205,7 +2219,18 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				} else if (rows[0].default_username != null)
 					username = rows[0].default_username;
 				else{
-					bot.sendMessage(message.chat.id, lang_invalid_user[lang], options);
+					var iKeys = [];
+					iKeys.push([{
+						text: lang_config_inline[lang] + " ⚙️",
+						url: "https://t.me/r6siegestatsbot?start=config"
+					}]);
+					var opt =	{
+									parse_mode: 'HTML',
+									reply_markup: {
+										inline_keyboard: iKeys
+									}
+								};
+					bot.sendMessage(message.chat.id, lang_invalid_user[lang], opt);
 					return;
 				}
 			}else
@@ -3315,7 +3340,10 @@ bot.onText(/^\/config(?:@\w+)?/i, function (message, match) {
 			parse_mode: "Markdown"
 		};
 		
-		bot.sendMessage(message.from.id, lang_config[lang], options);
+		if (message.chat.id < 0)
+			bot.sendMessage(message.from.id, lang_config[lang], options);
+		else
+			bot.sendMessage(message.from.id, lang_config_private[lang], options);
 	});
 });
 
