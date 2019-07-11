@@ -285,8 +285,8 @@ lang_unlink["it"] = "Scollega gruppo";
 lang_unlink["en"] = "Unlink group";
 lang_welcome_message["it"] = "Messaggio di benvenuto";
 lang_welcome_message["en"] = "Welcome message";
-lang_manage["it"] = "Gestione del gruppo <b>%s</b>\nSeleziona le funzionalità di verifica di attivare o disattivare quando un utente accede al gruppo.\nRicorda al termine della configurazione di attivare il <i>Mute automatico</i> per permettere al bot di funzionare correttamente.\n\n<b>Spiegazione validazioni:</b>\n- <b>Pulsante</b>: Richiede la sola pressione di un pulsante, utile per bloccare l'accesso ai bot\n- <b>Immagine profilo obbligatoria</b>: Obbliga ad impostarne una per procedere\n- <b>Username obbligatorio</b>: Obbliga ad impostarne uno per procedere\n- <b>Captcha</b>: Richiede la scelta di un pulsante tra 5 corrispondente all'immagine per procedere\n- <b>Lingua</b>: Richiede che l'utente debba avere la lingua del client impostata sulla stessa del gestore del bot\n- <b>Account recente</b>: Richiede che l'account di telegram sia stato creato almeno un mese prima dell'accesso (funzionalità sperimentale)\n- <b>Blocco totale</b>: Cancella tutti i messaggi degli utenti e consente solo agli amministratori di scrivere nel gruppo, utile per le emergenze\n\nPer qualsiasi problema, utilizza il comando <b>/unlock</b> nel gruppo per consentire accesso ad un utente forzatamente";
-lang_manage["en"] = "Manage group <b>%s</b>\nSelect the verify functions to enable or disable when a user enter the group.\nRemember that at the end of condifuration you must active <i>Automatic mute</i> to allow bot to work correctly.\n\n<b>Validations:</b>\n- <b>Button</b>: Ask only a button click, useful for avoid bots\n- <b>Mandatory profile picture</b>: Need a profile pic to go next\n- <b>Mandatory username</b>: Need an username to go next\n- <b>Captcha</b>: Need a click to one of five buttons that meets captcha content\n- <b>Language</b>: Need that user has same language as bot configurator\n- <b>Recent account</b>: Need that telegram account must be created at lest 1 month before now (experimental)\n- <b>Total block</b>: Delete all users messages and allow only administrator to write in the group, useful for emergencies\n\nFor every trouble, use the command <b>/unlock</b> inside a group to allow a single user access manually";
+lang_manage["it"] = "Gestione del gruppo <b>%s</b>\nSeleziona le funzionalità di verifica di attivare o disattivare quando un utente accede al gruppo.\nRicorda al termine della configurazione di attivare il <i>Mute automatico</i> per permettere al bot di funzionare correttamente.\n\n<b>Spiegazione validazioni:</b>\n- <b>Pulsante</b>: Richiede la sola pressione di un pulsante, utile per bloccare l'accesso ai bot\n- <b>Immagine profilo obbligatoria</b>: Obbliga ad impostarne una per procedere\n- <b>Username obbligatorio</b>: Obbliga ad impostarne uno per procedere\n- <b>Captcha</b>: Richiede la scelta di un pulsante tra 5 corrispondente all'immagine per procedere\n- <b>Lingua</b>: Richiede che l'utente debba avere la lingua del client impostata sulla stessa del gestore del bot\n- <b>Account recente</b>: Richiede che l'account di telegram sia stato creato almeno un mese prima dell'accesso (funzionalità sperimentale)\n- <b>Blocco totale</b>: Cancella tutti i messaggi degli utenti e consente solo agli amministratori di scrivere nel gruppo, utile per le emergenze\n\nPer qualsiasi problema, utilizza il comando <b>/unlock</b> nel gruppo per consentire accesso ad un utente forzatamente.\nRicorda di impostare il gruppo come <b>supergruppo</b> ed il bot come <b>amministratore</b>!";
+lang_manage["en"] = "Manage group <b>%s</b>\nSelect the verify functions to enable or disable when a user enter the group.\nRemember that at the end of condifuration you must active <i>Automatic mute</i> to allow bot to work correctly.\n\n<b>Validations:</b>\n- <b>Button</b>: Ask only a button click, useful for avoid bots\n- <b>Mandatory profile picture</b>: Need a profile pic to go next\n- <b>Mandatory username</b>: Need an username to go next\n- <b>Captcha</b>: Need a click to one of five buttons that meets captcha content\n- <b>Language</b>: Need that user has same language as bot configurator\n- <b>Recent account</b>: Need that telegram account must be created at lest 1 month before now (experimental)\n- <b>Total block</b>: Delete all users messages and allow only administrator to write in the group, useful for emergencies\n\nFor every trouble, use the command <b>/unlock</b> inside a group to allow a single user access manually.\nRemember to set group as <b>supergroup</b> and bot as <b>administrator</b>!";
 
 lang_complete["it"] = "Hai <b>completato</b> correttamente tutte le azioni richieste!\nSei stato smutato dal gruppo.";
 lang_complete["en"] = "You have <b>completed</b> correctly all requested actions!\nYou have been unmuted from the group.";
@@ -420,6 +420,15 @@ bot.on('message', function (message) {
 					console.log("Check not activated");
 			});
 		}
+	} else {
+		connection.query('SELECT 1 FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				connection.query('INSERT INTO user (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
+		});
 	}
 
 	if (message.chat.id > 0){
@@ -517,12 +526,12 @@ bot.onText(/^\/config$/, function (message) {
 				if (lang == "it") {
 					iKeys.push([{
 						text: "🇺🇸 English 🇺🇸",
-						callback_data: "lang:en"
+						callback_data: "chlang:en"
 					}]);
 				} else {
 					iKeys.push([{
 						text: "🇮🇹 Italiano 🇮🇹",
-						callback_data: "lang:it"
+						callback_data: "chlang:it"
 					}]);
 				}
 
@@ -819,7 +828,7 @@ bot.on('callback_query', function (message) {
 		var user_id = rows[0].id;
 		var user_lang = rows[0].lang;
 		
-		if (function_name == "lang"){
+		if (function_name == "chlang"){
 			var newlang = group_chat_id;
 			connection.query('UPDATE user SET lang = "' + newlang + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 				if (err) throw err;
