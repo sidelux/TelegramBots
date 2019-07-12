@@ -616,7 +616,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"> '/setreport' - Attiva o disattiva il report statistiche del gruppo in cui si è usato /stats l'ultima volta.\n" +
 	"> '/setdailyreport' - Attiva o disattiva il report statistiche giornaliero del giocatore.\n" +
-	"> '/config' - Mostra la guida per la prima configurazione del bot.\n" +
+	"> '/botconfig' - Mostra la guida per la prima configurazione del bot.\n" +
 	"\nE' possibile utilizzare il bot anche *inline* inserendo username e piattaforma come per il comando /stats oppure invitare qualcuno nel gruppo italiano!\n\nPer ulteriori informazioni contatta @fenix45.";
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
@@ -643,7 +643,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
-	"> '/config' - Show guide for bot's first configuration.\n" +
+	"> '/botconfig' - Show guide for bot's first configuration.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
 lang_config["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Prima di tutto avvia il bot IN PRIVATO;\n2. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n3. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n4. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. First of all, start the bot IN PRIVATE CHAT;\n2. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n3. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n4. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
@@ -3320,7 +3320,7 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/config(?:@\w+)?/i, function (message, match) {
+bot.onText(/^\/botconfig(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -3341,7 +3341,7 @@ bot.onText(/^\/config(?:@\w+)?/i, function (message, match) {
 		};
 		
 		if (message.chat.id < 0)
-			bot.sendMessage(message.from.id, lang_config[lang], options);
+			bot.sendMessage(message.chat.id, lang_config[lang], options);
 		else
 			bot.sendMessage(message.from.id, lang_config_private[lang], options);
 	});
