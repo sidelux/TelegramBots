@@ -1271,7 +1271,9 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 bot.on('message', function (message) {
 	if (message.chat.id == -1001246584843) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+		
 		var res = parse(message);
+		
 		if (res == "platform")
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
 		if (res == "ok") {
@@ -1286,7 +1288,14 @@ bot.on('message', function (message) {
 								inline_keyboard: iKeys
 							}
 						};
-			bot.sendMessage(message.chat.id, message.from.username + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+			
+			var nick = "";
+			if (message.from.username == undefined)
+				nick = message.from.first_name;
+			else
+				nick = message.from.username;
+			
+			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
 		}
 	}
 });
@@ -3880,9 +3889,14 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 });
 
 function parse(message, force = 0){
-	if (message.text == undefined)
+	if ((message.text == undefined) && (message.caption == undefined))
 		return;
-	var text = message.text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
+	
+	var text = message.text;
+	if (message.caption != undefined)
+		text = message.caption;
+	
+	var text = text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
 	var author;
 	if (message.from.username != undefined)
 		author = "@" + message.from.username;
@@ -3890,8 +3904,9 @@ function parse(message, force = 0){
 		author = message.from.first_name;
 	var response = "";
 
-	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo|provini|provino/gmi) == -1) && (force == 0))
+	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo|provini|provino|requisiti/gmi) == -1) && (force == 0))
 		return;
+	
 	var clanNameFound = "";
 	var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
 	if (clanName != null)
@@ -3986,6 +4001,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.reply_to_message.message_id};
 		
 		var res = parse(message.reply_to_message, 1);
+		
 		if (res == "platform")
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
 		if (res == "ok") {
@@ -4001,7 +4017,13 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 							}
 						};
 			
-			bot.sendMessage(message.chat.id, message.reply_to_message.from.username + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+			var nick = "";
+			if (message.reply_to_message.from.username == undefined)
+				nick = message.reply_to_message.from.first_name;
+			else
+				nick = message.reply_to_message.from.username;
+			
+			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
 			
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
