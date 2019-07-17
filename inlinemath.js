@@ -85,6 +85,8 @@ bot.on("inline_query", function (query) {
 	}], {cache_time: 0});
 });
 
+// Functions
+
 String.prototype.replaceAll = function (search, replacement) {
 	var target = this;
 	return target.replace(new RegExp(search, 'g'), replacement);

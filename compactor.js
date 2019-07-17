@@ -104,6 +104,8 @@ bot.onText(/^\/check/i, function (message) {
 		bot.sendMessage(message.chat.id, "You can use this command only in a group");
 });
 
+// Functions
+
 function addZero(i) {
 	if (i < 10)
 		i = "0" + i;

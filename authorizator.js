@@ -1387,6 +1387,8 @@ bot.on('callback_query', function (message) {
 	});
 });
 
+// Functions
+
 function checkComplete(message, user_id, group_chat_id){
 	connection.query('SELECT active, button, propic, username, captcha, lang, recent FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -1437,8 +1439,6 @@ function checkComplete(message, user_id, group_chat_id){
 		});
 	});
 }
-
-// Funzioni
 
 function addZero(i) {
 	if (i < 10)

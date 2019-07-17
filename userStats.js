@@ -326,6 +326,8 @@ bot.on("inline_query", function (query) {
 	});
 });
 
+// Functions
+
 function getNow(lang, obj) {
 	var d = new Date();
 	obj = typeof obj !== 'undefined' ? obj : false;
