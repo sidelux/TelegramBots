@@ -32,7 +32,7 @@ CREATE TABLE `stats` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_id` (`account_id`),
   KEY `last_username` (`last_username`)
-) ENGINE=InnoDB AUTO_INCREMENT=7605 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,7 +50,7 @@ CREATE TABLE `user_group` (
   PRIMARY KEY (`id`),
   KEY `user_group_account_id` (`account_id`),
   CONSTRAINT `user_group_account_id` FOREIGN KEY (`account_id`) REFERENCES `stats` (`account_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6172 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -62,4 +62,4 @@ CREATE TABLE `user_group` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-31  9:09:41
+-- Dump completed on 2019-08-07 15:00:05
