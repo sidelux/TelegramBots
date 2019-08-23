@@ -146,6 +146,9 @@ var lang_recent = [];
 var lang_unlink = [];
 var lang_welcome_message = [];
 var lang_manage = [];
+var lang_disableall = [];
+var lang_until_date = [];
+var lang_only_until = [];
 
 var lang_complete = [];
 var lang_complete_group = [];
@@ -285,8 +288,14 @@ lang_unlink["it"] = "Scollega gruppo";
 lang_unlink["en"] = "Unlink group";
 lang_welcome_message["it"] = "Messaggio di benvenuto";
 lang_welcome_message["en"] = "Welcome message";
-lang_manage["it"] = "Gestione del gruppo <b>%s</b>\nSeleziona le funzionalità di verifica di attivare o disattivare quando un utente accede al gruppo.\nRicorda al termine della configurazione di attivare il <i>Mute automatico</i> per permettere al bot di funzionare correttamente.\n\n<b>Spiegazione validazioni:</b>\n- <b>Pulsante</b>: Richiede la sola pressione di un pulsante, utile per bloccare l'accesso ai bot\n- <b>Immagine profilo obbligatoria</b>: Obbliga ad impostarne una per procedere\n- <b>Username obbligatorio</b>: Obbliga ad impostarne uno per procedere\n- <b>Captcha</b>: Richiede la scelta di un pulsante tra 5 corrispondente all'immagine per procedere\n- <b>Lingua</b>: Richiede che l'utente debba avere la lingua del client impostata sulla stessa del gestore del bot\n- <b>Account recente</b>: Richiede che l'account di telegram sia stato creato almeno un mese prima dell'accesso (funzionalità sperimentale)\n- <b>Blocco totale</b>: Cancella tutti i messaggi degli utenti e consente solo agli amministratori di scrivere nel gruppo, utile per le emergenze\n\nPer qualsiasi problema, utilizza il comando <b>/unlock</b> nel gruppo per consentire accesso ad un utente forzatamente.\nRicorda di impostare il gruppo come <b>supergruppo</b> ed il bot come <b>amministratore</b>!";
-lang_manage["en"] = "Manage group <b>%s</b>\nSelect the verify functions to enable or disable when a user enter the group.\nRemember that at the end of condifuration you must active <i>Automatic mute</i> to allow bot to work correctly.\n\n<b>Validations:</b>\n- <b>Button</b>: Ask only a button click, useful for avoid bots\n- <b>Mandatory profile picture</b>: Need a profile pic to go next\n- <b>Mandatory username</b>: Need an username to go next\n- <b>Captcha</b>: Need a click to one of five buttons that meets captcha content\n- <b>Language</b>: Need that user has same language as bot configurator\n- <b>Recent account</b>: Need that telegram account must be created at lest 1 month before now (experimental)\n- <b>Total block</b>: Delete all users messages and allow only administrator to write in the group, useful for emergencies\n\nFor every trouble, use the command <b>/unlock</b> inside a group to allow a single user access manually.\nRemember to set group as <b>supergroup</b> and bot as <b>administrator</b>!";
+lang_manage["it"] = "Gestione del gruppo <b>%s</b>\nSeleziona le funzionalità di verifica di attivare o disattivare quando un utente accede al gruppo.\nRicorda al termine della configurazione di attivare il <i>Mute automatico</i> per permettere al bot di funzionare correttamente.\n\n<b>Spiegazione validazioni:</b>\n- <b>Pulsante</b>: Richiede la sola pressione di un pulsante, utile per bloccare l'accesso ai bot\n- <b>Immagine profilo obbligatoria</b>: Obbliga ad impostarne una per procedere\n- <b>Username obbligatorio</b>: Obbliga ad impostarne uno per procedere\n- <b>Captcha</b>: Richiede la scelta di un pulsante tra 5 corrispondente all'immagine per procedere\n- <b>Lingua</b>: Richiede che l'utente debba avere la lingua del client impostata sulla stessa del gestore del bot\n- <b>Account recente</b>: Richiede che l'account di telegram sia stato creato almeno un mese prima dell'accesso (funzionalità sperimentale)\n- <b>Mute temporaneo</b>: In alternativa alle validazioni, il mute temporaneo smuta automaticamente dopo 12 ore dall'ingresso, utile per le entrate in massa o multiple dello stesso utente\n- <b>Blocco totale</b>: Cancella tutti i messaggi degli utenti e consente solo agli amministratori di scrivere nel gruppo, utile per le emergenze\n\nPer qualsiasi problema, utilizza il comando <b>/unlock</b> nel gruppo per consentire accesso ad un utente forzatamente.\nRicorda di impostare il gruppo come <b>supergruppo</b> ed il bot come <b>amministratore</b>!";
+lang_manage["en"] = "Manage group <b>%s</b>\nSelect the verify functions to enable or disable when a user enter the group.\nRemember that at the end of condifuration you must active <i>Automatic mute</i> to allow bot to work correctly.\n\n<b>Validations:</b>\n- <b>Button</b>: Ask only a button click, useful for avoid bots\n- <b>Mandatory profile picture</b>: Need a profile pic to go next\n- <b>Mandatory username</b>: Need an username to go next\n- <b>Captcha</b>: Need a click to one of five buttons that meets captcha content\n- <b>Language</b>: Need that user has same language as bot configurator\n- <b>Recent account</b>: Need that telegram account must be created at lest 1 month before now (experimental)\n- <b>Temporary mute</b>: Alternatively to validations, temporary mute unmute automatically after 12 hours, useful for avoid mass access and multi account from same person\n- <b>Total block</b>: Delete all users messages and allow only administrator to write in the group, useful for emergencies\n\nFor every trouble, use the command <b>/unlock</b> inside a group to allow a single user access manually.\nRemember to set group as <b>supergroup</b> and bot as <b>administrator</b>!";
+lang_disableall["it"] = "Disabilita le validazioni per attivare il mute temporaneo."
+lang_disableall["en"] = "Disable validations to enable temporary mute."
+lang_until_date["it"] = "Mute temporaneo (12h)";
+lang_until_date["en"] = "Temporary mute (12h)";
+lang_only_until["it"] = "Disattiva prima il mute temporaneo!";
+lang_only_until["en"] = "Disable temporary mute first!";
 
 lang_complete["it"] = "Hai <b>completato</b> correttamente tutte le azioni richieste!\nSei stato smutato dal gruppo.";
 lang_complete["en"] = "You have <b>completed</b> correctly all requested actions!\nYou have been unmuted from the group.";
@@ -361,19 +370,19 @@ bot.on('message', function (message) {
 			});
 		} else if (message.new_chat_member.is_bot == false){
 			var rows = connection_sync.query('SELECT id FROM user WHERE account_id = ' + message.from.id);
+			var current_id;
 			if (Object.keys(rows).length == 0) {
 				var rows = connection_sync.query('SELECT MAX(id) As mx FROM user');
-				var current_id = rows[0].mx+1;
+				current_id = rows[0].mx+1;
 				connection_sync.query('INSERT INTO user (id, account_id) VALUES (' + current_id + ', ' + message.from.id + ')');
-			} else {
-				var current_id = rows[0].id;
-			}
+			} else
+				current_id = rows[0].id;
 
 			var rows = connection_sync.query('SELECT 1 FROM user_validated WHERE user_id = ' + current_id);
 			if (Object.keys(rows).length == 0)
 				connection_sync.query('INSERT INTO user_validated (user_id, group_chat_id) VALUES (' + current_id + ', "' + message.chat.id + '")');
 
-			connection.query('SELECT active, welcome_msg FROM user_group WHERE group_chat_id = "' + message.chat.id + '"', function (err, rows, fields) {
+			connection.query('SELECT active, welcome_msg, until_date FROM user_group WHERE group_chat_id = "' + message.chat.id + '"', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0){
 					console.log("Group not found");
@@ -382,6 +391,7 @@ bot.on('message', function (message) {
 
 				var active = rows[0].active;
 				var welcome_msg = rows[0].welcome_msg;
+				var until_date = rows[0].until_date;
 				if (active == 1){
 					connection.query('SELECT id FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 						if (err) throw err;
@@ -389,7 +399,12 @@ bot.on('message', function (message) {
 						connection.query('SELECT validated FROM user_validated WHERE user_id = ' + user_id + ' AND group_chat_id = "' + message.chat.id + '"', function (err, rows, fields) {
 							if (err) throw err;
 							if (rows[0].validated == 0){
-								var options = {can_send_messages: false, can_send_media_messages: false, can_send_other_messages: false, can_add_web_page_previews: false};
+								var options;
+								if (until_date == 1) {
+									var time = Math.round((Date.now()+ms("12h"))/1000);
+									options = {can_send_messages: false, can_send_media_messages: false, can_send_other_messages: false, can_add_web_page_previews: false, until_date: time};
+								} else
+									options = {can_send_messages: false, can_send_media_messages: false, can_send_other_messages: false, can_add_web_page_previews: false};
 								bot.restrictChatMember(message.chat.id, message.new_chat_member.id, options).then(function (data) {
 									if (data == true){
 										// mutato
@@ -844,7 +859,7 @@ bot.on('callback_query', function (message) {
 			return;
 		}
 		
-		connection.query('SELECT id, user_id, group_title, welcome_msg, lockall, active, button, propic, username, captcha, lang, recent FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
+		connection.query('SELECT id, user_id, group_title, welcome_msg, lockall, active, button, propic, username, captcha, lang, recent, until_date FROM user_group WHERE group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				bot.answerCallbackQuery(message.id, {text: lang_error_info[user_lang]});
@@ -866,6 +881,7 @@ bot.on('callback_query', function (message) {
 			var captcha = rows[0].captcha;
 			var lang = rows[0].lang;
 			var recent = rows[0].recent;
+			var until_date = rows[0].until_date;
 
 			if (function_name == "button_val") {
 				connection.query('UPDATE user_validated SET button = 1 WHERE user_id = ' + user_id + ' AND group_chat_id = "' + group_chat_id + '"', function (err, rows, fields) {
@@ -1179,6 +1195,10 @@ bot.on('callback_query', function (message) {
 							bot.answerCallbackQuery(message.id, {text: lang_unmute[user_lang]});
 							return;
 						}
+						if ((until_date == 1) && (button == 0)){
+							bot.answerCallbackQuery(message.id, {text: lang_only_until[user_lang]});
+							return;
+						}
 						if (button == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: lang_button[user_lang] + ' ' + lang_action_disabled[user_lang]});
@@ -1190,6 +1210,10 @@ bot.on('callback_query', function (message) {
 					} else if (function_name == "propic"){
 						if ((active == 1) && (button == 0) && (propic == 1) && (username == 0) && (captcha == 0) && (lang == null) && (recent == 0)){
 							bot.answerCallbackQuery(message.id, {text: lang_unmute[user_lang]});
+							return;
+						}
+						if ((until_date == 1) && (propic == 0)){
+							bot.answerCallbackQuery(message.id, {text: lang_only_until[user_lang]});
 							return;
 						}
 						if (propic == 1){
@@ -1205,6 +1229,10 @@ bot.on('callback_query', function (message) {
 							bot.answerCallbackQuery(message.id, {text: lang_unmute[user_lang]});
 							return;
 						}
+						if ((until_date == 1) && (username == 0)){
+							bot.answerCallbackQuery(message.id, {text: lang_only_until[user_lang]});
+							return;
+						}
 						if (username == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: lang_username[user_lang] + ' ' + lang_action_disabled[user_lang]});
@@ -1218,6 +1246,10 @@ bot.on('callback_query', function (message) {
 							bot.answerCallbackQuery(message.id, {text: lang_unmute[user_lang]});
 							return;
 						}
+						if ((until_date == 1) && (captcha == 0)){
+							bot.answerCallbackQuery(message.id, {text: lang_only_until[user_lang]});
+							return;
+						}
 						if (captcha == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: lang_captcha[user_lang] + ' ' + lang_action_disabled[user_lang]});
@@ -1229,6 +1261,10 @@ bot.on('callback_query', function (message) {
 					} else if (function_name == "lang"){
 						if ((active == 1) && (button == 0) && (propic == 0) && (username == 0) && (captcha == 0) && (lang != null) && (recent == 0)){
 							bot.answerCallbackQuery(message.id, {text: lang_unmute[user_lang]});
+							return;
+						}
+						if ((until_date == 1) && (lang == null)){
+							bot.answerCallbackQuery(message.id, {text: lang_only_until[user_lang]});
 							return;
 						}
 						if (message.from.language_code == undefined){
@@ -1250,6 +1286,10 @@ bot.on('callback_query', function (message) {
 							bot.answerCallbackQuery(message.id, {text: lang_unmute[user_lang]});
 							return;
 						}
+						if ((until_date == 1) && (recent == 0)){
+							bot.answerCallbackQuery(message.id, {text: lang_only_until[user_lang]});
+							return;
+						}
 						if (recent == 1){
 							param_value = 0;
 							bot.answerCallbackQuery(message.id, {text: lang_recent[user_lang] + ' ' + lang_action_disabled[user_lang]});
@@ -1258,6 +1298,19 @@ bot.on('callback_query', function (message) {
 							bot.answerCallbackQuery(message.id, {text: lang_recent[user_lang] + ' ' + lang_action_enabled[user_lang]});
 						}
 						recent = !recent;
+					}  else if (function_name == "until_date"){
+						if ((button == 1) || (propic == 1) || (username == 1) || (captcha == 1) || (lang != null) || (recent == 1)){
+							bot.answerCallbackQuery(message.id, {text: lang_disableall[user_lang]});
+							return;
+						}
+						if (until_date == 1){
+							param_value = 0;
+							bot.answerCallbackQuery(message.id, {text: lang_until_date[user_lang] + ' ' + lang_action_disabled[user_lang]});
+						} else {
+							param_value = 1;
+							bot.answerCallbackQuery(message.id, {text: lang_until_date[user_lang] + ' ' + lang_action_enabled[user_lang]});
+						}
+						until_date = !until_date;
 					}
 
 					if (function_name != "clean"){
@@ -1285,6 +1338,17 @@ bot.on('callback_query', function (message) {
 					iKeys.push([{
 						text: "🚫 " + lang_automute[user_lang],
 						callback_data: "active:" + group_chat_id
+					}]);
+				}
+				if (until_date == 1){
+					iKeys.push([{
+						text: "✅ " + lang_until_date[user_lang],
+						callback_data: "until_date:" + group_chat_id
+					}]);
+				} else {
+					iKeys.push([{
+						text: "🚫 " + lang_until_date[user_lang],
+						callback_data: "until_date:" + group_chat_id
 					}]);
 				}
 				if (button == 1){
