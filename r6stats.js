@@ -2985,7 +2985,7 @@ bot.onText(/^\/botconfig(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/groups(?:@\w+)?/i, function (message, match) {
-	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -4220,7 +4220,7 @@ function generateDailyReport(element, index, array) {
 		report_line = "";
 		report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1);
 		report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1);
-		report_line += calculateSym(lang_season_mmr[lang], player[0].season_mmr, player[lastId].season_mmr, 1);
+		report_line += calculateSym(lang_season_mmr[lang], player[0].season_mmr, player[lastId].season_mmr, 0);
 		if (report_line != "") {
 			console.log("Daily report sent for user " + username + " on " + platform);
 			bot.sendMessage(account_id, report + report_head + report_line, html);
@@ -4272,7 +4272,7 @@ function generateReport(element, index, array) {
 			report_line = "";
 			report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1);
 			report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1);
-			report_line += calculateSym(lang_season_mmr[lang], player[0].season_mmr, player[lastId].season_mmr, 1);
+			report_line += calculateSym(lang_season_mmr[lang], Math.round(player[0].season_mmr), player[lastId].season_mmr, 0);
 			if (report_line != ""){
 				report += report_head + report_line;
 				cnt++;
@@ -4296,6 +4296,9 @@ function calculateSym(text, first, last, float) {
 	if (float == 1) {
 		last = parseFloat(last).toFixed(3);
 		first = parseFloat(first).toFixed(3);
+	} else {
+		last = Math.round(parseFloat(last));
+		first = Math.round(parseFloat(first));
 	}
 	return "<i>" + text + "</i>: " + last + " -> " + first + " " + sym + "\n";
 }

@@ -49,6 +49,7 @@ CREATE TABLE `user_group` (
   `welcome_msg` text,
   `lockall` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '0',
+  `until_date` tinyint(1) NOT NULL DEFAULT '0',
   `button` tinyint(1) NOT NULL DEFAULT '0',
   `propic` tinyint(1) NOT NULL DEFAULT '0',
   `username` tinyint(1) NOT NULL DEFAULT '0',
@@ -94,4 +95,4 @@ CREATE TABLE `user_validated` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-23  9:00:04
+-- Dump completed on 2019-08-26  9:00:04
