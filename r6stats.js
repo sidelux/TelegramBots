@@ -364,6 +364,9 @@ var lang_season_mmr = [];
 var lang_season_max_mmr = [];
 var lang_season_not_ranked = [];
 var lang_season_prevision = [];
+var lang_season_invalid = [];
+var lang_season_error = [];
+var lang_season_not_specified = [];
 
 var lang_title_mode = [];
 var lang_mode_secure = [];
@@ -527,6 +530,7 @@ var lang_info_notfound2 = [];
 var lang_info_result = [];
 
 var lang_seasons_intro = [];
+var lang_season_intro = [];
 var lang_rank_data = [];
 var lang_search_mates = [];
 var lang_search_join = [];
@@ -597,6 +601,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform inviandola in privato.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
+	"> '/season <nome-stagione>' - Permette di visualizzare i punteggi relativi alla stagione indicata del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/seasons' - Permette di visualizzare la lista completa del rango massimo ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori.\n" +
@@ -624,6 +629,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
 	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform sending it in private mode.\n" +
+	"> '/season <season-name>' - Allow to print season details specified as parameter using /setusername and /setplatform..\n" +
 	"> '/seasons' - Allow to print seasons max ranks details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats.\n" +
@@ -852,6 +858,12 @@ lang_season_not_ranked["it"] = "Non classificato";
 lang_season_not_ranked["en"] = "Not ranked";
 lang_season_prevision["it"] = "Previsione";
 lang_season_prevision["en"] = "Prevision";
+lang_season_invalid["it"] = "Stagione non valida, riprova.";
+lang_season_invalid["en"] = "Invalid season, try again.";
+lang_season_error["it"] = "Errore, impossibile recuperare i dati della stagione. I dati precedenti all'Operazione Health non vengono forniti da Ubisoft.";
+lang_season_error["en"] = "Error, unable to get season data. Previous data from Operation Health are not provided by Ubisoft.";
+lang_season_not_specified["it"] = "Stagione non specificata, riprova.";
+lang_season_not_specified["en"] = "Season not specified, try again.";
 
 lang_title_mode["it"] = "Modalità";
 lang_title_mode["en"] = "Mode";
@@ -1150,6 +1162,8 @@ lang_info_result["en"] = "R6 infos for";
 
 lang_seasons_intro["it"] = "<b>Classificazioni stagioni:</b>\n\n";
 lang_seasons_intro["en"] = "<b>Seasons ranking:</b>\n\n";
+lang_season_intro["it"] = "Classificazione";
+lang_season_intro["en"] = "Ranking";
 
 lang_rank_data["it"] = "<b>Il tuo rango:</b>";
 lang_rank_data["en"] = "<b>Your rank:</b>";
@@ -2521,6 +2535,66 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 	});
 });
 
+bot.onText(/^\/season(?:@\w+)? (.+)/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /season", options);
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
+			return;
+		}
+		
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, lang_season_not_specified[lang], options);
+			return;
+		}
+		
+		var season = match[1];
+		var seasonIndex = -1;
+		for (var i = 0; i < seasonList.length; i++) {
+			if (seasonList[i].toLowerCase() === season)
+				seasonIndex = i;
+		}
+		if (seasonIndex == -1) {
+			bot.sendMessage(message.chat.id, lang_season_invalid[lang], options);
+			return;
+		}
+
+		var default_username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
+			return;
+		}
+
+		var default_platform = rows[0].default_platform;
+		
+		console.log(getNow("it") + " Request season data for " + default_username + " on " + default_platform);
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			r6.stats(default_username, default_platform, (seasonIndex+1), 0).then(response => {
+				bot.sendMessage(message.chat.id, "<b>" + lang_season_intro[lang] + " " + seasonList[response.season_id-1] + ":</b>\n" +
+								lang_season_mmr[lang] + ": " + mapRank(Math.round(response.season_mmr), lang) + "\n" +
+								lang_season_max_mmr[lang] + ": " + mapRank(Math.round(response.season_max_mmr), lang) + "\n", options);
+			}).catch(error => {
+				bot.sendMessage(message.chat.id, lang_season_error[lang], options);
+				console.log(getNow("it") + " Season data not found for " + default_username + " on " + default_platform);
+			});
+		});
+	});
+});
+
 bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2562,22 +2636,39 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 					return;
 				}
 				
+				var startSeason = 6;
 				var lastSeason = responseStats.season_id;
 				var seasonArray = [];
 				var textDone = 0;
-				for(i = 1; i < lastSeason+1; i++){
-					r6.stats(default_username, default_platform, i, 0).then(response => {
-						if ((response.season_id != undefined) && (response.season_rank != 0)) {
-							seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + mapRank(Math.round(response.season_max_mmr), lang) + "\n";
-						}
+				for(i = startSeason; i < lastSeason+1; i++){
+					console.log("Season " + i + "/" + lastSeason);
+					var seasonQuery = connection_sync.query("SELECT mmr, max_mmr FROM season_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' AND season_id = " + i);
+					if (Object.keys(seasonQuery).length == 0){
+						console.log("Requesting season " + i + " from api...");
+						r6.stats(default_username, default_platform, i, 0).then(response => {
+							if ((response.season_id != undefined) && (response.season_rank != 0)) {
+								seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + mapRank(Math.round(response.season_max_mmr), lang) + "\n";
+
+								if (response.season_id != lastSeason) {
+									connection.query("INSERT INTO season_history (username, platform, season_id, mmr, max_mmr) VALUES ('" + default_username + "', '" + default_platform + "', " + response.season_id + ", " + response.season_mmr + ", " + response.season_max_mmr + ")", function (err, rows) {
+										if (err) throw err;
+									});
+								}
+							}
+							textDone++;
+							if (textDone >= lastSeason-startSeason)
+								bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
+						}).catch(error => {
+							textDone++;
+							if (textDone >= lastSeason-startSeason)
+								bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
+						});
+					} else {
+						seasonArray[i] = "<b>" + seasonList[i-1] + ":</b> " + mapRank(Math.round(seasonQuery[0].max_mmr), lang) + "\n";
 						textDone++;
-						if (textDone >= lastSeason)
+						if (textDone >= lastSeason-startSeason)
 							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
-					}).catch(error => {
-						textDone++;
-						if (textDone >= lastSeason)
-							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
-					});
+					}
 				}
 			});
 		});
@@ -3845,7 +3936,7 @@ function mapLoadout(itemOrig, lang){
 	return resp;
 }
 
-function mapRank(rank, lang){	
+function mapRank(rank, lang){
 	if (rank < 1399)
 		return lang_rank_copper4[lang];
 	else if ((rank >= 1399) && (rank < 1499))
