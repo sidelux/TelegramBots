@@ -2641,10 +2641,8 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				var seasonArray = [];
 				var textDone = 0;
 				for(i = startSeason; i < lastSeason+1; i++){
-					console.log("Season " + i + "/" + lastSeason);
 					var seasonQuery = connection_sync.query("SELECT mmr, max_mmr FROM season_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' AND season_id = " + i);
 					if (Object.keys(seasonQuery).length == 0){
-						console.log("Requesting season " + i + " from api...");
 						r6.stats(default_username, default_platform, i, 0).then(response => {
 							if ((response.season_id != undefined) && (response.season_rank != 0)) {
 								seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + mapRank(Math.round(response.season_max_mmr), lang) + "\n";
@@ -2656,17 +2654,17 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 								}
 							}
 							textDone++;
-							if (textDone >= lastSeason-startSeason)
+							if (textDone >= (lastSeason-startSeason)+1)
 								bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
 						}).catch(error => {
 							textDone++;
-							if (textDone >= lastSeason-startSeason)
+							if (textDone >= (lastSeason-startSeason)+1)
 								bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
 						});
 					} else {
 						seasonArray[i] = "<b>" + seasonList[i-1] + ":</b> " + mapRank(Math.round(seasonQuery[0].max_mmr), lang) + "\n";
 						textDone++;
-						if (textDone >= lastSeason-startSeason)
+						if (textDone >= (lastSeason-startSeason)+1)
 							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
 					}
 				}
