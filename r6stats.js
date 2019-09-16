@@ -436,6 +436,8 @@ var ability_operatorpvp_mozzie_droneshacked = [];
 var ability_operatorpvp_gridlock_traxdeployed = [];
 var ability_operatorpvp_Nokk_Cameras_Deceived = [];
 var ability_operatorpvp_Warden_Kills_During_Ability = [];
+var ability_operatorpvp_goyo_volcandetonate = [];
+var ability_operatorpvp_amaru_distancereeled = [];
 
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
@@ -518,6 +520,7 @@ var lang_rank_platinum3 = [];
 var lang_rank_platinum2 = [];
 var lang_rank_platinum1 = [];
 var lang_rank_diamond = [];
+var lang_rank_champion = [];
 
 var lang_no_validgraph = [];
 var lang_report_deactivated = [];
@@ -656,6 +659,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+						"14/09/19 - Aggiunte nuove statistiche e organizzazione per Goyo e Amaru\n" +
 						"18/08/19 - Aggiunto il supporto completo ai nuovi operatori Goyo e Amaru\n" +
 						"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
 						"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
@@ -670,6 +674,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+						"09/14/19 - Added new statistics and organization for Goyo and Amaru\n" +
 						"08/18/19 - Added full support for new operators Goyo and Amaru\n" +
 						"06/18/19 - Added /tstats command for team stats (and renamed /tagteam in /ttag)\n" +
 						"06/07/19 - Added full support for new operators Nokk and Warden\n" +
@@ -1000,6 +1005,10 @@ ability_operatorpvp_Nokk_Cameras_Deceived["it"] = "Videocamere disturbate";
 ability_operatorpvp_Nokk_Cameras_Deceived["en"] = "Deceived cameras";
 ability_operatorpvp_Warden_Kills_During_Ability["it"] = "Uccisioni con abilità";
 ability_operatorpvp_Warden_Kills_During_Ability["en"] = "Kills during ability";
+ability_operatorpvp_goyo_volcandetonate["it"] = "Volcan detonati";
+ability_operatorpvp_goyo_volcandetonate["en"] = "Detonated Volcan";
+ability_operatorpvp_amaru_distancereeled["it"] = "Distanza percorsa in volo";
+ability_operatorpvp_amaru_distancereeled["en"] = "Distance reeled";
 
 lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
 lang_loadout_intro["en"] = "Recommended loadout for";
@@ -1141,6 +1150,8 @@ lang_rank_platinum1["it"] = "Platino I";
 lang_rank_platinum1["en"] = "Platinum I";
 lang_rank_diamond["it"] = "Diamante";
 lang_rank_diamond["en"] = "Diamond";
+lang_rank_champion["it"] = "Campione";
+lang_rank_champion["en"] = "Champion";
 
 lang_no_validgraph["it"] = "Utilizza almeno una volta il comando /graph prima di utilizzare /lastgraph";
 lang_no_validgraph["en"] = "Use at least once the command /graph before using /lastgraph";
@@ -3973,8 +3984,10 @@ function mapRank(rank, lang){
 		return lang_rank_platinum2[lang];
 	else if ((rank >= 4099) && (rank < 4499))
 		return lang_rank_platinum1[lang];
-	else
+	else if ((rank >= 4499) && (rank < 5000))
 		return lang_rank_diamond[lang];
+	else
+		return lang_rank_champion[lang];
 }
 
 function sortSeasons(seasonArray){
@@ -4231,14 +4244,14 @@ function numToRank(num, lang, mmr = -1){
 		"Bronzo IV", "Bronzo III", "Bronzo II", "Bronzo I",
 		"Argento IV", "Argento III", "Argento II", "Argento I",
 		"Oro IV", "Oro III", "Oro II", "Oro I",
-		"Platino III", "Platino II", "Platino I", "Diamante"
+		"Platino III", "Platino II", "Platino I", "Diamante", "Campione"
 	];
 	var rankEn = [
 		"Copper IV", "Copper III", "Copper II", "Copper I",
 		"Bronze IV", "Bronze III", "Bronze II", "Bronze I",
 		"Silver IV", "Silver III", "Silver II", "Silver I",
 		"Gold IV", "Gold III", "Gold II", "Gold I",
-		"Platinum III", "Platinum II", "Platinum I", "Diamond"
+		"Platinum III", "Platinum II", "Platinum I", "Diamond", "Champion"
 	];
 
 	if ((num == 0) || (num > 21)){
