@@ -86,13 +86,13 @@ class RainbowSixApi {
 						objStats.xp = objResp.players[ubi_id].xp;									
 						objStats.season_id = objResp.players[ubi_id].season;
 						objStats.season_rank = objResp.players[ubi_id].rank;
-						
+
 						/*
 						var d = new Date();
 						if ((d.getDay() == 1) && (d.getMonth() == 3))
 							objStats.season_rank = 20;
 						*/
-						
+
 						objStats.season_mmr = objResp.players[ubi_id].mmr;
 						objStats.season_max_mmr = objResp.players[ubi_id].max_mmr;
 
@@ -104,7 +104,7 @@ class RainbowSixApi {
 						request.get(endpoint, (error, response, body) => {
 							if(!error && response.statusCode == '200') {
 								var objResp = JSON.parse(body);
-								
+
 								if (objResp.players[ubi_id] == undefined)
 									return reject("User stats empty - " + username);
 
@@ -500,19 +500,21 @@ var lang_multiple_limit = [];
 var lang_dist_noplayers = [];
 var lang_dist = [];
 
+var lang_rank_copper5 = [];
 var lang_rank_copper4 = [];
 var lang_rank_copper3 = [];
 var lang_rank_copper2 = [];
 var lang_rank_copper1 = [];
+var lang_rank_bronze5 = [];
 var lang_rank_bronze4 = [];
 var lang_rank_bronze3 = [];
 var lang_rank_bronze2 = [];
 var lang_rank_bronze1 = [];
+var lang_rank_silver5 = [];
 var lang_rank_silver4 = [];
 var lang_rank_silver3 = [];
 var lang_rank_silver2 = [];
 var lang_rank_silver1 = [];
-var lang_rank_gold4 = [];
 var lang_rank_gold3 = [];
 var lang_rank_gold2 = [];
 var lang_rank_gold1 = [];
@@ -541,6 +543,7 @@ var lang_search_mates_lbl = [];
 var lang_search_already = [];
 var lang_search_ok = [];
 var lang_invalid_find = [];
+var lang_seasons_invalid_order = [];
 
 var lang_on = [];
 var lang_daily_report_header = [];
@@ -602,7 +605,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/stats <username>,<piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
 	"> '/mstats <username1>,<username2>,ecc. - Permette di visualizzare statistiche brevi per la lista di utenti specificata.\n" +
 	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
-	"> '/operators' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform inviandola in privato.\n" +
+	"> '/operators <ordinamento>' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform inviandola in privato.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
 	"> '/season <nome-stagione>' - Permette di visualizzare i punteggi relativi alla stagione indicata del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/seasons' - Permette di visualizzare la lista completa del rango massimo ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
@@ -630,7 +633,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
 	"> '/mstats <username1>,<username2>,etc. - Allow to print a short stats for multiple specified users.\n" +
 	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
-	"> '/operators' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
+	"> '/operators <order-method>' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform sending it in private mode.\n" +
 	"> '/season <season-name>' - Allow to print season details specified as parameter using /setusername and /setplatform..\n" +
 	"> '/seasons' - Allow to print seasons max ranks details specified as parameter using /setusername and /setplatform.\n" +
@@ -659,34 +662,36 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
-						"14/09/19 - Aggiunte nuove statistiche e organizzazione per Goyo e Amaru\n" +
-						"18/08/19 - Aggiunto il supporto completo ai nuovi operatori Goyo e Amaru\n" +
-						"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
-						"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
-						"03/06/19 - Aggiunta la possibilità di utilzzare il comando /compare anche se i giocatori sono su piattaforme differenti\n" +
-						"16/05/19 - Aggiunto il comando /dist per visualizzare la distribuzione del giocatori per piattaforma relativa al gruppo attuale\n" +
-						"23/04/19 - Aggiunta la possibilità di invitare qualcuno nel gruppo scrivendo 'invite' in inline\n" +
-						"21/04/19 - Aggiunto il comando /setdailyreport con la relativa funzione automatica\n" +
-						"09/04/19 - Aggiunto il comando /find\n" +
-						"01/04/19 - Aggiunto il comando /rank\n" +
-						"26/03/19 - Aggiunto il comando /seasons\n" +
-						"11/03/19 - Completata l'integrazione di Gridlock e Mozzie e aggiunto il comando /r6info\n" +
-						"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
-						"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
+	"19/09/19 - Aggiunta la possibilità di utilizzare il comando /seasons ordinando per un criterio specifico\n" +
+	"18/09/19 - Aggiornato con il supporto completo ad Ember Rise\n" +
+	"15/08/19 - Aggiunto il comando /season per i dettagli sulla stagione specificata\n" +
+	"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
+	"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
+	"03/06/19 - Aggiunta la possibilità di utilzzare il comando /compare anche se i giocatori sono su piattaforme differenti\n" +
+	"16/05/19 - Aggiunto il comando /dist per visualizzare la distribuzione del giocatori per piattaforma relativa al gruppo attuale\n" +
+	"23/04/19 - Aggiunta la possibilità di invitare qualcuno nel gruppo scrivendo 'invite' in inline\n" +
+	"21/04/19 - Aggiunto il comando /setdailyreport con la relativa funzione automatica\n" +
+	"09/04/19 - Aggiunto il comando /find\n" +
+	"01/04/19 - Aggiunto il comando /rank\n" +
+	"26/03/19 - Aggiunto il comando /seasons\n" +
+	"11/03/19 - Completata l'integrazione di Gridlock e Mozzie e aggiunto il comando /r6info\n" +
+	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
+	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
-						"09/14/19 - Added new statistics and organization for Goyo and Amaru\n" +
-						"08/18/19 - Added full support for new operators Goyo and Amaru\n" +
-						"06/18/19 - Added /tstats command for team stats (and renamed /tagteam in /ttag)\n" +
-						"06/07/19 - Added full support for new operators Nokk and Warden\n" +
-						"06/03/19 - Added possibility to use /compare command also with player's platform are different\n" +
-						"05/16/19 - Added /dist command to show platform distribution for actual group\n" +
-						"04/21/19 - Added /setdailyreport command with relative automatic function\n" +
-						"04/09/19 - Added /find command\n" +
-						"04/01/19 - Added /rank command\n" +
-						"03/26/19 - Added /seasons command\n" +
-						"03/11/19 - Finished Gridlock and Mozzie integration and added /r6info command\n" +
-						"02/22/19 - Added support for Gridlock and Mozzie\n" +
-						"02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
+	"09/19/19 - Added possibility to use /seasons command with custom order method\n" +
+	"09/18/19 - Updated with Ember Rise complete support\n" +
+	"08/15/19 - Added /season command for specified season details\n" +
+	"06/18/19 - Added /tstats command for team stats (and renamed /tagteam in /ttag)\n" +
+	"06/07/19 - Added full support for new operators Nokk and Warden\n" +
+	"06/03/19 - Added possibility to use /compare command also with player's platform are different\n" +
+	"05/16/19 - Added /dist command to show platform distribution for actual group\n" +
+	"04/21/19 - Added /setdailyreport command with relative automatic function\n" +
+	"04/09/19 - Added /find command\n" +
+	"04/01/19 - Added /rank command\n" +
+	"03/26/19 - Added /seasons command\n" +
+	"03/11/19 - Finished Gridlock and Mozzie integration and added /r6info command\n" +
+	"02/22/19 - Added support for Gridlock and Mozzie\n" +
+	"02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata per questo gruppo:";
@@ -1110,6 +1115,8 @@ lang_dist_noplayers["en"] = "No players linked at this group";
 lang_dist["it"] = "Distribuzione giocatori memorizzati per questo gruppo";
 lang_dist["en"] = "Distribution of saved players for this group";
 
+lang_rank_copper5["it"] = "Rame V";
+lang_rank_copper5["en"] = "Copper V";
 lang_rank_copper4["it"] = "Rame IV";
 lang_rank_copper4["en"] = "Copper IV";
 lang_rank_copper3["it"] = "Rame III";
@@ -1118,6 +1125,8 @@ lang_rank_copper2["it"] = "Rame II";
 lang_rank_copper2["en"] = "Copper II";
 lang_rank_copper1["it"] = "Rame I";
 lang_rank_copper1["en"] = "Copper I";
+lang_rank_bronze5["it"] = "Bronzo V";
+lang_rank_bronze5["en"] = "Bronze V";
 lang_rank_bronze4["it"] = "Bronzo IV";
 lang_rank_bronze4["en"] = "Bronze IV";
 lang_rank_bronze3["it"] = "Bronzo III";
@@ -1126,6 +1135,8 @@ lang_rank_bronze2["it"] = "Bronzo II";
 lang_rank_bronze2["en"] = "Bronze II";
 lang_rank_bronze1["it"] = "Bronzo I";
 lang_rank_bronze1["en"] = "Bronze I";
+lang_rank_silver5["it"] = "Argento V";
+lang_rank_silver5["en"] = "Silver V";
 lang_rank_silver4["it"] = "Argento IV";
 lang_rank_silver4["en"] = "Silver IV";
 lang_rank_silver3["it"] = "Argento III";
@@ -1134,8 +1145,6 @@ lang_rank_silver2["it"] = "Argento II";
 lang_rank_silver2["en"] = "Silver II";
 lang_rank_silver1["it"] = "Argento I";
 lang_rank_silver1["en"] = "Silver I";
-lang_rank_gold4["it"] = "Oro IV";
-lang_rank_gold4["en"] = "Gold IV";
 lang_rank_gold3["it"] = "Oro III";
 lang_rank_gold3["en"] = "Gold III";
 lang_rank_gold2["it"] = "Oro II";
@@ -1191,6 +1200,8 @@ lang_search_ok["it"] = "Partecipazione aggiunta!";
 lang_search_ok["en"] = "Join confirmed!";
 lang_invalid_find["it"] = "Specifica la piattaforma con /find <piattaforma>";
 lang_invalid_find["en"] = "Specify the platform with /find <platform>";
+lang_seasons_invalid_order["it"] = "Ordinamento non valido, ordinamenti disponibili: ";
+lang_seasons_invalid_order["en"] = "Invalid sort, available sorting method: ";
 
 lang_on["it"] = "su";
 lang_on["en"] = "on";
@@ -1265,7 +1276,7 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 					default_text = "\n" + lang_default[lang] + rows[0].default_platform + "\n";
 			}
 		}
-		
+
 		if (match[1] != undefined) {
 			if (match[1] == "config") {
 				var opt = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
@@ -1298,9 +1309,9 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 bot.on('message', function (message) {
 	if (message.chat.id == -1001246584843) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-		
+
 		var res = parse(message);
-		
+
 		if (res == "platform")
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
 		if (res == "ok") {
@@ -1310,18 +1321,18 @@ bot.on('message', function (message) {
 				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
 			}]);
 			var opt =	{
-							parse_mode: 'HTML',
-							reply_markup: {
-								inline_keyboard: iKeys
-							}
-						};
-			
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				}
+			};
+
 			var nick = "";
 			if (message.from.username == undefined)
 				nick = message.from.first_name;
 			else
 				nick = message.from.username;
-			
+
 			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
 		}
 	}
@@ -1347,14 +1358,14 @@ bot.on("inline_query", function (query) {
 			}
 		}else
 			lang = rows[0].lang;
-		
+
 		if (data == "invite"){
 			var account_id = query.from.id;
 			var username = query.from.username;
-			
+
 			var iKeys = [];
 			iKeys.push([{text: lang_inline_invite_join["it"], url: "https://t.me/Rainbow6SItaly"}]);
-			
+
 			// force it language cause of groups
 			bot.answerInlineQuery(query.id, [{
 				id: '0',
@@ -1525,14 +1536,14 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 		}
 
 		var platform = match[1].toLowerCase().trim();
-		
+
 		if (platform == "ps4")
 			platform = "psn";
 		else if (platform == "pc")
 			platform = "uplay";
 		else if (platform == "xbox")
 			platform = "xbl";
-		
+
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
 			return;
@@ -2044,7 +2055,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 			bot.sendMessage(message.chat.id, lang_multiple_limit[lang], options);
 			return;
 		}
-		
+
 		var text = "";
 		var textDone = 0;
 
@@ -2132,11 +2143,11 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						url: "https://t.me/r6siegestatsbot?start=config"
 					}]);
 					var opt =	{
-									parse_mode: 'HTML',
-									reply_markup: {
-										inline_keyboard: iKeys
-									}
-								};
+						parse_mode: 'HTML',
+						reply_markup: {
+							inline_keyboard: iKeys
+						}
+					};
 					bot.sendMessage(message.chat.id, lang_invalid_user[lang], opt);
 					return;
 				}
@@ -2152,7 +2163,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 		username = username.trim();
 		platform = platform.trim();
-		
+
 		if (platform == "ps4")
 			platform = "psn";
 		else if (platform == "pc")
@@ -2322,7 +2333,7 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
-		
+
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
@@ -2376,15 +2387,15 @@ bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, mat
 		}
 
 		var lang = rows[0].lang;
-		
+
 		var mark = {
 			parse_mode: "Markdown"
 		};
-		
+
 		var html = {
 			parse_mode: "HTML"
 		};
-		
+
 		var account_id;
 		var username;
 		if (message.reply_to_message != undefined){
@@ -2403,18 +2414,18 @@ bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, mat
 				bot.sendMessage(message.chat.id, lang_info_notfound[lang], options);
 				return;
 			}
-			
+
 			if ((rows[0].default_username == null) && (rows[0].default_platform == null)){
 				bot.sendMessage(message.chat.id, lang_info_notfound2[lang], options);
 				return;
 			}
-			
+
 			var default_username = (rows[0].default_username == null ? "-" : rows[0].default_username);
 			var default_platform = (rows[0].default_platform == null ? "-" : rows[0].default_platform);
-			
+
 			connection.query("SELECT insert_date FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' ORDER BY id DESC LIMIT 1", function (err, rows) {
 				if (err) throw err;
-			
+
 				var insert_date;
 				if (Object.keys(rows).length > 0){
 					var d = new Date(rows[0].insert_date);
@@ -2461,7 +2472,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 
 		var username1 = match[1].trim();
 		var username2 = match[2].trim();
-		
+
 		var user1info = connection_sync.query("SELECT default_platform FROM user WHERE default_username = '" + username1 + "'");
 		if (Object.keys(user1info).length > 0){
 			if (user1info[0].default_platform != null)
@@ -2546,7 +2557,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 	});
 });
 
-bot.onText(/^\/season(?:@\w+)? (.+)/i, function (message, match) {
+bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -2561,17 +2572,17 @@ bot.onText(/^\/season(?:@\w+)? (.+)/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
-		
+
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
 		}
-		
+
 		if (match[1] == undefined){
 			bot.sendMessage(message.chat.id, lang_season_not_specified[lang], options);
 			return;
 		}
-		
+
 		var season = match[1];
 		var seasonIndex = -1;
 		for (var i = 0; i < seasonList.length; i++) {
@@ -2591,7 +2602,7 @@ bot.onText(/^\/season(?:@\w+)? (.+)/i, function (message, match) {
 		}
 
 		var default_platform = rows[0].default_platform;
-		
+
 		console.log(getNow("it") + " Request season data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(default_username, default_platform, (seasonIndex+1), 0).then(response => {
@@ -2621,7 +2632,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 		}
 
 		var lang = rows[0].lang;
-		
+
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
@@ -2635,18 +2646,18 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 		}
 
 		var default_platform = rows[0].default_platform;
-		
+
 		console.log(getNow("it") + " Request seasons data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(default_username, default_platform, -1, 0).then(response => {
 				var responseStats = response;
-				
+
 				if (responseStats.platform == undefined){
 					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
 					console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 					return;
 				}
-				
+
 				var startSeason = 6;
 				var lastSeason = responseStats.season_id;
 				var seasonArray = [];
@@ -2684,7 +2695,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 	});
 });
 
-bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
+bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -2714,6 +2725,18 @@ bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
 
 		var default_platform = rows[0].default_platform;
 
+		var orderList = ["match", "win", "lose", "kill", "death", "time"];
+		var orderMethod = "";
+		if (match[1] != undefined) {
+			match[1] = match[1].toLowerCase();
+			if (orderList.indexOf(match[1]) != -1)
+				orderMethod = match[1];
+			else {
+				bot.sendMessage(message.chat.id, lang_seasons_invalid_order[lang] + orderList.join(", "), options);
+				return;
+			}
+		}
+
 		console.log(getNow("it") + " Request operators data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(default_username, default_platform, -1, 1).then(response => {
@@ -2725,11 +2748,54 @@ bot.onText(/^\/operators(?:@\w+)?/i, function (message) {
 				delete operators.platform;
 				delete operators.profile_id;
 
-				var ordered = {};
-				Object.keys(response).sort().forEach(function(key) {
-					ordered[key] = response[key];
-				});
-				operators = ordered;
+				if (orderMethod == "") {
+					var ordered = {};
+					Object.keys(response).sort().forEach(function(key) {
+						ordered[key] = response[key];
+					});
+					operators = ordered;
+				} else {
+					var ordered = {};
+					if (orderMethod == "match") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return (response[keyB].operatorpvp_roundwon+response[keyB].operatorpvp_roundlost) - (response[keyA].operatorpvp_roundwon+response[keyA].operatorpvp_roundlost);
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					} else if (orderMethod == "win") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_roundwon - response[keyA].operatorpvp_roundwon;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					} else if (orderMethod == "lose") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_roundlost - response[keyA].operatorpvp_roundlost;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					} else if (orderMethod == "kill") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_kills - response[keyA].operatorpvp_kills;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					} else if (orderMethod == "death") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_death - response[keyA].operatorpvp_death;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					} else if (orderMethod == "time") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_timeplayed - response[keyA].operatorpvp_timeplayed;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					}
+
+					operators = ordered;
+				}
 
 				var operators_name = Object.keys(operators);
 
@@ -2952,9 +3018,9 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 			bot.sendMessage(message.chat.id, lang_operator_no_name[lang], options);
 			return;
 		}
-		
+
 		operator_name = jsUcfirst(match[1]);
-		
+
 		if (operatorList.indexOf(match[1]) == -1){
 			var sim = stringSimilarity.findBestMatch(operator_name, operatorList);
 			if (sim.bestMatch.rating >= 0.6)
@@ -3076,7 +3142,7 @@ bot.onText(/^\/botconfig(?:@\w+)?/i, function (message, match) {
 		var mark = {
 			parse_mode: "Markdown"
 		};
-		
+
 		if (message.chat.id < 0)
 			bot.sendMessage(message.chat.id, lang_config[lang], options);
 		else
@@ -3553,7 +3619,7 @@ bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
 		var mark = {
 			parse_mode: "HTML"
 		};
-		
+
 		if (message.chat.id > 0) {
 			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
 			return;
@@ -3597,7 +3663,7 @@ bot.onText(/^\/top(?:@\w+)?/i, function (message, match) {
 		var text = "<b>" + lang_rank[rows[0].lang] + "</b>\n";
 		var c = 1;
 		var size = 25;
-		
+
 		var group_id = message.chat.id;
 		if (group_id > 0){
 			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
@@ -3622,11 +3688,11 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 			console.log("Use this in reply mode");
 			return;
 		}
-		
+
 		var options = {parse_mode: "HTML", reply_to_message_id: message.reply_to_message.message_id};
-		
+
 		var res = parse(message.reply_to_message, 1);
-		
+
 		if (res == "platform")
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
 		if (res == "ok") {
@@ -3636,20 +3702,20 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
 			}]);
 			var opt =	{
-							parse_mode: 'HTML',
-							reply_markup: {
-								inline_keyboard: iKeys
-							}
-						};
-			
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				}
+			};
+
 			var nick = "";
 			if (message.reply_to_message.from.username == undefined)
 				nick = message.reply_to_message.from.first_name;
 			else
 				nick = message.reply_to_message.from.username;
-			
+
 			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
-			
+
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 	}
@@ -3670,7 +3736,7 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 		}
 
 		var lang = rows[0].lang;
-		
+
 		var mark = {
 			parse_mode: "HTML"
 		};
@@ -3689,7 +3755,7 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 				return;
 			}
 		}
-		
+
 		var platform_txt = decodePlatform(platform);
 		var author;
 		if (rows[0].default_username != null)
@@ -3698,13 +3764,13 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 			author = "@" + message.from.username;
 		else if (message.from.first_name != undefined)
 			author = message.from.first_name;
-		
+
 		var iKeys = [];
 		iKeys.push([{
 			text: lang_search_join[lang],
 			callback_data: "find:" + lang
 		}]);
-		
+
 		var opt = {
 			parse_mode: "HTML",
 			reply_to_message_id: message.message_id,
@@ -3712,7 +3778,7 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 				inline_keyboard: iKeys
 			}
 		}
-		
+
 		bot.sendMessage(message.chat.id, "👀 " + jsUcfirst(author) + " " + lang_search_mates[lang] + " " + platform_txt + "!", opt);
 	});
 });
@@ -3720,10 +3786,10 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 bot.on('callback_query', function (message) {
 	var split = message.data.split(":");
 	var lang = split[1];
-	
+
 	connection.query("SELECT default_username FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
-	
+
 		var name;
 		if ((Object.keys(rows).length > 0) && (rows[0].default_username != null))
 			name = rows[0].default_username;
@@ -3731,7 +3797,7 @@ bot.on('callback_query', function (message) {
 			name = "@" + message.from.username;
 		else if (message.from.first_name != undefined)
 			name = message.from.first_name;
-		
+
 		var newtext = message.message.text;
 		if (newtext.toLowerCase().indexOf(name.toLowerCase()) != -1){
 			bot.answerCallbackQuery(message.id, {text: lang_search_already[lang]});
@@ -3739,7 +3805,7 @@ bot.on('callback_query', function (message) {
 		}
 
 		name = jsUcfirst(name);
-		
+
 		if (message.message.text.indexOf(lang_search_mates_lbl[lang]) == -1)
 			newtext += "\n" + lang_search_mates_lbl[lang] + ": " + name;
 		else
@@ -3800,11 +3866,11 @@ bot.onText(/^\/dreport(?:@\w+)?/i, function (message, match) {
 function parse(message, force = 0){
 	if ((message.text == undefined) && (message.caption == undefined))
 		return;
-	
+
 	var text = message.text;
 	if (message.caption != undefined)
 		text = message.caption;
-	
+
 	var text = text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
 	var author;
 	if (message.from.username != undefined)
@@ -3815,7 +3881,7 @@ function parse(message, force = 0){
 
 	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo|provini|provino|requisiti/gmi) == -1) && (force == 0))
 		return;
-	
+
 	var clanNameFound = "";
 	var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
 	if (clanName != null)
@@ -3888,7 +3954,7 @@ function parse(message, force = 0){
 		console.log("Response empty");
 		return;
 	}
-	
+
 	if (miss_plat == 1)
 		return "platform";
 
@@ -3896,7 +3962,7 @@ function parse(message, force = 0){
 	bot.deleteMessage(message.chat.id, message.message_id);
 
 	bot.sendMessage(-1001326797846, header + response, html);
-	
+
 	return "ok";
 }
 
@@ -3946,45 +4012,54 @@ function mapLoadout(itemOrig, lang){
 }
 
 function mapRank(rank, lang){
-	if (rank < 1399)
+	if (rank < 1100)
+		return lang_rank_copper5[lang];
+	else if ((rank >= 1200) && (rank < 1300))
 		return lang_rank_copper4[lang];
-	else if ((rank >= 1399) && (rank < 1499))
+	else if ((rank >= 1300) && (rank < 1400))
 		return lang_rank_copper3[lang];
-	else if ((rank >= 1499) && (rank < 1599))
+	else if ((rank >= 1400) && (rank < 1500))
 		return lang_rank_copper2[lang];
-	else if ((rank >= 1599) && (rank < 1699))
+	else if ((rank >= 1500) && (rank < 1600))
 		return lang_rank_copper1[lang];
-	else if ((rank >= 1699) && (rank < 1799))
+
+	else if ((rank >= 1600) && (rank < 1700))
+		return lang_rank_bronze5[lang];
+	else if ((rank >= 1700) && (rank < 1800))
 		return lang_rank_bronze4[lang];
-	else if ((rank >= 1799) && (rank < 1899))
+	else if ((rank >= 1800) && (rank < 1900))
 		return lang_rank_bronze3[lang];
-	else if ((rank >= 1899) && (rank < 1999))
+	else if ((rank >= 1900) && (rank < 2000))
 		return lang_rank_bronze2[lang];
-	else if ((rank >= 1999) && (rank < 2099))
+	else if ((rank >= 2000) && (rank < 2100))
 		return lang_rank_bronze1[lang];
-	else if ((rank >= 2099) && (rank < 2199))
+
+	else if ((rank >= 2100) && (rank < 2200))
+		return lang_rank_silver5[lang];
+	else if ((rank >= 2200) && (rank < 2300))
 		return lang_rank_silver4[lang];
-	else if ((rank >= 2199) && (rank < 2299))
+	else if ((rank >= 2300) && (rank < 2400))
 		return lang_rank_silver3[lang];
-	else if ((rank >= 2299) && (rank < 2399))
+	else if ((rank >= 2400) && (rank < 2500))
 		return lang_rank_silver2[lang];
-	else if ((rank >= 2399) && (rank < 2499))
+	else if ((rank >= 2500) && (rank < 2600))
 		return lang_rank_silver1[lang];
-	else if ((rank >= 2499) && (rank < 2699))
-		return lang_rank_gold4[lang];
-	else if ((rank >= 2699) && (rank < 2899))
+
+	else if ((rank >= 2600) && (rank < 2800))
 		return lang_rank_gold3[lang];
-	else if ((rank >= 2899) && (rank < 3099))
+	else if ((rank >= 2800) && (rank < 3000))
 		return lang_rank_gold2[lang];
-	else if ((rank >= 3099) && (rank < 3299))
+	else if ((rank >= 3000) && (rank < 3200))
 		return lang_rank_gold1[lang];
-	else if ((rank >= 3299) && (rank < 3699))
+
+	else if ((rank >= 3200) && (rank < 3600))
 		return lang_rank_platinum3[lang];
-	else if ((rank >= 3699) && (rank < 4099))
+	else if ((rank >= 3600) && (rank < 4000))
 		return lang_rank_platinum2[lang];
-	else if ((rank >= 4099) && (rank < 4499))
+	else if ((rank >= 4000) && (rank < 4400))
 		return lang_rank_platinum1[lang];
-	else if ((rank >= 4499) && (rank < 5000))
+
+	else if ((rank >= 4400) && (rank < 5000))
 		return lang_rank_diamond[lang];
 	else
 		return lang_rank_champion[lang];
@@ -4240,17 +4315,17 @@ function saveData(responseStats, responseOps){
 
 function numToRank(num, lang, mmr = -1){
 	var rankIt = [
-		"Rame IV", "Rame III", "Rame II", "Rame I",
-		"Bronzo IV", "Bronzo III", "Bronzo II", "Bronzo I",
-		"Argento IV", "Argento III", "Argento II", "Argento I",
-		"Oro IV", "Oro III", "Oro II", "Oro I",
+		"Rame V", "Rame IV", "Rame III", "Rame II", "Rame I",
+		"Bronzo V", "Bronzo IV", "Bronzo III", "Bronzo II", "Bronzo I",
+		"Argento V", "Argento IV", "Argento III", "Argento II", "Argento I",
+		"Oro III", "Oro II", "Oro I",
 		"Platino III", "Platino II", "Platino I", "Diamante", "Campione"
 	];
 	var rankEn = [
-		"Copper IV", "Copper III", "Copper II", "Copper I",
-		"Bronze IV", "Bronze III", "Bronze II", "Bronze I",
-		"Silver IV", "Silver III", "Silver II", "Silver I",
-		"Gold IV", "Gold III", "Gold II", "Gold I",
+		"Copper V", "Copper IV", "Copper III", "Copper II", "Copper I",
+		"Bronze V", "Bronze IV", "Bronze III", "Bronze II", "Bronze I",
+		"Silver V", "Silver IV", "Silver III", "Silver II", "Silver I",
+		"Gold III", "Gold II", "Gold I",
 		"Platinum III", "Platinum II", "Platinum I", "Diamond", "Champion"
 	];
 
@@ -4591,9 +4666,9 @@ function jsUcfirst(string) {
 }
 
 function jsUcall(string) {
-    return string.replace(/\w\S*/g, function(txt){
-        return txt.charAt(0).toUpperCase() + txt.substr(1);
-    });
+	return string.replace(/\w\S*/g, function(txt){
+		return txt.charAt(0).toUpperCase() + txt.substr(1);
+	});
 }
 
 function addZero(i) {
