@@ -149,6 +149,8 @@ var lang_manage = [];
 var lang_disableall = [];
 var lang_until_date = [];
 var lang_only_until = [];
+var lang_help = [];
+var lang_help_private = [];
 
 var lang_complete = [];
 var lang_complete_group = [];
@@ -296,6 +298,10 @@ lang_until_date["it"] = "Mute temporaneo (12h)";
 lang_until_date["en"] = "Temporary mute (12h)";
 lang_only_until["it"] = "Disattiva prima il mute temporaneo!";
 lang_only_until["en"] = "Disable temporary mute first!";
+lang_help["it"] = "<b>A cosa serve questo bot?</b>\nQuesto bot serve a limitare l'accesso agli utenti bot (e perchè no, anche agli altri) tramite diversi metodi di verifica, i metodi al momento supportati sono i seguenti: pulsante, immagine profilo obbligatoria, username obbligatorio, captcha, lingua del client, account recente. Appena l'utente accede al gruppo verrà immediatamente mutato e smutato solamente quando avrà completato tutti i metodi di verifica abilitati in chat privata.\n\nE' possibile attivare il mute automatico oppure il mute temporaneo in alternativa ai vari metodi di validazione, in questo modo potrà scrivere automaticamente dopo tot tempo senza effettuare alcuna azione.\n\nE' possibile infine attivare il blocco totale per cancellare tutti i messaggi che vengono scritti tranne quelli degli admin ed è possibile sbloccare manualmente un utente con il comando apposito. Maggiori dettagli durante la configurazione del bot.";
+lang_help["en"] = "<b>What this bot can do?</b>\nThis bot can limit user bot access (and also normal users, why not) using different verification methods, methods actually supported are: button, mandatory profile picture, mandatory username, captcha, client language, recent account. When user access the group it will be immediately muted and unmuted only when will have completed all mandatory specified verification methods in private chat.\n\nIs possibile to use automatic mute or temporary mute to automatically unmute a user after a fixed time without making actions.\n\nAt the end, is possibile to active total block to automatically delete all messages except admin messages and is possibile to unlock manually a user with a command. More infos during bot configuration.";
+lang_help_private["it"] = "Questo comando può essere utilizzato solo in privato.";
+lang_help_private["en"] = "This command can be used only in private mode.";
 
 lang_complete["it"] = "Hai <b>completato</b> correttamente tutte le azioni richieste!\nSei stato smutato dal gruppo.";
 lang_complete["en"] = "You have <b>completed</b> correctly all requested actions!\nYou have been unmuted from the group.";
@@ -481,6 +487,21 @@ bot.on('message', function (message) {
 			});
 		});
 	}
+});
+
+bot.onText(/^\/help/, function (message) {
+	connection.query('SELECT id, lang FROM user WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+		if (err) throw err;
+		var user_id = rows[0].id;
+		var lang = rows[0].lang;
+		
+		if (message.chat.id < 0){
+			bot.sendMessage(message.chat.id, lang_help_private[lang]);
+			return;
+		}
+
+		bot.sendMessage(message.chat.id, lang_help[lang], html);
+	});
 });
 
 bot.onText(/^\/new/, function (message) {
