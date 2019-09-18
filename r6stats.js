@@ -571,8 +571,8 @@ var lang_history_result_lose = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
-lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate";
-lang_stats["en"] = "%n operators registered, %s stats saved";
+lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate in %g gruppi diversi";
+lang_stats["en"] = "%n operators registered, %s stats saved in %g different groups";
 lang_startme["it"] = "Avviami in privato per utilizzare il comando";
 lang_startme["en"] = "Start me in private mode before use";
 lang_only_groups["it"] = "Questo comando funziona solo nei gruppi";
@@ -1320,12 +1320,13 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 		if (lang_last_news[lang] != "")
 			last_news = "\n" + lang_last_news[lang] + "\n";
 
-		connection.query("SELECT COUNT(1) As cnt FROM user UNION SELECT COUNT(1) As cnt FROM player_history", function (err, rows) {
+		connection.query("SELECT COUNT(1) As cnt FROM user UNION SELECT COUNT(1) As cnt FROM player_history UNION SELECT COUNT(DISTINCT last_chat_id) As cnt FROM user", function (err, rows) {
 			if (err) throw err;
 
 			var stats_text = "\n" + lang_stats[lang];
 			stats_text = stats_text.replace("%n", formatNumber(rows[0].cnt));
 			stats_text = stats_text.replace("%s", formatNumber(rows[1].cnt));
+			stats_text = stats_text.replace("%g", formatNumber(rows[2].cnt));
 
 			fs.stat("r6stats.js", function(err, stats){
 				var time = new Date(stats.mtime);
