@@ -95,6 +95,12 @@ class RainbowSixApi {
 
 						objStats.season_mmr = objResp.players[ubi_id].mmr;
 						objStats.season_max_mmr = objResp.players[ubi_id].max_mmr;
+						objStats.top_rank_position = objResp.players[ubi_id].top_rank_position;
+						
+						objStats.last_match_skill_stdev_change = objResp.players[ubi_id].last_match_skill_stdev_change;
+						objStats.last_match_mmr_change = objResp.players[ubi_id].last_match_mmr_change;
+						objStats.last_match_skill_mean_change = objResp.players[ubi_id].last_match_skill_mean_change;
+						objStats.last_match_result = objResp.players[ubi_id].last_match_result;
 
 						if (objStats.season_rank == undefined) objStats.season_rank = 0;
 						if (objStats.season_mmr == undefined) objStats.season_mmr = 0;
@@ -554,6 +560,14 @@ var lang_inline_invite_join = [];
 var lang_inline_invite_title = [];
 var lang_inline_invite_desc = [];
 var lang_inline_invite_text = [];
+				
+var lang_no_history = [];
+var lang_history_stdev = [];
+var lang_history_mmr = [];
+var lang_history_mean = [];
+var lang_history_result = [];
+var lang_history_result_win = [];
+var lang_history_result_lose = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -610,6 +624,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/season <nome-stagione>' - Permette di visualizzare i punteggi relativi alla stagione indicata del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/seasons' - Permette di visualizzare la lista completa del rango massimo ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
+	"> '/history' - Permette di visualizzare i risultati delle ultime partite del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
 	"> '/lastgraph' - Genera un grafico utilizzando l'ultimo parametro usato.\n" +
@@ -638,6 +653,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/season <season-name>' - Allow to print season details specified as parameter using /setusername and /setplatform..\n" +
 	"> '/seasons' - Allow to print seasons max ranks details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
+	"> '/history' - Allow to print match history specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
 	"> '/lastgraph' - Generate a graph using last parameter used.\n" +
@@ -662,7 +678,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
-	"19/09/19 - Aggiunta la possibilità di utilizzare il comando /seasons ordinando per un criterio specifico\n" +
+	"19/09/19 - Aggiunta la possibilità di utilizzare il comando /seasons ordinando per un criterio specifico, aggiunto il comando /history e la dicitura relativa al posizionamento del grado Campione\n" +
 	"18/09/19 - Aggiornato con il supporto completo ad Ember Rise\n" +
 	"15/08/19 - Aggiunto il comando /season per i dettagli sulla stagione specificata\n" +
 	"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
@@ -678,7 +694,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
-	"09/19/19 - Added possibility to use /seasons command with custom order method\n" +
+	"09/19/19 - Added possibility to use /seasons command with custom order method, added /history command and position relative to Champion rank\n" +
 	"09/18/19 - Updated with Ember Rise complete support\n" +
 	"08/15/19 - Added /season command for specified season details\n" +
 	"06/18/19 - Added /tstats command for team stats (and renamed /tagteam in /ttag)\n" +
@@ -1221,6 +1237,21 @@ lang_inline_invite_desc["en"] = "Publish invite for R6 group";
 //lang_inline_invite_text["it"] = "Entra nel gruppo *Rainbow Six Siege Italy* e partecipa al contest per vincere una copia di Rainbow Six Siege per PC!\nIl contest terminerà a breve, affrettati!";
 lang_inline_invite_text["it"] = "🇮🇹 Entra nel gruppo *Rainbow Six Siege Italy*! 🇮🇹\n\nConfronta le tue statistiche con altri giocatori provenienti da tutte le piattaforme 🎮, forma team 👥, discuti aggiornamenti 💬, partecipa a contest 💰 e tanto altro!\n\n🔥 Ti aspettiamo 🔥";
 lang_inline_invite_text["en"] = "English version not available";
+				
+lang_no_history["it"] = "Nessun dato storico da poter visualizzare";
+lang_no_history["en"] = "No historical data to show";
+lang_history_stdev["it"] = "Deviazione standard";
+lang_history_stdev["en"] = "Standard deviation";
+lang_history_mmr["it"] = "Variazione MMR";
+lang_history_mmr["en"] = "MMR variation";
+lang_history_mean["it"] = "Variazione media";
+lang_history_mean["en"] = "Mean variation";
+lang_history_result["it"] = "Esito partita";
+lang_history_result["en"] = "Match result";
+lang_history_result_win["it"] = "Vittoria";
+lang_history_result_win["en"] = "Victory";
+lang_history_result_lose["it"] = "Sconfitta";
+lang_history_result_lose["en"] = "Defeat";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2238,6 +2269,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					response.season_rank = rows[0].season_rank;
 					response.season_mmr = rows[0].season_mmr;
 					response.season_max_mmr = rows[0].season_max_mmr;
+					response.top_rank_position = rows[0].top_rank_position;
 
 					response.mode_secure = rows[0].mode_secure;
 					response.mode_hostage = rows[0].mode_hostage;
@@ -2694,6 +2726,70 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 		});
 	});
 });
+
+bot.onText(/^\/history(?:@\w+)?/i, function (message) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /history", options);
+			return;
+		}
+
+		var lang = rows[0].lang;
+
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
+			return;
+		}
+
+		var default_username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
+			return;
+		}
+
+		var default_platform = rows[0].default_platform;
+
+		console.log(getNow("it") + " Request history data for " + default_username + " on " + default_platform);
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			connection.query("SELECT last_match_skill_stdev_change, last_match_mmr_change, last_match_skill_mean_change, last_match_result FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' AND (last_match_skill_stdev_change != 0 OR last_match_mmr_change != 0 OR last_match_skill_mean_change != 0) ORDER BY id DESC LIMIT 25", function (err, rows) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, lang_no_history[lang], options);
+					return;
+				}
+				
+				var text = "<b>" + lang_history_stdev[lang] + " - " + lang_history_mmr[lang] + " - " + lang_history_mean[lang] + " - " + lang_history_result[lang] + "</b>\n";
+				for (i = 0; i < Object.keys(rows).length; i++){
+					text += roundTwoDecimal(rows[i].last_match_skill_stdev_change) + " - " + (rows[i].last_match_mmr_change > 0 ? "+" + rows[i].last_match_mmr_change : rows[i].last_match_mmr_change) + " - " + roundTwoDecimal(rows[i].last_match_skill_mean_change) + " - " + decodeMatchResult(rows[i].last_match_result, lang) + "\n";
+				}
+				
+				bot.sendMessage(message.from.id, text, options);
+			});
+		});
+	});
+});
+
+function roundTwoDecimal(value) {
+	return parseFloat(value).toFixed(2);
+}
+
+function decodeMatchResult(value, lang) {
+	if (value == 1)
+		return lang_history_result_win[lang];
+	else if (value == 2)
+		return lang_history_result_lose[lang];
+	else
+		return value;
+}
 
 bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
@@ -4011,58 +4107,64 @@ function mapLoadout(itemOrig, lang){
 	return resp;
 }
 
-function mapRank(rank, lang){
-	if (rank < 1100)
-		return lang_rank_copper5[lang];
+function mapRank(rank, lang, top_pos = 0){
+	var rank_text = "";
+	if (rank < 1200)
+		rank_text = lang_rank_copper5[lang];
 	else if ((rank >= 1200) && (rank < 1300))
-		return lang_rank_copper4[lang];
+		rank_text = lang_rank_copper4[lang];
 	else if ((rank >= 1300) && (rank < 1400))
-		return lang_rank_copper3[lang];
+		rank_text = lang_rank_copper3[lang];
 	else if ((rank >= 1400) && (rank < 1500))
-		return lang_rank_copper2[lang];
+		rank_text = lang_rank_copper2[lang];
 	else if ((rank >= 1500) && (rank < 1600))
-		return lang_rank_copper1[lang];
+		rank_text = lang_rank_copper1[lang];
 
 	else if ((rank >= 1600) && (rank < 1700))
-		return lang_rank_bronze5[lang];
+		rank_text = lang_rank_bronze5[lang];
 	else if ((rank >= 1700) && (rank < 1800))
-		return lang_rank_bronze4[lang];
+		rank_text = lang_rank_bronze4[lang];
 	else if ((rank >= 1800) && (rank < 1900))
-		return lang_rank_bronze3[lang];
+		rank_text = lang_rank_bronze3[lang];
 	else if ((rank >= 1900) && (rank < 2000))
-		return lang_rank_bronze2[lang];
+		rank_text = lang_rank_bronze2[lang];
 	else if ((rank >= 2000) && (rank < 2100))
-		return lang_rank_bronze1[lang];
+		rank_text = lang_rank_bronze1[lang];
 
 	else if ((rank >= 2100) && (rank < 2200))
-		return lang_rank_silver5[lang];
+		rank_text = lang_rank_silver5[lang];
 	else if ((rank >= 2200) && (rank < 2300))
-		return lang_rank_silver4[lang];
+		rank_text = lang_rank_silver4[lang];
 	else if ((rank >= 2300) && (rank < 2400))
-		return lang_rank_silver3[lang];
+		rank_text = lang_rank_silver3[lang];
 	else if ((rank >= 2400) && (rank < 2500))
-		return lang_rank_silver2[lang];
+		rank_text = lang_rank_silver2[lang];
 	else if ((rank >= 2500) && (rank < 2600))
-		return lang_rank_silver1[lang];
+		rank_text = lang_rank_silver1[lang];
 
 	else if ((rank >= 2600) && (rank < 2800))
-		return lang_rank_gold3[lang];
+		rank_text = lang_rank_gold3[lang];
 	else if ((rank >= 2800) && (rank < 3000))
-		return lang_rank_gold2[lang];
+		rank_text = lang_rank_gold2[lang];
 	else if ((rank >= 3000) && (rank < 3200))
-		return lang_rank_gold1[lang];
+		rank_text = lang_rank_gold1[lang];
 
 	else if ((rank >= 3200) && (rank < 3600))
-		return lang_rank_platinum3[lang];
+		rank_text = lang_rank_platinum3[lang];
 	else if ((rank >= 3600) && (rank < 4000))
-		return lang_rank_platinum2[lang];
+		rank_text = lang_rank_platinum2[lang];
 	else if ((rank >= 4000) && (rank < 4400))
-		return lang_rank_platinum1[lang];
+		rank_text = lang_rank_platinum1[lang];
 
 	else if ((rank >= 4400) && (rank < 5000))
-		return lang_rank_diamond[lang];
+		rank_text = lang_rank_diamond[lang];
 	else
-		return lang_rank_champion[lang];
+		rank_text = lang_rank_champion[lang];
+	
+	if (top_pos > 0)
+		rank_text += " #" + top_pos;
+	
+	return rank_text;
 }
 
 function sortSeasons(seasonArray){
@@ -4109,8 +4211,8 @@ function getData(response, lang){
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + " (" + mapRank(response.season_mmr, lang) + ")\n" +
-		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + " (" + mapRank(response.season_max_mmr, lang) + ")\n" +
+		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + " (" + mapRank(response.season_mmr, lang, response.top_rank_position) + ")\n" +
+		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + " (" + mapRank(response.season_max_mmr, lang, response.top_rank_position) + ")\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
 		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure) + " " + lang_points[lang] + "\n" +
 		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage) + " " + lang_points[lang] + "\n" +
@@ -4274,6 +4376,10 @@ function saveData(responseStats, responseOps){
 						 responseStats.casual_deaths + ',' +
 						 responseStats.casual_kd + ',' +
 						 responseStats.casual_playtime + ',' +
+						 responseStats.last_match_skill_stdev_change + ',' +
+						 responseStats.last_match_mmr_change + ',' +
+						 responseStats.last_match_skill_mean_change + ',' +
+						 responseStats.last_match_result + ',' +
 						 responseStats.revives + ',' +
 						 responseStats.suicides + ',' +
 						 responseStats.reinforcements_deployed + ',' +
@@ -4287,6 +4393,7 @@ function saveData(responseStats, responseOps){
 						 responseStats.season_rank + ',' + 
 						 responseStats.season_mmr + ',' +
 						 responseStats.season_max_mmr + ',' +
+						 responseStats.top_rank_position + ',' +
 						 responseStats.mode_secure + ',' + 
 						 responseStats.mode_hostage + ',' +
 						 responseStats.mode_bomb + ',"' +

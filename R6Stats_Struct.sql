@@ -61,6 +61,10 @@ CREATE TABLE `player_history` (
   `casual_deaths` int(11) NOT NULL,
   `casual_kd` decimal(9,3) NOT NULL,
   `casual_playtime` int(11) NOT NULL,
+  `last_match_skill_stdev_change` decimal(12,10) NOT NULL,
+  `last_match_mmr_change` int(3) NOT NULL,
+  `last_match_skill_mean_change` decimal(12,10) NOT NULL,
+  `last_match_result` tinyint(1) NOT NULL,
   `revives` int(11) NOT NULL,
   `suicides` int(11) NOT NULL,
   `reinforcements_deployed` int(11) NOT NULL,
@@ -189,4 +193,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-09-18  9:00:05
+-- Dump completed on 2019-09-18 12:00:05
