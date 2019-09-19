@@ -36,6 +36,8 @@ class RainbowSixApi {
 		return new Promise((resolve, reject) => {
 
 			var endpoint;
+			
+			username = encodeURI(username);
 
 			if (extra == 1){
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;

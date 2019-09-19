@@ -78,6 +78,7 @@ CREATE TABLE `player_history` (
   `season_rank` int(11) NOT NULL DEFAULT '0',
   `season_mmr` decimal(12,8) NOT NULL DEFAULT '0.00000000',
   `season_max_mmr` decimal(12,8) NOT NULL DEFAULT '0.00000000',
+  `top_rank_position` int(11) NOT NULL,
   `mode_secure` int(11) NOT NULL DEFAULT '0',
   `mode_hostage` int(11) NOT NULL DEFAULT '0',
   `mode_bomb` int(11) NOT NULL DEFAULT '0',
@@ -99,7 +100,10 @@ CREATE TABLE `player_history` (
   `operator_max_playtime` int(11) NOT NULL DEFAULT '0',
   `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `insert_date` (`insert_date`)
+  KEY `insert_date` (`insert_date`),
+  KEY `platform` (`platform`),
+  KEY `username` (`username`),
+  KEY `ubisoft_id` (`ubisoft_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -193,4 +197,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-09-18 12:00:05
+-- Dump completed on 2019-09-19  6:00:05
