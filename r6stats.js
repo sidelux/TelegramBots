@@ -28,6 +28,8 @@ var Parser = require('rss-parser');
 var request = require('request');
 var striptags = require('striptags');
 var stringSimilarity = require('string-similarity');
+var im = require('imagemagick');
+var tesseract = require('node-tesseract-ocr')
 
 class RainbowSixApi {
 	constructor() {}
@@ -36,7 +38,7 @@ class RainbowSixApi {
 		return new Promise((resolve, reject) => {
 
 			var endpoint;
-			
+
 			username = encodeURI(username);
 
 			if (extra == 1){
@@ -98,7 +100,7 @@ class RainbowSixApi {
 						objStats.season_mmr = objResp.players[ubi_id].mmr;
 						objStats.season_max_mmr = objResp.players[ubi_id].max_mmr;
 						objStats.top_rank_position = objResp.players[ubi_id].top_rank_position;
-						
+
 						objStats.last_match_skill_stdev_change = objResp.players[ubi_id].last_match_skill_stdev_change;
 						objStats.last_match_mmr_change = objResp.players[ubi_id].last_match_mmr_change;
 						objStats.last_match_skill_mean_change = objResp.players[ubi_id].last_match_skill_mean_change;
@@ -562,7 +564,7 @@ var lang_inline_invite_join = [];
 var lang_inline_invite_title = [];
 var lang_inline_invite_desc = [];
 var lang_inline_invite_text = [];
-				
+
 var lang_no_history = [];
 var lang_history_stdev = [];
 var lang_history_mmr = [];
@@ -570,6 +572,11 @@ var lang_history_mean = [];
 var lang_history_result = [];
 var lang_history_result_win = [];
 var lang_history_result_lose = [];
+
+var lang_scan_error = [];
+var lang_scan_limit = [];
+var lang_scan_reply = [];
+var lang_scan_photo = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -620,6 +627,7 @@ lang_operator_not_found["en"] = "Operator not found.";
 lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/stats <username>,<piattaforma>' - Permette di visualizzare la lista completa delle statistiche del giocatore specificato nei parametri del comando. E' possibile omettere i parametri se sono stati salvati con /setusername o /setplatform.\n" +
 	"> '/mstats <username1>,<username2>,ecc. - Permette di visualizzare statistiche brevi per la lista di utenti specificata.\n" +
+	"> '/scan - Scansiona lo screenshot di una classifica e visualizza le statistiche dei giocatori (solo PC, sperimentale).\n" +
 	"> '/update' - Forza l'aggiornamento delle statistiche del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/operators <ordinamento>' - Permette di visualizzare la lista completa degli operatori del giocatore specificato utilizzando /setusername e /setplatform inviandola in privato.\n" +
 	"> '/operator <nome-operatore>' - Permette di visualizzare i dettagli di un solo operatore specificato come parametro utilizzando /setusername e /setplatform.\n" +
@@ -649,6 +657,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/stats <username>,<platform>' - Allow to print a complete stats list of user specified in command parameters. Is possibile to omit params if they has been saved with /setusername and /setplatform.\n" +
 	"> '/mstats <username1>,<username2>,etc. - Allow to print a short stats for multiple specified users.\n" +
+	"> '/scan - Scan a leaderboard screenshot and show stats of players (only PC, experimental).\n" +
 	"> '/update' - Force update of user stats of player specified using /setusername and /setplatform.\n" +
 	"> '/operators <order-method>' - Allow to print a complete operators list of player specified using /setusername and /setplatform.\n" +
 	"> '/operator <operator-name>' - Allow to print operator details specified as parameter using /setusername and /setplatform sending it in private mode.\n" +
@@ -680,6 +689,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"20/09/19 - Aggiunto il comando /scan per analizzare gli screenshot delle classifiche in game (solo pc)\n" +
 	"19/09/19 - Aggiunta la possibilità di utilizzare il comando /seasons ordinando per un criterio specifico, aggiunto il comando /history e la dicitura relativa al posizionamento del grado Campione\n" +
 	"18/09/19 - Aggiornato con il supporto completo ad Ember Rise\n" +
 	"15/08/19 - Aggiunto il comando /season per i dettagli sulla stagione specificata\n" +
@@ -696,6 +706,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"09/20/19 - Added /scan command to analyze leaderboard screenshot taken in-game (only pc)\n" +
 	"09/19/19 - Added possibility to use /seasons command with custom order method, added /history command and position relative to Champion rank\n" +
 	"09/18/19 - Updated with Ember Rise complete support\n" +
 	"08/15/19 - Added /season command for specified season details\n" +
@@ -1239,7 +1250,7 @@ lang_inline_invite_desc["en"] = "Publish invite for R6 group";
 //lang_inline_invite_text["it"] = "Entra nel gruppo *Rainbow Six Siege Italy* e partecipa al contest per vincere una copia di Rainbow Six Siege per PC!\nIl contest terminerà a breve, affrettati!";
 lang_inline_invite_text["it"] = "🇮🇹 Entra nel gruppo *Rainbow Six Siege Italy*! 🇮🇹\n\nConfronta le tue statistiche con altri giocatori provenienti da tutte le piattaforme 🎮, forma team 👥, discuti aggiornamenti 💬, partecipa a contest 💰 e tanto altro!\n\n🔥 Ti aspettiamo 🔥";
 lang_inline_invite_text["en"] = "English version not available";
-				
+
 lang_no_history["it"] = "Nessun dato storico da poter visualizzare";
 lang_no_history["en"] = "No historical data to show";
 lang_history_stdev["it"] = "Deviazione standard";
@@ -1254,6 +1265,15 @@ lang_history_result_win["it"] = "Vittoria";
 lang_history_result_win["en"] = "Victory";
 lang_history_result_lose["it"] = "Sconfitta";
 lang_history_result_lose["en"] = "Defeat";
+
+lang_scan_error["it"] = "Nessun giocatore trovato nell'immagine scansionata";
+lang_scan_error["en"] = "No players found in scanned image";
+lang_scan_limit["it"] = "E' possibile ottenere informazioni solamente solo su 10 giocatori alla volta";
+lang_scan_limit["en"] = "Is possibile to get infos only for 10 players at time";
+lang_scan_reply["it"] = "Il comando deve essere utilizzato in risposta";
+lang_scan_reply["en"] = "This command should be used in reply";
+lang_scan_photo["it"] = "Il comando deve essere utilizzato in risposta su una foto (non inviata come documento)";
+lang_scan_photo["en"] = "This command should be used in reply on a photo (not sent as document)";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2022,6 +2042,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 		if (rows[0].default_platform != undefined)
 			default_platform = rows[0].default_platform;
 
+		console.log(getNow("it") + " Request update for " + default_username + " from " + default_platform);
 		connection.query("SELECT insert_date FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' ORDER BY id DESC", function (err, rows) {
 			if (err) throw err;
 
@@ -2089,25 +2110,102 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 			bot.sendMessage(message.chat.id, lang_multiple_limit[lang], options);
 			return;
 		}
+		
+		console.log(getNow("it") + " Request multiple stats for " + players.length + " players from " + message.from.username);
 
-		var text = "";
-		var textDone = 0;
+		multipleStats (message, players, platform, options, lang);
+	});
+});
 
-		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			for (i = 0; i < players.length; i++){
-				r6.stats(players[i], platform, -1, 0).then(response => {
-					if (response.level != undefined)
-						text += getDataLine(response, lang) + "\n";
+function multipleStats(message, players, platform, options, lang) {
+	var text = "";
+	var textDone = 0;
+	
+	bot.sendChatAction(message.chat.id, "typing").then(function () {
+		for (i = 0; i < players.length; i++){
+			r6.stats(players[i], platform, -1, 0).then(response => {
+				if (response.level != undefined)
+					text += getDataLine(response, lang) + "\n";
 
-					textDone++;
-					if (textDone >= players.length)
-						bot.sendMessage(message.chat.id, text, options);
-				}).catch(error => {
-					textDone++;
-					if (textDone >= players.length)
-						bot.sendMessage(message.chat.id, text, options);
-				});
+				textDone++;
+				if (textDone >= players.length)
+					bot.sendMessage(message.chat.id, text, options);
+			}).catch(error => {
+				textDone++;
+				if (textDone >= players.length)
+					bot.sendMessage(message.chat.id, text, options);
+			});
+		}
+	});
+}
+
+bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
 			}
+			rows[0] = {};
+			rows[0].lang = lang;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (message.reply_to_message == undefined) {
+			bot.sendMessage(message.chat.id, lang_scan_reply[lang], options);
+			return;
+		}
+
+		if (message.reply_to_message.photo == undefined) {
+			bot.sendMessage(message.chat.id, lang_scan_photo[lang], options);
+			return;
+		}
+
+		console.log(getNow("it") + " Request scan from " + message.from.username);
+		
+		var image = message.reply_to_message.photo;
+		bot.downloadFile(image[image.length-1].file_id, "r6tmp/").then(function (data) {
+			var filePath = data;
+			var outputFilePath = data.replace(".", "_output.");
+
+			im.convert([filePath, '-resize', '1920x1080', '-crop', '+465+295', '-crop', '-965-200', '-resample', '144', '-sharpen', '0x3.0', '-set', 'colorspace', 'Gray', outputFilePath], function(err, stdout){
+				if (err) throw err;
+
+				tesseract.recognize(outputFilePath, {
+					load_system_dawg: 0
+				}).then(text => {
+					fs.unlink(filePath, function (err) {
+						if (err) throw err;
+					}); 
+					fs.unlink(outputFilePath, function (err) {
+						if (err) throw err;
+					});
+
+					var res = text.replace(/^\s*[\r\n]/gm, '');
+					var players = res.split("\n");
+					players = players.filter(function (el) {
+						return el != "";
+					});
+
+					if (players.length == 0) {
+						bot.sendMessage(message.chat.id, lang_scan_error[lang], options);
+						return;
+					}
+
+					if (players.length > 10){
+						bot.sendMessage(message.chat.id, lang_scan_limit[lang], options);
+						return;
+					}
+
+					// console.log(players);
+
+					multipleStats(message, players, "uplay", options, lang);
+				})
+			});
 		});
 	});
 });
@@ -2769,12 +2867,12 @@ bot.onText(/^\/history(?:@\w+)?/i, function (message) {
 					bot.sendMessage(message.chat.id, lang_no_history[lang], options);
 					return;
 				}
-				
+
 				var text = "<b>" + lang_history_stdev[lang] + " - " + lang_history_mmr[lang] + " - " + lang_history_mean[lang] + " - " + lang_history_result[lang] + "</b>\n";
 				for (i = 0; i < Object.keys(rows).length; i++){
 					text += roundTwoDecimal(rows[i].last_match_skill_stdev_change) + " - " + (rows[i].last_match_mmr_change > 0 ? "+" + rows[i].last_match_mmr_change : rows[i].last_match_mmr_change) + " - " + roundTwoDecimal(rows[i].last_match_skill_mean_change) + " - " + decodeMatchResult(rows[i].last_match_result, lang) + "\n";
 				}
-				
+
 				bot.sendMessage(message.from.id, text, options);
 			});
 		});
@@ -4163,10 +4261,10 @@ function mapRank(rank, lang, top_pos = 0){
 		rank_text = lang_rank_diamond[lang];
 	else
 		rank_text = lang_rank_champion[lang];
-	
+
 	if (top_pos > 0)
 		rank_text += " #" + top_pos;
-	
+
 	return rank_text;
 }
 
