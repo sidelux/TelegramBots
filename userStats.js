@@ -336,9 +336,8 @@ function getNow(lang, obj) {
 		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
 		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-	} else {
+	} else
 		datetime = "Error";
-	}
 	if (obj == true) {
 		datetime = new Date(datetime);
 	}
@@ -350,13 +349,12 @@ function toDate(lang, date) {
 	if (typeof date == "object")
 		d = date;
 	var datetime = "";
-	if (lang == "en") {
+	if (lang == "it") {
 		datetime = addZero(d.getMonth() + 1) + "/" + addZero(d.getDate()) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-	} else if (lang == "db") {
+	} else if (lang == "en") {
 		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-	} else {
+	} else
 		datetime = "Error";
-	}
 	return datetime;
 }
 
