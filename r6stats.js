@@ -2110,7 +2110,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 			bot.sendMessage(message.chat.id, lang_multiple_limit[lang], options);
 			return;
 		}
-		
+
 		console.log(getNow("it") + " Request multiple stats for " + players.length + " players from " + message.from.username);
 
 		multipleStats (message, players, platform, options, lang);
@@ -2120,7 +2120,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 function multipleStats(message, players, platform, options, lang) {
 	var text = "";
 	var textDone = 0;
-	
+
 	bot.sendChatAction(message.chat.id, "typing").then(function () {
 		for (i = 0; i < players.length; i++){
 			r6.stats(players[i], platform, -1, 0).then(response => {
@@ -2154,7 +2154,7 @@ bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
-		
+
 		if (message.reply_to_message == undefined) {
 			bot.sendMessage(message.chat.id, lang_scan_reply[lang], options);
 			return;
@@ -2166,7 +2166,7 @@ bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 		}
 
 		console.log(getNow("it") + " Request scan from " + message.from.username);
-		
+
 		var image = message.reply_to_message.photo;
 		bot.downloadFile(image[image.length-1].file_id, "r6tmp/").then(function (data) {
 			var filePath = data;
@@ -2690,7 +2690,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 	});
 });
 
-bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?/i, function (message, match) {
+bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -2719,7 +2719,7 @@ bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?/i, function (message, mat
 		var season = match[1];
 		var seasonIndex = -1;
 		for (var i = 0; i < seasonList.length; i++) {
-			if (seasonList[i].toLowerCase() === season)
+			if (seasonList[i].toLowerCase() === season.toLowerCase())
 				seasonIndex = i;
 		}
 		if (seasonIndex == -1) {
