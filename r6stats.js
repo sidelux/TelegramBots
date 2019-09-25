@@ -572,6 +572,7 @@ var lang_history_mean = [];
 var lang_history_result = [];
 var lang_history_result_win = [];
 var lang_history_result_lose = [];
+var lang_history_date = [];
 
 var lang_scan_error = [];
 var lang_scan_limit = [];
@@ -1265,6 +1266,8 @@ lang_history_result_win["it"] = "Vittoria";
 lang_history_result_win["en"] = "Victory";
 lang_history_result_lose["it"] = "Sconfitta";
 lang_history_result_lose["en"] = "Defeat";
+lang_history_date["it"] = "Data partita";
+lang_history_date["en"] = "Match date";
 
 lang_scan_error["it"] = "Nessun giocatore trovato nell'immagine scansionata";
 lang_scan_error["en"] = "No players found in scanned image";
@@ -2860,7 +2863,7 @@ bot.onText(/^\/history(?:@\w+)?/i, function (message) {
 
 		console.log(getNow("it") + " Request history data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			connection.query("SELECT last_match_skill_stdev_change, last_match_mmr_change, last_match_skill_mean_change, last_match_result FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' AND (last_match_skill_stdev_change != 0 OR last_match_mmr_change != 0 OR last_match_skill_mean_change != 0) ORDER BY id DESC LIMIT 25", function (err, rows) {
+			connection.query("SELECT insert_date, last_match_skill_stdev_change, last_match_mmr_change, last_match_skill_mean_change, last_match_result FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' AND (last_match_skill_stdev_change != 0 OR last_match_mmr_change != 0 OR last_match_skill_mean_change != 0) ORDER BY id DESC LIMIT 25", function (err, rows) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -2868,9 +2871,24 @@ bot.onText(/^\/history(?:@\w+)?/i, function (message) {
 					return;
 				}
 
-				var text = "<b>" + lang_history_stdev[lang] + " - " + lang_history_mmr[lang] + " - " + lang_history_mean[lang] + " - " + lang_history_result[lang] + "</b>\n";
+				var text = "<b>" + lang_history_date[lang] + " - " + lang_history_stdev[lang] + " - " + lang_history_mmr[lang] + " - " + lang_history_mean[lang] + " - " + lang_history_result[lang] + "</b>\n";
+				var last_match_skill_stdev_change = "";
+				var last_match_mmr_change = "";
+				var last_match_skill_mean_change = "";
+				var last_match_result = "";
 				for (i = 0; i < Object.keys(rows).length; i++){
-					text += roundTwoDecimal(rows[i].last_match_skill_stdev_change) + " - " + (rows[i].last_match_mmr_change > 0 ? "+" + rows[i].last_match_mmr_change : rows[i].last_match_mmr_change) + " - " + roundTwoDecimal(rows[i].last_match_skill_mean_change) + " - " + decodeMatchResult(rows[i].last_match_result, lang) + "\n";
+					if ((last_match_skill_stdev_change != rows[i].last_match_skill_stdev_change) || 
+						(last_match_mmr_change != rows[i].last_match_mmr_change) || 
+						(last_match_skill_mean_change != rows[i].last_match_skill_mean_change) || 
+						(last_match_result != rows[i].last_match_result)) {
+						
+						text += toDate(lang, rows[i].insert_date) + ": " + roundTwoDecimal(rows[i].last_match_skill_stdev_change) + " - " + (rows[i].last_match_mmr_change > 0 ? "+" + rows[i].last_match_mmr_change : rows[i].last_match_mmr_change) + " - " + roundTwoDecimal(rows[i].last_match_skill_mean_change) + " - " + decodeMatchResult(rows[i].last_match_result, lang) + "\n";
+						
+						last_match_skill_stdev_change = rows[i].last_match_skill_stdev_change;
+						last_match_mmr_change = rows[i].last_match_mmr_change;
+						last_match_skill_mean_change = rows[i].last_match_skill_mean_change;
+						last_match_result = rows[i].last_match_result;
+					}
 				}
 
 				bot.sendMessage(message.from.id, text, options);
@@ -2878,19 +2896,6 @@ bot.onText(/^\/history(?:@\w+)?/i, function (message) {
 		});
 	});
 });
-
-function roundTwoDecimal(value) {
-	return parseFloat(value).toFixed(2);
-}
-
-function decodeMatchResult(value, lang) {
-	if (value == 1)
-		return lang_history_result_win[lang];
-	else if (value == 2)
-		return lang_history_result_lose[lang];
-	else
-		return value;
-}
 
 bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
@@ -4059,6 +4064,19 @@ bot.onText(/^\/dreport(?:@\w+)?/i, function (message, match) {
 });
 
 // Functions
+
+function roundTwoDecimal(value) {
+	return parseFloat(value).toFixed(2);
+}
+
+function decodeMatchResult(value, lang) {
+	if (value == 1)
+		return "<b>" + lang_history_result_win[lang] + "</b>";
+	else if (value == 2)
+		return lang_history_result_lose[lang];
+	else
+		return value;
+}
 
 function parse(message, force = 0){
 	if ((message.text == undefined) && (message.caption == undefined))
