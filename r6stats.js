@@ -4555,12 +4555,8 @@ function numToRank(num, lang, mmr = -1){
 		"Platinum III", "Platinum II", "Platinum I", "Diamond", "Champion"
 	];
 
-	if ((num == 0) || (num > 21)){
-		if (mmr != -1)
-			return lang_season_not_ranked[lang] + " (" + lang_season_prevision[lang] + ": " + mapRank(mmr, lang) + ")";
-		else
-			return lang_season_not_ranked[lang];
-	}
+	if (mmr == 0)
+		return lang_season_not_ranked[lang];
 
 	if (lang == "it")
 		return rankIt[num-1];
