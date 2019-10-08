@@ -4221,14 +4221,16 @@ function mapLoadout(itemOrig, lang){
 			resp = lang_loadout_map_lasertrue[lang];
 		else
 			resp = itemOrig;
-	}else
+	} else
 		resp = itemOrig;
 	return resp;
 }
 
 function mapRank(rank, lang, top_pos = 0){
 	var rank_text = "";
-	if (rank < 1200)
+	if (rank == 0)
+		rank_text = lang_season_not_ranked[lang];
+	else if (rank < 1200)
 		rank_text = lang_rank_copper5[lang];
 	else if ((rank >= 1200) && (rank < 1300))
 		rank_text = lang_rank_copper4[lang];
