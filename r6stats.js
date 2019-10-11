@@ -3077,6 +3077,8 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 		}
 		if (operatorList.indexOf(match[1]) == -1){
 			match[1] = jsUcfirst(match[1]);
+			if (match[1].toLowerCase() == "iq")
+				match[1] = "IQ";
 			var sim = stringSimilarity.findBestMatch(match[1], operatorList);
 			if (sim.bestMatch.rating >= 0.6)
 				match[1] = sim.bestMatch.target;
@@ -3224,10 +3226,12 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 		operator_name = jsUcfirst(match[1]);
 
 		if (operatorList.indexOf(match[1]) == -1){
+			if (operator_name == "Iq")
+				operator_name = "IQ";
 			var sim = stringSimilarity.findBestMatch(operator_name, operatorList);
 			if (sim.bestMatch.rating >= 0.6)
 				operator_name = sim.bestMatch.target;
-			else{
+			else {
 				bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options);
 				return;
 			}
