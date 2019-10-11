@@ -1364,35 +1364,11 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 });
 
 bot.on('message', function (message) {
-	if (message.chat.id == -1001246584843) {
-		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	capture_parse(message);
+});
 
-		var res = parse(message);
-
-		if (res == "platform")
-			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
-		if (res == "ok") {
-			var iKeys = [];
-			iKeys.push([{
-				text: "Vai al Canale 🔰",
-				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
-			}]);
-			var opt =	{
-				parse_mode: 'HTML',
-				reply_markup: {
-					inline_keyboard: iKeys
-				}
-			};
-
-			var nick = "";
-			if (message.from.username == undefined)
-				nick = message.from.first_name;
-			else
-				nick = message.from.username;
-
-			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
-		}
-	}
+bot.on('edited_message', function (message) {
+	capture_parse(message);
 });
 
 bot.on("inline_query", function (query) {
@@ -4068,6 +4044,37 @@ bot.onText(/^\/dreport(?:@\w+)?/i, function (message, match) {
 });
 
 // Functions
+
+function capture_parse(message) {
+	if (message.chat.id == -1001246584843) {
+		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+
+		var res = parse(message);
+		if (res == "platform")
+			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
+		if (res == "ok") {
+			var iKeys = [];
+			iKeys.push([{
+				text: "Vai al Canale 🔰",
+				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				}
+			};
+
+			var nick = "";
+			if (message.from.username == undefined)
+				nick = message.from.first_name;
+			else
+				nick = message.from.username;
+
+			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+		}
+	}
+}
 
 function roundTwoDecimal(value) {
 	return parseFloat(value).toFixed(2);
