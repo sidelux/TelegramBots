@@ -4184,7 +4184,7 @@ function parse(message, force = 0){
 	if (miss_plat == 1)
 		return "platform";
 
-	response += "\n<i>Contattare</i> " + author
+	response += "\n<i>Contattare</i> " + author;
 	bot.deleteMessage(message.chat.id, message.message_id);
 
 	bot.sendMessage(-1001326797846, header + response, html);
