@@ -29,7 +29,8 @@ var request = require('request');
 var striptags = require('striptags');
 var stringSimilarity = require('string-similarity');
 var im = require('imagemagick');
-var tesseract = require('node-tesseract-ocr')
+var tesseract = require('node-tesseract-ocr');
+var ffmpeg = require('fluent-ffmpeg');
 
 class RainbowSixApi {
 	constructor() {}
@@ -578,6 +579,7 @@ var lang_scan_error = [];
 var lang_scan_limit = [];
 var lang_scan_reply = [];
 var lang_scan_photo = [];
+var lang_scan_video = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -1277,6 +1279,8 @@ lang_scan_reply["it"] = "Il comando deve essere utilizzato in risposta";
 lang_scan_reply["en"] = "This command should be used in reply";
 lang_scan_photo["it"] = "Il comando deve essere utilizzato in risposta su una foto (non inviata come documento)";
 lang_scan_photo["en"] = "This command should be used in reply on a photo (not sent as document)";
+lang_scan_video["it"] = "Il comando deve essere utilizzato in risposta su un video MP4";
+lang_scan_video["en"] = "This command should be used in reply on a MP4 video";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2188,6 +2192,73 @@ bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 		});
 	});
 });
+
+/* Commented cause 20MB downlod limit :/
+
+bot.onText(/^\/compress(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+		}
+
+		var lang = rows[0].lang;
+
+		if (message.reply_to_message == undefined) {
+			bot.sendMessage(message.chat.id, lang_scan_reply[lang], options);
+			return;
+		}
+
+		if ((message.reply_to_message.document == undefined) && (message.reply_to_message.video == undefined)) {
+			bot.sendMessage(message.chat.id, lang_scan_video[lang], options);
+			return;
+		}
+		
+		var video = message.reply_to_message.video;
+		if (message.reply_to_message.document != undefined)
+			video = message.reply_to_message.document;
+
+		console.log(getNow("it") + " Request compress from " + message.from.username);
+
+		if (video.mime_type != "video/mp4") {
+			console.log("Invalid mime type: " + video.mime_type);
+			bot.sendMessage(message.chat.id, lang_scan_video[lang], options);
+			return;
+		}
+		bot.downloadFile(video.file_id, "r6tmp/").then(function (data) {
+			var filePath = data;
+			var outputFilePath = data.replace(".", "_output.");
+			
+			var command = ffmpeg(filePath).inputFormat("mp4").outputOptions([
+			  	'-vcodec h264',
+			  	'-acodec mp2',
+			  	'-vf scale=1280:720',
+				'-crf 30'
+			]).on('error', function(err) {
+				console.log('An error occurred: ' + err.message);
+			}).on('end', function() {
+				console.log('Compression finished!');
+				bot.sendVideo(message.chat.id, outputFilePath, {reply_to_message_id: message.reply_to_message.message_id}).then(function (data) {
+					fs.unlink(filePath, function (err) {
+						if (err) throw err;
+					}); 
+					fs.unlink(outputFilePath, function (err) {
+						if (err) throw err;
+					});
+				});
+			}).save(outputFilePath);
+		});
+	});
+});
+
+*/
 
 bot.onText(/^\/checklang/, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
