@@ -1673,6 +1673,14 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 		}
 
 		var platform = match[1].toLowerCase();
+		
+		if (platform == "ps4")
+			platform = "psn";
+		else if (platform == "pc")
+			platform = "uplay";
+		else if (platform == "xbox")
+			platform = "xbl";
+		
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
 			return;
