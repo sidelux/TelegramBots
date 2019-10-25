@@ -169,13 +169,13 @@ class RainbowSixApi {
 								if (objStats.mode_hostage == undefined) objStats.mode_hostage = 0;
 								if (objStats.mode_bomb == undefined) objStats.mode_bomb = 0;
 
-								objStats.ranked_wl = (objStats.ranked_wins/objStats.ranked_losses).toFixed(3);
+								objStats.ranked_wl = formatDecimal(objStats.ranked_wins/objStats.ranked_losses, lang);
 								if (!isFinite(objStats.ranked_wl)) objStats.ranked_wl = objStats.ranked_wins;
-								objStats.ranked_kd = (objStats.ranked_kills/objStats.ranked_deaths).toFixed(3);
+								objStats.ranked_kd = formatDecimal(objStats.ranked_kills/objStats.ranked_deaths, lang);
 								if (!isFinite(objStats.ranked_kd)) objStats.ranked_kd = objStats.ranked_kills;
-								objStats.casual_wl = (objStats.casual_wins/objStats.casual_losses).toFixed(3);
+								objStats.casual_wl = formatDecimal(objStats.casual_wins/objStats.casual_losses, lang);
 								if (!isFinite(objStats.casual_wl)) objStats.casual_wl = objStats.casual_wins;
-								objStats.casual_kd = (objStats.casual_kills/objStats.casual_deaths).toFixed(3);
+								objStats.casual_kd = formatDecimal(objStats.casual_kills/objStats.casual_deaths, lang);
 								if (!isFinite(objStats.casual_kd)) objStats.casual_kd = objStats.casual_kills;
 
 								return resolve(objStats);
@@ -1353,9 +1353,9 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 			if (err) throw err;
 
 			var stats_text = "\n" + lang_stats[lang];
-			stats_text = stats_text.replace("%n", formatNumber(rows[0].cnt));
-			stats_text = stats_text.replace("%s", formatNumber(rows[1].cnt));
-			stats_text = stats_text.replace("%g", formatNumber(rows[2].cnt));
+			stats_text = stats_text.replace("%n", formatNumber(rows[0].cnt, lang));
+			stats_text = stats_text.replace("%s", formatNumber(rows[1].cnt, lang));
+			stats_text = stats_text.replace("%g", formatNumber(rows[2].cnt, lang));
 
 			fs.stat("r6stats.js", function(err, stats){
 				var time = new Date(stats.mtime);
@@ -2727,8 +2727,8 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 							"<b>" + lang_penetration_kills[lang] + "</b>: " + compare(response1.penetration_kills, response2.penetration_kills, "number") + "\n" +
 							"<b>" + lang_assists[lang] + "</b>: " + compare(response1.assists, response2.assists, "number") + "\n" +
 							"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-							"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.season_mmr), Math.round(response2.season_mmr)) + "\n" +
-							"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.season_max_mmr),Math.round(response2.season_max_mmr))  + "\n" +  
+							"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.season_mmr), Math.round(response2.season_mmr), "number") + "\n" +
+							"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.season_max_mmr), Math.round(response2.season_max_mmr), "number")  + "\n" +  
 							"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
 							"<b>" + lang_mode_secure[lang] + "</b>: " + compare(response1.mode_secure, response2.mode_secure, "number") + "\n" +
 							"<b>" + lang_mode_hostage[lang] + "</b>: " + compare(response1.mode_hostage, response2.mode_hostage, "number") + "\n" +
@@ -3057,7 +3057,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 				var operators_name = Object.keys(operators);
 
 				for (i = 0; i < Object.keys(operators).length; i++){
-					text += "<b>" + jsUcfirst(operators_name[i]) + "</b> - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon+response[operators_name[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundlost) + " - " + formatNumber(response[operators_name[i]].operatorpvp_kills) + " - " + formatNumber(response[operators_name[i]].operatorpvp_death) + " - " + toTime(response[operators_name[i]].operatorpvp_timeplayed, lang, true);
+					text += "<b>" + jsUcfirst(operators_name[i]) + "</b> - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon+response[operators_name[i]].operatorpvp_roundlost, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundlost, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_kills, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_death, lang) + " - " + toTime(response[operators_name[i]].operatorpvp_timeplayed, lang, true);
 
 					var specials = Object.keys(operators[operators_name[i]]);
 
@@ -3080,7 +3080,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 								sum += parseInt(eval("operators[operators_name[" + i + "]]." + specials[j]));
 						}
 					}
-					text += " - " + formatNumber(sum);
+					text += " - " + formatNumber(sum, lang);
 					text += "\n";
 				}
 				if (message.chat.id < 0)
@@ -3191,11 +3191,11 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 							played = (response[operators[i]].operatorpvp_roundwon+response[operators[i]].operatorpvp_roundlost);
 							wins = response[operators[i]].operatorpvp_roundwon;
 							losses = response[operators[i]].operatorpvp_roundlost;
-							wlratio = (wins/losses).toFixed(3);
+							wlratio = formatDecimal(wins/losses, lang);
 							if (!isFinite(wlratio)) wlratio = wins;
 							kills = response[operators[i]].operatorpvp_kills;
 							deaths = response[operators[i]].operatorpvp_death;
-							kdratio = (kills/deaths).toFixed(3);
+							kdratio = formatDecimal(kills/deaths, lang);
 							if (!isFinite(kdratio)) kdratio = kills;
 							playtime = response[operators[i]].operatorpvp_timeplayed;
 
@@ -3226,16 +3226,16 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 					}
 
 					var text = 	"<b>" + lang_operator_title[lang] + "</b>: " + name + " (" + role + ", " + org + ")\n" +
-						"<b>" + lang_operator_plays[lang] + "</b>: " + formatNumber(played) + "\n" +
-						"<b>" + lang_operator_wins[lang] + "</b>: " + formatNumber(wins) + "\n" +
-						"<b>" + lang_operator_losses[lang] + "</b>: " + formatNumber(losses) + "\n" +
-						"<b>" + lang_operator_wlratio[lang] + "</b>: " + formatNumber(wlratio) + "\n" +
-						"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(kills) + "\n" +
-						"<b>" + lang_operator_deaths[lang] + "</b>: " + formatNumber(deaths) + "\n" +
-						"<b>" + lang_operator_kdratio[lang] + "</b>: " + formatNumber(kdratio) + "\n" +
+						"<b>" + lang_operator_plays[lang] + "</b>: " + formatNumber(played, lang) + "\n" +
+						"<b>" + lang_operator_wins[lang] + "</b>: " + formatNumber(wins, lang) + "\n" +
+						"<b>" + lang_operator_losses[lang] + "</b>: " + formatNumber(losses, lang) + "\n" +
+						"<b>" + lang_operator_wlratio[lang] + "</b>: " + formatDecimal(wlratio, lang) + "\n" +
+						"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(kills, lang) + "\n" +
+						"<b>" + lang_operator_deaths[lang] + "</b>: " + formatNumber(deaths, lang) + "\n" +
+						"<b>" + lang_operator_kdratio[lang] + "</b>: " + formatDecimal(kdratio, lang) + "\n" +
 						"<b>" + lang_operator_playtime[lang] + "</b>: " + toTime(playtime, lang, true) + "\n";
 					for (j = 0; j < validSpecials; j++)
-						text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j]) + "\n";
+						text += "<b>" + special_names[j] + "</b>: " + formatNumber(special_values[j], lang) + "\n";
 
 					bot.sendMessage(message.chat.id, text, options);
 
@@ -4392,42 +4392,42 @@ function getData(response, lang){
 	var text = "<b>" + lang_username[lang] + "</b>: " + response.username + "\n" +
 		"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response.platform) + "\n" +
 		"<b>" + lang_level[lang] + "</b>: " + response.level + "\n" +
-		"<b>" + lang_xp[lang] + "</b>: " + formatNumber(response.xp) + "\n" +
+		"<b>" + lang_xp[lang] + "</b>: " + formatNumber(response.xp, lang) + "\n" +
 		"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
-		"<b>" + lang_ranked_plays[lang] + "</b>: " + formatNumber(response.ranked_plays) + "\n" +
-		"<b>" + lang_ranked_win[lang] + "</b>: " + formatNumber(response.ranked_wins) + "\n" +
-		"<b>" + lang_ranked_losses[lang] + "</b>: " + formatNumber(response.ranked_losses) + "\n" +
-		"<b>" + lang_ranked_wl[lang] + "</b>: " + formatNumber(response.ranked_wl) + "\n" +
-		"<b>" + lang_ranked_kills[lang] + "</b>: " + formatNumber(response.ranked_kills) + "\n" +
-		"<b>" + lang_ranked_deaths[lang] + "</b>: " + formatNumber(response.ranked_deaths) + "\n" +
-		"<b>" + lang_ranked_kd[lang] + "</b>: " + formatNumber(response.ranked_kd) + "\n" +
+		"<b>" + lang_ranked_plays[lang] + "</b>: " + formatNumber(response.ranked_plays, lang) + "\n" +
+		"<b>" + lang_ranked_win[lang] + "</b>: " + formatNumber(response.ranked_wins, lang) + "\n" +
+		"<b>" + lang_ranked_losses[lang] + "</b>: " + formatNumber(response.ranked_losses, lang) + "\n" +
+		"<b>" + lang_ranked_wl[lang] + "</b>: " + formatDecimal(response.ranked_wl, lang) + "\n" +
+		"<b>" + lang_ranked_kills[lang] + "</b>: " + formatNumber(response.ranked_kills, lang) + "\n" +
+		"<b>" + lang_ranked_deaths[lang] + "</b>: " + formatNumber(response.ranked_deaths, lang) + "\n" +
+		"<b>" + lang_ranked_kd[lang] + "</b>: " + formatDecimal(response.ranked_kd, lang) + "\n" +
 		"<b>" + lang_ranked_playtime[lang] + "</b>: " + toTime(response.ranked_playtime, lang) + " (" + toTime(response.ranked_playtime, lang, true) + ")\n" +
 		"\n<b>" + lang_title_casual[lang] + "</b>:\n" +
-		"<b>" + lang_casual_plays[lang] + "</b>: " + formatNumber(response.casual_plays) + "\n" +
-		"<b>" + lang_casual_win[lang] + "</b>: " + formatNumber(response.casual_wins) + "\n" +
-		"<b>" + lang_casual_losses[lang] + "</b>: " + formatNumber(response.casual_losses) + "\n" +
-		"<b>" + lang_casual_wl[lang] + "</b>: " + formatNumber(response.casual_wl) + "\n" +
-		"<b>" + lang_casual_kills[lang] + "</b>: " + formatNumber(response.casual_kills) + "\n" +
-		"<b>" + lang_casual_deaths[lang] + "</b>: " + formatNumber(response.casual_deaths) + "\n" +
-		"<b>" + lang_casual_kd[lang] + "</b>: " + formatNumber(response.casual_kd) + "\n" +
+		"<b>" + lang_casual_plays[lang] + "</b>: " + formatNumber(response.casual_plays, lang) + "\n" +
+		"<b>" + lang_casual_win[lang] + "</b>: " + formatNumber(response.casual_wins, lang) + "\n" +
+		"<b>" + lang_casual_losses[lang] + "</b>: " + formatNumber(response.casual_losses, lang) + "\n" +
+		"<b>" + lang_casual_wl[lang] + "</b>: " + formatDecimal(response.casual_wl, lang) + "\n" +
+		"<b>" + lang_casual_kills[lang] + "</b>: " + formatNumber(response.casual_kills, lang) + "\n" +
+		"<b>" + lang_casual_deaths[lang] + "</b>: " + formatNumber(response.casual_deaths, lang) + "\n" +
+		"<b>" + lang_casual_kd[lang] + "</b>: " + formatDecimal(response.casual_kd, lang) + "\n" +
 		"<b>" + lang_casual_playtime[lang] + "</b>: " + toTime(response.casual_playtime, lang) + " (" + toTime(response.casual_playtime, lang, true) + ")\n" +
 		"\n<b>" + lang_title_general[lang] + "</b>:\n" +
-		"<b>" + lang_revives[lang] + "</b>: " + formatNumber(response.revives) + "\n" +
-		"<b>" + lang_suicides[lang] + "</b>: " + formatNumber(response.suicides) + "\n" +
-		"<b>" + lang_reinforcements[lang] + "</b>: " + formatNumber(response.reinforcements_deployed) + "\n" +
-		"<b>" + lang_barricades[lang] + "</b>: " + formatNumber(response.barricades_built) + "\n" +
-		"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(response.bullets_hit) + "\n" +
-		"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(response.headshots) + "\n" +
-		"<b>" + lang_melee_kills[lang] + "</b>: " + formatNumber(response.melee_kills) + "\n" +
-		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills) + "\n" +
-		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists) + "\n" +
+		"<b>" + lang_revives[lang] + "</b>: " + formatNumber(response.revives, lang) + "\n" +
+		"<b>" + lang_suicides[lang] + "</b>: " + formatNumber(response.suicides, lang) + "\n" +
+		"<b>" + lang_reinforcements[lang] + "</b>: " + formatNumber(response.reinforcements_deployed, lang) + "\n" +
+		"<b>" + lang_barricades[lang] + "</b>: " + formatNumber(response.barricades_built, lang) + "\n" +
+		"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(response.bullets_hit, lang) + "\n" +
+		"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(response.headshots, lang) + "\n" +
+		"<b>" + lang_melee_kills[lang] + "</b>: " + formatNumber(response.melee_kills, lang) + "\n" +
+		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills, lang) + "\n" +
+		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists, lang) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_mmr[lang] + "</b>: " + Math.round(response.season_mmr) + " (" + mapRank(response.season_mmr, lang, response.top_rank_position) + ")\n" +
-		"<b>" + lang_season_max_mmr[lang] + "</b>: " + Math.round(response.season_max_mmr) + " (" + mapRank(response.season_max_mmr, lang, response.top_rank_position) + ")\n" +
+		"<b>" + lang_season_mmr[lang] + "</b>: " + formatNumber(response.season_mmr, lang) + " (" + mapRank(response.season_mmr, lang, response.top_rank_position) + ")\n" +
+		"<b>" + lang_season_max_mmr[lang] + "</b>: " + formatNumber(response.season_max_mmr, lang) + " (" + mapRank(response.season_max_mmr, lang, response.top_rank_position) + ")\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
-		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure) + " " + lang_points[lang] + "\n" +
-		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage) + " " + lang_points[lang] + "\n" +
-		"<b>" + lang_mode_bomb[lang] + "</b>: " + formatNumber(response.mode_bomb) + " " + lang_points[lang] + "\n"; // a capo finale
+		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure, lang) + " " + lang_points[lang] + "\n" +
+		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage, lang) + " " + lang_points[lang] + "\n" +
+		"<b>" + lang_mode_bomb[lang] + "</b>: " + formatNumber(response.mode_bomb, lang) + " " + lang_points[lang] + "\n"; // a capo finale
 
 	return text;
 }
@@ -4525,13 +4525,13 @@ function getOperators(response){
 
 function getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang){
 	return "\n<b>" + lang_title_operators[lang] + "</b>:\n" +
-		"<b>" + lang_op_kd[lang] + "</b>: " + most_kd_name + " (" + most_kd.toFixed(3) + ")\n" +
-		"<b>" + lang_op_wl[lang] + "</b>: " + most_wl_name + " (" + most_wl.toFixed(3) + ")\n" +
-		"<b>" + lang_op_plays[lang] + "</b>: " + most_played_name + " (" + formatNumber(most_played) + ")\n" +
-		"<b>" + lang_op_wins[lang] + "</b>: " + most_wins_name + " (" + formatNumber(most_wins) + ")\n" +
-		"<b>" + lang_op_losses[lang] + "</b>: " + most_losses_name + " (" + formatNumber(most_losses) + ")\n" +
-		"<b>" + lang_op_kills[lang] + "</b>: " + most_kills_name + " (" + formatNumber(most_kills) + ")\n" +
-		"<b>" + lang_op_deaths[lang] + "</b>: " + most_deaths_name + " (" + formatNumber(most_deaths) + ")\n" +
+		"<b>" + lang_op_kd[lang] + "</b>: " + most_kd_name + " (" + formatDecimal(most_kd, lang) + ")\n" +
+		"<b>" + lang_op_wl[lang] + "</b>: " + most_wl_name + " (" + formatDecimal(most_wl, lang) + ")\n" +
+		"<b>" + lang_op_plays[lang] + "</b>: " + most_played_name + " (" + formatNumber(most_played, lang) + ")\n" +
+		"<b>" + lang_op_wins[lang] + "</b>: " + most_wins_name + " (" + formatNumber(most_wins, lang) + ")\n" +
+		"<b>" + lang_op_losses[lang] + "</b>: " + most_losses_name + " (" + formatNumber(most_losses, lang) + ")\n" +
+		"<b>" + lang_op_kills[lang] + "</b>: " + most_kills_name + " (" + formatNumber(most_kills, lang) + ")\n" +
+		"<b>" + lang_op_deaths[lang] + "</b>: " + most_deaths_name + " (" + formatNumber(most_deaths, lang) + ")\n" +
 		"<b>" + lang_op_playtime[lang] + "</b>: " + most_playtime_name + " (" + toTime(most_playtime, lang, true) + ")";
 }
 
@@ -4543,15 +4543,15 @@ function printInline(query_id, response, lang){
 		description: lang_inline_userfound[lang],
 		message_text: 	"<b>" + response.username + "</b> (Lv " + response.level + " - " + decodePlatform(response.platform) + ")\n" +
 		"<b>" + lang_inline_season[lang] + "</b>: " + numToRank(response.season_rank, lang) + " (" + Math.round(response.season_mmr) + ")\n" + 
-		"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + response.ranked_kd + "\n" +
+		"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + formatDecimal(response.ranked_kd, lang) + "\n" +
 		"<b>" + lang_inline_ranked_playtime[lang] + "</b>: " + toTime(response.ranked_playtime, lang, true) + "\n" +
-		"<b>" + lang_inline_casual_kd[lang] + "</b>: " + response.casual_kd + "\n" +
+		"<b>" + lang_inline_casual_kd[lang] + "</b>: " + formatDecimal(response.casual_kd, lang) + "\n" +
 		"<b>" + lang_inline_casual_playtime[lang] + "</b>: " + toTime(response.casual_playtime, lang, true) + "\n" +
-		"<b>" + lang_inline_total_kills[lang] + "</b>: " + formatNumber(response.ranked_kills + response.casual_kills) + "\n" +
-		"<b>" + lang_inline_total_deaths[lang] + "</b>: " + formatNumber(response.ranked_deaths + response.casual_deaths) + "\n" +
-		"<b>" + lang_inline_total_wins[lang] + "</b>: " + formatNumber(response.ranked_wins + response.casual_wins) + "\n" +
-		"<b>" + lang_inline_total_losses[lang] + "</b>: " + formatNumber(response.ranked_losses + response.casual_losses) + "\n" +
-		"<b>" + lang_inline_best_operator[lang] + "</b>: " + response.operator_max_wl_name + " (" + (response.operator_max_wl).toFixed(3) + ")\n\n" + lang_inline_infos[lang],
+		"<b>" + lang_inline_total_kills[lang] + "</b>: " + formatNumber(response.ranked_kills + response.casual_kills, lang) + "\n" +
+		"<b>" + lang_inline_total_deaths[lang] + "</b>: " + formatNumber(response.ranked_deaths + response.casual_deaths, lang) + "\n" +
+		"<b>" + lang_inline_total_wins[lang] + "</b>: " + formatNumber(response.ranked_wins + response.casual_wins, lang) + "\n" +
+		"<b>" + lang_inline_total_losses[lang] + "</b>: " + formatNumber(response.ranked_losses + response.casual_losses, lang) + "\n" +
+		"<b>" + lang_inline_best_operator[lang] + "</b>: " + response.operator_max_wl_name + " (" + formatDecimal(response.operator_max_wl, lang) + ")\n\n" + lang_inline_infos[lang],
 		parse_mode: "HTML"
 	}]);
 }
@@ -4785,8 +4785,8 @@ function calculateSym(text, first, last, float) {
 	if (first > last)
 		sym = "⬆";
 	if (float == 1) {
-		last = parseFloat(last).toFixed(3);
-		first = parseFloat(first).toFixed(3);
+		last = formatDecimal(parseFloat(last), lang);
+		first = formatDecimal(parseFloat(first), lang);
 	} else {
 		last = Math.round(parseFloat(last));
 		first = Math.round(parseFloat(first));
@@ -4893,11 +4893,11 @@ function compare(val1, val2, format = "", lang = defaultLang, inverted = 0){
 	var formattedVal2 = val2;
 
 	if (format == "number"){
-		formattedVal1 = formatNumber(formattedVal1);
-		formattedVal2 = formatNumber(formattedVal2);
+		formattedVal1 = formatNumber(formattedVal1, lang);
+		formattedVal2 = formatNumber(formattedVal2, lang);
 	}else if (format == "perc"){
-		formattedVal1 = formatNumber(formattedVal1) + "%";
-		formattedVal2 = formatNumber(formattedVal2) + "%";
+		formattedVal1 = formatNumber(formattedVal1, lang) + "%";
+		formattedVal2 = formatNumber(formattedVal2, lang) + "%";
 	}else if (format == "time"){
 		formattedVal1 = toTime(formattedVal1, lang, true);
 		formattedVal2 = toTime(formattedVal2, lang, true);
@@ -4922,17 +4922,28 @@ function compare(val1, val2, format = "", lang = defaultLang, inverted = 0){
 	return res;
 }
 
-function formatNumber(num) {
-	if (num < 0)
-		num = Math.abs(num)+2147483647;	// fix per il negativo passi
+function formatNumber(num, lang) {
+	var char = ",";
+	if (lang == "it")
+		char = ".";
 	return ("" + num).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, function ($1) {
-		return $1 + "."
+		return $1 + char;
 	});
+}
+
+function formatDecimal(num, lang) {
+	var startChar = ",";
+	var endChar = ".";
+	if (lang == "it") {
+		startChar = /\./;
+		endChar = ",";
+	}
+	return num.toFixed(3).replaceAll(startChar, endChar);
 }
 
 function toTime(seconds, lang = defaultLang, onlyHours = false) {
 	if (onlyHours == true)
-		return formatNumber(humanizeDuration(seconds*1000, { language: lang, units: ['h'], round: true }));
+		return formatNumber(humanizeDuration(seconds*1000, { language: lang, units: ['h'], round: true }), lang);
 	else
 		return humanizeDuration(seconds*1000, { language: lang });
 }

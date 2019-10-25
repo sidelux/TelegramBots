@@ -95,4 +95,4 @@ CREATE TABLE `user_validated` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-22 15:00:04
+-- Dump completed
