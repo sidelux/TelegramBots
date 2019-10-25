@@ -169,13 +169,13 @@ class RainbowSixApi {
 								if (objStats.mode_hostage == undefined) objStats.mode_hostage = 0;
 								if (objStats.mode_bomb == undefined) objStats.mode_bomb = 0;
 
-								objStats.ranked_wl = formatDecimal(objStats.ranked_wins/objStats.ranked_losses, lang);
+								objStats.ranked_wl = (objStats.ranked_wins/objStats.ranked_losses).toFixed(3);
 								if (!isFinite(objStats.ranked_wl)) objStats.ranked_wl = objStats.ranked_wins;
-								objStats.ranked_kd = formatDecimal(objStats.ranked_kills/objStats.ranked_deaths, lang);
+								objStats.ranked_kd = (objStats.ranked_kills/objStats.ranked_deaths).toFixed(3);
 								if (!isFinite(objStats.ranked_kd)) objStats.ranked_kd = objStats.ranked_kills;
-								objStats.casual_wl = formatDecimal(objStats.casual_wins/objStats.casual_losses, lang);
+								objStats.casual_wl = (objStats.casual_wins/objStats.casual_losses).toFixed(3);
 								if (!isFinite(objStats.casual_wl)) objStats.casual_wl = objStats.casual_wins;
-								objStats.casual_kd = formatDecimal(objStats.casual_kills/objStats.casual_deaths, lang);
+								objStats.casual_kd = (objStats.casual_kills/objStats.casual_deaths).toFixed(3);
 								if (!isFinite(objStats.casual_kd)) objStats.casual_kd = objStats.casual_kills;
 
 								return resolve(objStats);
@@ -4938,7 +4938,7 @@ function formatDecimal(num, lang) {
 		startChar = /\./;
 		endChar = ",";
 	}
-	return num.toFixed(3).replaceAll(startChar, endChar);
+	return parseFloat(num).toFixed(3).replaceAll(startChar, endChar);
 }
 
 function toTime(seconds, lang = defaultLang, onlyHours = false) {
