@@ -580,6 +580,11 @@ var lang_scan_limit = [];
 var lang_scan_reply = [];
 var lang_scan_photo = [];
 var lang_scan_video = [];
+		
+var lang_contest_invalid_username = [];
+var lang_contest_already_linked = [];
+var lang_contest_done = [];
+var lang_contest_invalid_date = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -1282,6 +1287,15 @@ lang_scan_photo["en"] = "This command should be used in reply on a photo (not se
 lang_scan_video["it"] = "Il comando deve essere utilizzato in risposta su un video MP4";
 lang_scan_video["en"] = "This command should be used in reply on a MP4 video";
 
+lang_contest_invalid_username["it"] = "Nome utente non valido";
+lang_contest_invalid_username["en"] = "Invalid username";
+lang_contest_already_linked["it"] = "Hai già utilizzato un comando contest con un utente";
+lang_contest_already_linked["en"] = "You have already linked a username";
+lang_contest_done["it"] = "Partecipazione completata!";
+lang_contest_done["en"] = "Submission completed!";
+lang_contest_invalid_date["it"] = "Puoi utilizzare questo comando solo il giorno di accesso al gruppo";
+lang_contest_invalid_date["en"] = "You can use this command only during same day as group access";
+
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
@@ -1369,7 +1383,23 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 
 bot.on('message', function (message) {
 	capture_parse(message);
+	contest_group(message);
 });
+
+function contest_group(message) {
+	if (message.chat.id == -1001246584843) {
+		// if (message.new_chat_members != undefined) {
+			connection.query("SELECT 1 FROM contest_group WHERE account_id = " + message.from.id + " AND chat_id = '" + message.chat.id + "'", function (err, rows) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0){
+					connection.query("INSERT INTO contest_group (account_id, chat_id) VALUES (" + message.from.id + ", '" + message.chat.id + "')", function (err, rows) {
+						if (err) throw err;
+					});
+				}
+			});
+		// }
+	}
+}
 
 bot.on('edited_message', function (message) {
 	capture_parse(message);
@@ -2267,6 +2297,61 @@ bot.onText(/^\/compress(?:@\w+)?/i, function (message, match) {
 });
 
 */
+
+bot.onText(/^\/contest(?:@\w+) (.+)?|^\/contest(?:@\w+)?/i, function (message, match) {
+	if (message.chat.id == -1001246584843) {
+		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+		connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0){
+				var lang = defaultLang;
+				if (message.from.language_code != undefined){
+					if (validLang.indexOf(message.from.language_code) != -1)
+						lang = message.from.language_code;
+				}
+				rows[0] = {};
+				rows[0].lang = lang;
+			}
+
+			var lang = rows[0].lang;
+
+			if (match[1] == undefined) {
+				bot.sendMessage(message.chat.id, lang_contest_invalid_username[lang]);
+				return;
+			}
+
+			var username = match[1].replace("@", "");
+			
+			connection.query("SELECT join_date FROM contest_group WHERE account_id = " + message.from.id + "' AND chat_id = '" + message.chat.id + "'", function (err, rows) {
+				if (err) throw err;
+				if (Object.keys(rows).length > 0) {
+					var join_date = new Date(rows[0].join_date);
+					var now = new Date();
+					
+					if ((join_date.getFullYear() != now.getFullYear()) || 
+						(join_date.getMonth() != now.getMonth()) || 
+						(join_date.getDate() != now.getDate())) {
+						bot.sendMessage(message.chat.id, lang_contest_invalid_date[lang]);
+						return;
+					}
+				}
+
+				connection.query("SELECT 1 FROM contest WHERE account_id = " + message.from.id + "'", function (err, rows) {
+					if (err) throw err;
+					if (Object.keys(rows).length > 0) {
+						bot.sendMessage(message.chat.id, lang_contest_already_linked[lang]);
+						return;
+					}
+
+					connection.query("INSERT INTO contest (account_id, username, contest_username) VALUES (" + message.from.id + ", '" + message.from.username + "', '" + username + "')", function (err, rows) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, lang_contest_done[lang]);
+					});
+				});
+			});
+		});
+	}
+});
 
 bot.onText(/^\/checklang/, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
