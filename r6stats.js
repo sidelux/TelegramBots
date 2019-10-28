@@ -2298,7 +2298,7 @@ bot.onText(/^\/compress(?:@\w+)?/i, function (message, match) {
 
 */
 
-bot.onText(/^\/contest(?:@\w+) (.+)?|^\/contest(?:@\w+)?/i, function (message, match) {
+bot.onText(/^\/contest(?:@\w+)? (.+)|^\/contest(?:@\w+)?/i, function (message, match) {
 	if (message.chat.id == -1001246584843) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 		connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2322,7 +2322,7 @@ bot.onText(/^\/contest(?:@\w+) (.+)?|^\/contest(?:@\w+)?/i, function (message, m
 
 			var username = match[1].replace("@", "");
 			
-			connection.query("SELECT join_date FROM contest_group WHERE account_id = " + message.from.id + "' AND chat_id = '" + message.chat.id + "'", function (err, rows) {
+			connection.query("SELECT join_date FROM contest_group WHERE account_id = " + message.from.id + " AND chat_id = '" + message.chat.id + "'", function (err, rows) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					var join_date = new Date(rows[0].join_date);
@@ -2336,7 +2336,7 @@ bot.onText(/^\/contest(?:@\w+) (.+)?|^\/contest(?:@\w+)?/i, function (message, m
 					}
 				}
 
-				connection.query("SELECT 1 FROM contest WHERE account_id = " + message.from.id + "'", function (err, rows) {
+				connection.query("SELECT 1 FROM contest WHERE account_id = " + message.from.id, function (err, rows) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						bot.sendMessage(message.chat.id, lang_contest_already_linked[lang]);
