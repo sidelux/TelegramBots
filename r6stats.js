@@ -585,6 +585,7 @@ var lang_contest_invalid_username = [];
 var lang_contest_already_linked = [];
 var lang_contest_done = [];
 var lang_contest_invalid_date = [];
+var lang_contest_username_me = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -1295,6 +1296,8 @@ lang_contest_done["it"] = "Partecipazione completata!";
 lang_contest_done["en"] = "Submission completed!";
 lang_contest_invalid_date["it"] = "Puoi utilizzare questo comando solo il giorno di accesso al gruppo";
 lang_contest_invalid_date["en"] = "You can use this command only during same day as group access";
+lang_contest_username_me["it"] = "Non puoi inserire te stesso";
+lang_contest_username_me["en"] = "You can't insert yourself";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2321,6 +2324,11 @@ bot.onText(/^\/contest(?:@\w+)? (.+)|^\/contest(?:@\w+)?/i, function (message, m
 			}
 
 			var username = match[1].replace("@", "");
+			
+			if (username == message.from.username) {
+				bot.sendMessage(message.chat.id, lang_contest_username_me[lang]);
+				return;
+			}
 			
 			connection.query("SELECT join_date FROM contest_group WHERE account_id = " + message.from.id + " AND chat_id = '" + message.chat.id + "'", function (err, rows) {
 				if (err) throw err;
