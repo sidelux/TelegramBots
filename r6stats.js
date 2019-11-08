@@ -4051,8 +4051,10 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 
 		var res = parse(message.reply_to_message, 1);
 
-		if (res == "platform")
+		if (res == "platform") {
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
+			bot.deleteMessage(message.chat.id, message.message_id);
+		}
 		if (res == "ok") {
 			var iKeys = [];
 			iKeys.push([{
@@ -4226,8 +4228,10 @@ function capture_parse(message) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 
 		var res = parse(message);
-		if (res == "platform")
+		if (res == "platform") {
 			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
+			bot.deleteMessage(message.chat.id, message.message_id);
+		}
 		if (res == "ok") {
 			var iKeys = [];
 			iKeys.push([{
