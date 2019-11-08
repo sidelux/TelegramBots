@@ -3284,11 +3284,11 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 							played = (response[operators[i]].operatorpvp_roundwon+response[operators[i]].operatorpvp_roundlost);
 							wins = response[operators[i]].operatorpvp_roundwon;
 							losses = response[operators[i]].operatorpvp_roundlost;
-							wlratio = formatDecimal(wins/losses, lang);
+							wlratio = wins/losses;
 							if (!isFinite(wlratio)) wlratio = wins;
 							kills = response[operators[i]].operatorpvp_kills;
 							deaths = response[operators[i]].operatorpvp_death;
-							kdratio = formatDecimal(kills/deaths, lang);
+							kdratio = kills/deaths;
 							if (!isFinite(kdratio)) kdratio = kills;
 							playtime = response[operators[i]].operatorpvp_timeplayed;
 
@@ -5031,6 +5031,7 @@ function formatDecimal(num, lang) {
 		startChar = /\./;
 		endChar = ",";
 	}
+	
 	return parseFloat(num).toFixed(3).replaceAll(startChar, endChar);
 }
 
