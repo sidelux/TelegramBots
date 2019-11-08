@@ -441,12 +441,12 @@ var ability_operatorpvp_tachanka_turretkill = [];
 var ability_operatorpvp_deceiver_revealedattackers = [];
 var ability_operatorpvp_maverick_wallbreached = [];
 var ability_operatorpvp_clash_sloweddown = [];
-var ability_operatorpvp_Kaid_Electroclaw_Hatches = [];
-var ability_operatorpvp_Nomad_Assist = [];
+var ability_operatorpvp_kaid_electroclawelectrify = [];
+var ability_operatorpvp_nomad_airjabdetonate = [];
 var ability_operatorpvp_mozzie_droneshacked = [];
 var ability_operatorpvp_gridlock_traxdeployed = [];
-var ability_operatorpvp_Nokk_Cameras_Deceived = [];
-var ability_operatorpvp_Warden_Kills_During_Ability = [];
+var ability_operatorpvp_nokk_observationtooldeceived = [];
+var ability_operatorpvp_warden_killswithglasses = [];
 var ability_operatorpvp_goyo_volcandetonate = [];
 var ability_operatorpvp_amaru_distancereeled = [];
 
@@ -1036,18 +1036,18 @@ ability_operatorpvp_maverick_wallbreached["it"] = "Muri bucati";
 ability_operatorpvp_maverick_wallbreached["en"] = "Walls breached";
 ability_operatorpvp_clash_sloweddown["it"] = "Nemici rallentati";
 ability_operatorpvp_clash_sloweddown["en"] = "Enemies slowed down";
-ability_operatorpvp_Kaid_Electroclaw_Hatches["it"] = "Elettroartigli lanciati su botole";
-ability_operatorpvp_Kaid_Electroclaw_Hatches["en"] = "Electroclaw throwed to hatches";
-ability_operatorpvp_Nomad_Assist["it"] = "Assist con abilità";
-ability_operatorpvp_Nomad_Assist["en"] = "Ability assists";
+ability_operatorpvp_kaid_electroclawelectrify["it"] = "Elettroartigli lanciati";
+ability_operatorpvp_kaid_electroclawelectrify["en"] = "Electroclaw throwed";
+ability_operatorpvp_nomad_airjabdetonate["it"] = "Airjab esplosi";
+ability_operatorpvp_nomad_airjabdetonate["en"] = "Airjab detonated";
 ability_operatorpvp_mozzie_droneshacked["it"] = "Droni hackerati";
 ability_operatorpvp_mozzie_droneshacked["en"] = "Drones hacked";
 ability_operatorpvp_gridlock_traxdeployed["it"] = "Trax piazzati";
 ability_operatorpvp_gridlock_traxdeployed["en"] = "Trax deployed";
-ability_operatorpvp_Nokk_Cameras_Deceived["it"] = "Videocamere disturbate";
-ability_operatorpvp_Nokk_Cameras_Deceived["en"] = "Deceived cameras";
-ability_operatorpvp_Warden_Kills_During_Ability["it"] = "Uccisioni con abilità";
-ability_operatorpvp_Warden_Kills_During_Ability["en"] = "Kills during ability";
+ability_operatorpvp_nokk_observationtooldeceived["it"] = "Videocamere disturbate";
+ability_operatorpvp_nokk_observationtooldeceived["en"] = "Deceived cameras";
+ability_operatorpvp_warden_killswithglasses["it"] = "Uccisioni con abilità";
+ability_operatorpvp_warden_killswithglasses["en"] = "Kills during ability";
 ability_operatorpvp_goyo_volcandetonate["it"] = "Volcan detonati";
 ability_operatorpvp_goyo_volcandetonate["en"] = "Detonated Volcan";
 ability_operatorpvp_amaru_distancereeled["it"] = "Distanza percorsa in volo";
@@ -3303,7 +3303,11 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 							if (specials.length > 0){
 								for (j = 0; j < specials.length; j++){
 									if (specials[j].indexOf("pve") == -1){
-										special_names.push(eval("ability_" + specials[j] + "['" + lang + "']"));
+										try {
+											special_names.push(eval("ability_" + specials[j] + "['" + lang + "']"));
+										} catch (e) {
+											special_names.push("ability_" + specials[j]);
+										}
 										special_values.push(parseInt(eval("response[operators[" + i + "]]." + specials[j])));
 										validSpecials++;
 									}
@@ -4802,9 +4806,9 @@ function generateDailyReport(element, index, array) {
 		var lastId = Object.keys(player).length-1;
 		report_head = "\n<b>" + player[0].username + "</b> " + lang_on[lang] + " " + decodePlatform(player[0].platform) + ":\n";
 		report_line = "";
-		report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1);
-		report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1);
-		report_line += calculateSym(lang_season_mmr[lang], player[0].season_mmr, player[lastId].season_mmr, 0);
+		report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1, lang);
+		report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1, lang);
+		report_line += calculateSym(lang_season_mmr[lang], player[0].season_mmr, player[lastId].season_mmr, 0, lang);
 		if (report_line != "") {
 			console.log("Daily report sent for user " + username + " on " + platform);
 			bot.sendMessage(account_id, report + report_head + report_line, html);
@@ -4854,9 +4858,9 @@ function generateReport(element, index, array) {
 			var lastId = Object.keys(player).length-1;
 			report_head = "\n<b>" + player[0].username + "</b> " + lang_on[lang] + " " + decodePlatform(player[0].platform) + ":\n";
 			report_line = "";
-			report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1);
-			report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1);
-			report_line += calculateSym(lang_season_mmr[lang], Math.round(player[0].season_mmr), player[lastId].season_mmr, 0);
+			report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1, lang);
+			report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1, lang);
+			report_line += calculateSym(lang_season_mmr[lang], Math.round(player[0].season_mmr), player[lastId].season_mmr, 0, lang);
 			if (report_line != ""){
 				report += report_head + report_line;
 				cnt++;
@@ -4871,7 +4875,7 @@ function generateReport(element, index, array) {
 		console.log("No data report for group " + last_chat_id);
 }
 
-function calculateSym(text, first, last, float) {
+function calculateSym(text, first, last, float, lang) {
 	if (first == last)
 		return "";
 	var sym = "⬇";
