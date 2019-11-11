@@ -3449,7 +3449,9 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 
 				text += "\n<b>" + lang_loadout_utility[lang] + "</b>: " + mapLoadout(utility, lang);
 
-				bot.sendMessage(message.chat.id, text, options);
+				if (message.chat.id < 0)
+					bot.sendMessage(message.chat.id, lang_private[lang]);
+				bot.sendMessage(message.from.id, text, options);
 			}
 		});
 	});
@@ -4052,7 +4054,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		var res = parse(message.reply_to_message, 1);
 
 		if (res == "platform") {
-			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
+			bot.sendMessage(message.chat.id, "Specifica la piattaforma ed invia nuovamente il reclutamento!", options);
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
@@ -4229,7 +4231,7 @@ function capture_parse(message) {
 
 		var res = parse(message);
 		if (res == "platform") {
-			bot.sendMessage(message.chat.id, "Specifica la piattaforma!", options);
+			bot.sendMessage(message.chat.id, "Specifica la piattaforma ed invia nuovamente il reclutamento!", options);
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
