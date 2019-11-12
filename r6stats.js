@@ -587,6 +587,10 @@ var lang_contest_done = [];
 var lang_contest_invalid_date = [];
 var lang_contest_username_me = [];
 
+var lang_check_res = [];
+var lang_check_yes = [];
+var lang_check_no = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate in %g gruppi diversi";
@@ -645,6 +649,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/history' - Permette di visualizzare i risultati delle ultime partite del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori.\n" +
+	"> '/canplay <username1>,<username2>' - Permette di verificare se due giocatori possono giocare insieme in classificata.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
 	"> '/lastgraph' - Genera un grafico utilizzando l'ultimo parametro usato.\n" +
 	"> '/loadout <nome-operatore>' - Suggerisce un equipaggiamento per l'operatore specificato.\n" +
@@ -675,6 +680,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
 	"> '/history' - Allow to print match history specified as parameter using /setusername and /setplatform.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats.\n" +
+	"> '/canplay <username1>,<username2>' - Allow to check if two players can play together in ranked.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
 	"> '/lastgraph' - Generate a graph using last parameter used.\n" +
 	"> '/loadout <operator-name>' - Suggest a full loadout for specified operator.\n" +
@@ -698,6 +704,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata\n" +
 	"20/09/19 - Aggiunto il comando /scan per analizzare gli screenshot delle classifiche in game (solo pc)\n" +
 	"19/09/19 - Aggiunta la possibilità di utilizzare il comando /seasons ordinando per un criterio specifico, aggiunto il comando /history e la dicitura relativa al posizionamento del grado Campione\n" +
 	"18/09/19 - Aggiornato con il supporto completo ad Ember Rise\n" +
@@ -715,6 +722,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked.\n" +
 	"09/20/19 - Added /scan command to analyze leaderboard screenshot taken in-game (only pc)\n" +
 	"09/19/19 - Added possibility to use /seasons command with custom order method, added /history command and position relative to Champion rank\n" +
 	"09/18/19 - Updated with Ember Rise complete support\n" +
@@ -1298,6 +1306,13 @@ lang_contest_invalid_date["it"] = "Puoi utilizzare questo comando solo il giorno
 lang_contest_invalid_date["en"] = "You can use this command only during same day as group access";
 lang_contest_username_me["it"] = "Non puoi inserire te stesso";
 lang_contest_username_me["en"] = "You can't insert yourself";
+
+lang_check_res["it"] = "Può <i>%a</i> giocare con <i>%b</i> in classificata?\n\n<b>%c</b>\n\nLa differenza di MMR è <b>%d</b>!";
+lang_check_res["en"] = "Can <i>%a</i> play with <i>%b</i> on ranked?\n\n<b>%c</b>\n\nMMR difference is <b>%d</b>!";
+lang_check_yes["it"] = "SI!";
+lang_check_yes["en"] = "YES!";
+lang_check_no["it"] = "NO :(";
+lang_check_no["en"] = "NO :(";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2478,54 +2493,8 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					else
 						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " of " + addZero(d.getMonth() + 1) + "/" + addZero(d.getDate()) + "/" + d.getFullYear();
 					insert_date = "\n\n<i>" + lang_insert_date[lang] + insert_date + "</i>";
-					var response = {};
-					response.player = {};
-					response.player.stats = {};
-					response.player.stats.progression = {};
-					response.player.stats.ranked = {};
-					response.player.stats.casual = {};
-					response.player.stats.overall = {};
-					response.player.season = {};
-
-					response.username = rows[0].username;
-					response.platform = rows[0].platform;
-					response.level = rows[0].level;
-					response.xp = rows[0].xp;
-					response.ranked_plays = rows[0].ranked_plays;
-					response.ranked_wins = rows[0].ranked_wins;
-					response.ranked_losses = rows[0].ranked_losses;
-					response.ranked_wl = rows[0].ranked_wl;
-					response.ranked_kills = rows[0].ranked_kills;
-					response.ranked_deaths = rows[0].ranked_deaths;
-					response.ranked_kd = rows[0].ranked_kd;
-					response.ranked_playtime = rows[0].ranked_playtime;
-					response.casual_plays = rows[0].casual_plays;
-					response.casual_wins = rows[0].casual_wins;
-					response.casual_losses = rows[0].casual_losses;
-					response.casual_wl = rows[0].casual_wl;
-					response.casual_kills = rows[0].casual_kills;
-					response.casual_deaths = rows[0].casual_deaths;
-					response.casual_kd = rows[0].casual_kd;
-					response.casual_playtime = rows[0].casual_playtime;
-					response.revives = rows[0].revives;
-					response.suicides = rows[0].suicides;
-					response.reinforcements_deployed = rows[0].reinforcements_deployed;
-					response.barricades_built = rows[0].barricades_built;
-					response.bullets_hit = rows[0].bullets_hit;
-					response.headshots = rows[0].headshots;
-					response.melee_kills = rows[0].melee_kills;
-					response.penetration_kills = rows[0].penetration_kills;
-					response.assists = rows[0].assists;
-
-					response.season_id = rows[0].season_id;
-					response.season_rank = rows[0].season_rank;
-					response.season_mmr = rows[0].season_mmr;
-					response.season_max_mmr = rows[0].season_max_mmr;
-					response.top_rank_position = rows[0].top_rank_position;
-
-					response.mode_secure = rows[0].mode_secure;
-					response.mode_hostage = rows[0].mode_hostage;
-					response.mode_bomb = rows[0].mode_bomb;
+					
+					var response = JSON.parse(JSON.stringify(rows[0]));
 
 					var most_played = rows[0].operator_max_plays;
 					var most_played_name = rows[0].operator_max_plays_name;
@@ -2633,23 +2602,37 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 		var platform = rows[0].default_platform;
 
 		console.log(getNow("it") + " Request rank data for " + username + " on " + platform);
-		bot.sendChatAction(message.chat.id, "typing").then(function () {
+		
+		connection.query('SELECT season_rank, season_mmr FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC', function (err, rows) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0){
+				var responseStats = {};
+				responseStats.season_rank = rows[0].season_rank;
+				responseStats.season_mmr = rows[0].season_mmr;
+
+				console.log(getNow("it") + " Loaded rank from cache");
+				bot.sendMessage(message.chat.id, getRankData(responseStats, lang), options);
+				return;
+			}
+		
+			console.log(getNow("it") + " Loading rank from api");
 			bot.sendChatAction(message.chat.id, "typing").then(function () {
-				r6.stats(username, platform, -1, 0).then(response => {
-					var responseStats = response;
+				bot.sendChatAction(message.chat.id, "typing").then(function () {
+					r6.stats(username, platform, -1, 0).then(response => {
+						var responseStats = response;
 
-					if (responseStats.platform == undefined){
+						if (responseStats.platform == undefined){
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
+							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
+							return;
+						}
+
+						bot.sendMessage(message.chat.id, getRankData(responseStats, lang), options);
+					}).catch(error => {
+						console.log(error);
 						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
-						console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
-						return;
-					}
-
-					var text = getRankData(responseStats, lang);
-					bot.sendMessage(message.chat.id, text, options);
-				}).catch(error => {
-					console.log(error);
-					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
-					console.log(getNow("it") + " User data not found for " + username + " on " + platform);
+						console.log(getNow("it") + " User data not found for " + username + " on " + platform);
+					});
 				});
 			});
 		});
@@ -2769,77 +2752,235 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 		}
 
 		console.log(getNow("it") + " Request user compare for " + username1 + " and " + username2 + " on " + user1platform + " and " + user2platform);
-		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(username1, user1platform, -1, 0).then(response1 => {
+		
+		var player1cached = 0;
+		var player2cached = 0;
+		
+		connection.query('SELECT * FROM player_history WHERE platform = "' + user1platform + '" AND username = "' + username1 + '" ORDER BY id DESC', function (err, rows) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0){
+				var response1 = JSON.parse(JSON.stringify(rows[0]));
 
-				if (response1.platform == undefined){
-					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", options);
-					console.log(getNow("it") + " User data 1 (compare) undefined for " + username1 + " on " + user1platform);
+				player1cached = 1;
+			}
+			
+			connection.query('SELECT * FROM player_history WHERE platform = "' + user2platform + '" AND username = "' + username2 + '" ORDER BY id DESC', function (err, rows) {
+				if (err) throw err;
+				if (Object.keys(rows).length > 0){
+					var response2 = JSON.parse(JSON.stringify(rows[0]));
+
+					player2cached = 1;
+				}
+				
+				if ((player1cached == 1) && (player2cached == 1)) {
+					bot.sendMessage(message.chat.id, getCompareStats(response1, response2, lang), options);
+					console.log(getNow("it") + " User compared from cache");
 					return;
 				}
-
+		
+				console.log(getNow("it") + " User compared from api request");
+				
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username2, user2platform, -1, 0).then(response2 => {
+					r6.stats(username1, user1platform, -1, 0).then(response1 => {
 
-						if (response2.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", options);
-							console.log(getNow("it") + " User data 2 (compare) undefined for " + username2 + " on " + user2platform);
+						if (response1.platform == undefined){
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", options);
+							console.log(getNow("it") + " User data 1 (compare) undefined for " + username1 + " on " + user1platform);
 							return;
 						}
 
-						var text = "<i>" + response1.username + " vs " + response2.username + "</i>\n\n" +
-							"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response1.platform) + " - " + decodePlatform(response2.platform) + "\n" +
-							"<b>" + lang_level[lang] + "</b>: " + compare(response1.level, response2.level) + "\n" +
-							"<b>" + lang_xp[lang] + "</b>: " + compare(response1.xp, response2.xp, "number") + "\n" +
-							"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
-							"<b>" + lang_ranked_plays[lang] + "</b>: " + compare(response1.ranked_plays, response2.ranked_plays, "number") + "\n" +
-							"<b>" + lang_ranked_win[lang] + "</b>: " + compare(response1.ranked_wins, response2.ranked_wins, "number") + "\n" +
-							"<b>" + lang_ranked_losses[lang] + "</b>: " + compare(response1.ranked_losses, response2.ranked_losses, "number", lang, 1) + "\n" +
-							"<b>" + lang_ranked_wl[lang] + "</b>: " + compare(response1.ranked_wl, response2.ranked_wl, "number", lang) + "\n" +
-							"<b>" + lang_ranked_kills[lang] + "</b>: " + compare(response1.ranked_kills, response2.ranked_kills, "number") + "\n" +
-							"<b>" + lang_ranked_deaths[lang] + "</b>: " + compare(response1.ranked_deaths, response2.ranked_deaths, "number", lang, 1) + "\n" +
-							"<b>" + lang_ranked_kd[lang] + "</b>: " + compare(response1.ranked_kd, response2.ranked_kd, "number") + "\n" +
-							"<b>" + lang_ranked_playtime[lang] + "</b>: " + compare(response1.ranked_playtime, response2.ranked_playtime, "time", lang) + "\n" +
-							"\n<b>" + lang_title_casual[lang] + "</b>:\n" +
-							"<b>" + lang_casual_plays[lang] + "</b>: " + compare(response1.casual_plays, response2.casual_plays, "number") + "\n" +
-							"<b>" + lang_casual_win[lang] + "</b>: " + compare(response1.casual_wins, response2.casual_wins, "number") + "\n" +
-							"<b>" + lang_casual_losses[lang] + "</b>: " + compare(response1.casual_losses, response2.casual_losses, "number", lang, 1) + "\n" +
-							"<b>" + lang_casual_wl[lang] + "</b>: " + compare(response1.casual_wl, response2.casual_wl, "number", lang) + "\n" +
-							"<b>" + lang_casual_kills[lang] + "</b>: " + compare(response1.casual_kills, response2.casual_kills, "number") + "\n" +
-							"<b>" + lang_casual_deaths[lang] + "</b>: " + compare(response1.casual_deaths, response2.casual_deaths, "number", lang, 1) + "\n" +
-							"<b>" + lang_casual_kd[lang] + "</b>: " + compare(response1.casual_kd, response2.casual_kd, "number") + "\n" +
-							"<b>" + lang_casual_playtime[lang] + "</b>: " + compare(response1.casual_playtime, response2.casual_playtime, "time", lang) + "\n" +
-							"\n<b>" + lang_title_general[lang] + "</b>:\n" +
-							"<b>" + lang_revives[lang] + "</b>: " + compare(response1.revives, response2.revives, "number") + "\n" +
-							"<b>" + lang_suicides[lang] + "</b>: " + compare(response1.suicides, response2.suicides, "number", lang, 1) + "\n" +
-							"<b>" + lang_reinforcements[lang] + "</b>: " + compare(response1.reinforcements_deployed, response2.reinforcements_deployed, "number") + "\n" +
-							"<b>" + lang_barricades[lang] + "</b>: " + compare(response1.barricades_built, response2.barricades_built, "number") + "\n" +
-							"<b>" + lang_bullets_hit[lang] + "</b>: " + compare(response1.bullets_hit, response2.bullets_hit, "number") + "\n" +
-							"<b>" + lang_headshots[lang] + "</b>: " + compare(response1.headshots, response2.headshots, "number") + "\n" +
-							"<b>" + lang_melee_kills[lang] + "</b>: " + compare(response1.melee_kills, response2.melee_kills, "number") + "\n" +
-							"<b>" + lang_penetration_kills[lang] + "</b>: " + compare(response1.penetration_kills, response2.penetration_kills, "number") + "\n" +
-							"<b>" + lang_assists[lang] + "</b>: " + compare(response1.assists, response2.assists, "number") + "\n" +
-							"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-							"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.season_mmr), Math.round(response2.season_mmr), "number") + "\n" +
-							"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.season_max_mmr), Math.round(response2.season_max_mmr), "number")  + "\n" +  
-							"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
-							"<b>" + lang_mode_secure[lang] + "</b>: " + compare(response1.mode_secure, response2.mode_secure, "number") + "\n" +
-							"<b>" + lang_mode_hostage[lang] + "</b>: " + compare(response1.mode_hostage, response2.mode_hostage, "number") + "\n" +
-							"<b>" + lang_mode_bomb[lang] + "</b>: " + compare(response1.mode_bomb, response2.mode_bomb, "number");
+						bot.sendChatAction(message.chat.id, "typing").then(function () {
+							r6.stats(username2, user2platform, -1, 0).then(response2 => {
 
-						bot.sendMessage(message.chat.id, text, options);
+								if (response2.platform == undefined){
+									bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", options);
+									console.log(getNow("it") + " User data 2 (compare) undefined for " + username2 + " on " + user2platform);
+									return;
+								}
+
+								bot.sendMessage(message.chat.id, getCompareStats(response1, response2, lang), options);
+							}).catch(error => {
+								bot.sendMessage(message.chat.id, error, options);
+								console.log(getNow("it") + " User data not found for " + username2 + " on " + platform);
+							});
+						});
 					}).catch(error => {
 						bot.sendMessage(message.chat.id, error, options);
-						console.log(getNow("it") + " User data not found for " + username2 + " on " + platform);
+						console.log(getNow("it") + " User data not found for " + username1 + " on " + platform);
 					});
 				});
-			}).catch(error => {
-				bot.sendMessage(message.chat.id, error, options);
-				console.log(getNow("it") + " User data not found for " + username1 + " on " + platform);
 			});
 		});
 	});
 });
+
+function getCompareStats(response1, response2, lang) {
+	return "<i>" + response1.username + " vs " + response2.username + "</i>\n\n" +
+		"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response1.platform) + " - " + decodePlatform(response2.platform) + "\n" +
+		"<b>" + lang_level[lang] + "</b>: " + compare(response1.level, response2.level) + "\n" +
+		"<b>" + lang_xp[lang] + "</b>: " + compare(response1.xp, response2.xp, "number") + "\n" +
+		"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
+		"<b>" + lang_ranked_plays[lang] + "</b>: " + compare(response1.ranked_plays, response2.ranked_plays, "number") + "\n" +
+		"<b>" + lang_ranked_win[lang] + "</b>: " + compare(response1.ranked_wins, response2.ranked_wins, "number") + "\n" +
+		"<b>" + lang_ranked_losses[lang] + "</b>: " + compare(response1.ranked_losses, response2.ranked_losses, "number", lang, 1) + "\n" +
+		"<b>" + lang_ranked_wl[lang] + "</b>: " + compare(response1.ranked_wl, response2.ranked_wl, "number", lang) + "\n" +
+		"<b>" + lang_ranked_kills[lang] + "</b>: " + compare(response1.ranked_kills, response2.ranked_kills, "number") + "\n" +
+		"<b>" + lang_ranked_deaths[lang] + "</b>: " + compare(response1.ranked_deaths, response2.ranked_deaths, "number", lang, 1) + "\n" +
+		"<b>" + lang_ranked_kd[lang] + "</b>: " + compare(response1.ranked_kd, response2.ranked_kd, "number") + "\n" +
+		"<b>" + lang_ranked_playtime[lang] + "</b>: " + compare(response1.ranked_playtime, response2.ranked_playtime, "time", lang) + "\n" +
+		"\n<b>" + lang_title_casual[lang] + "</b>:\n" +
+		"<b>" + lang_casual_plays[lang] + "</b>: " + compare(response1.casual_plays, response2.casual_plays, "number") + "\n" +
+		"<b>" + lang_casual_win[lang] + "</b>: " + compare(response1.casual_wins, response2.casual_wins, "number") + "\n" +
+		"<b>" + lang_casual_losses[lang] + "</b>: " + compare(response1.casual_losses, response2.casual_losses, "number", lang, 1) + "\n" +
+		"<b>" + lang_casual_wl[lang] + "</b>: " + compare(response1.casual_wl, response2.casual_wl, "number", lang) + "\n" +
+		"<b>" + lang_casual_kills[lang] + "</b>: " + compare(response1.casual_kills, response2.casual_kills, "number") + "\n" +
+		"<b>" + lang_casual_deaths[lang] + "</b>: " + compare(response1.casual_deaths, response2.casual_deaths, "number", lang, 1) + "\n" +
+		"<b>" + lang_casual_kd[lang] + "</b>: " + compare(response1.casual_kd, response2.casual_kd, "number") + "\n" +
+		"<b>" + lang_casual_playtime[lang] + "</b>: " + compare(response1.casual_playtime, response2.casual_playtime, "time", lang) + "\n" +
+		"\n<b>" + lang_title_general[lang] + "</b>:\n" +
+		"<b>" + lang_revives[lang] + "</b>: " + compare(response1.revives, response2.revives, "number") + "\n" +
+		"<b>" + lang_suicides[lang] + "</b>: " + compare(response1.suicides, response2.suicides, "number", lang, 1) + "\n" +
+		"<b>" + lang_reinforcements[lang] + "</b>: " + compare(response1.reinforcements_deployed, response2.reinforcements_deployed, "number") + "\n" +
+		"<b>" + lang_barricades[lang] + "</b>: " + compare(response1.barricades_built, response2.barricades_built, "number") + "\n" +
+		"<b>" + lang_bullets_hit[lang] + "</b>: " + compare(response1.bullets_hit, response2.bullets_hit, "number") + "\n" +
+		"<b>" + lang_headshots[lang] + "</b>: " + compare(response1.headshots, response2.headshots, "number") + "\n" +
+		"<b>" + lang_melee_kills[lang] + "</b>: " + compare(response1.melee_kills, response2.melee_kills, "number") + "\n" +
+		"<b>" + lang_penetration_kills[lang] + "</b>: " + compare(response1.penetration_kills, response2.penetration_kills, "number") + "\n" +
+		"<b>" + lang_assists[lang] + "</b>: " + compare(response1.assists, response2.assists, "number") + "\n" +
+		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
+		"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.season_mmr), Math.round(response2.season_mmr), "number") + "\n" +
+		"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.season_max_mmr), Math.round(response2.season_max_mmr), "number")  + "\n" +  
+		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
+		"<b>" + lang_mode_secure[lang] + "</b>: " + compare(response1.mode_secure, response2.mode_secure, "number") + "\n" +
+		"<b>" + lang_mode_hostage[lang] + "</b>: " + compare(response1.mode_hostage, response2.mode_hostage, "number") + "\n" +
+		"<b>" + lang_mode_bomb[lang] + "</b>: " + compare(response1.mode_bomb, response2.mode_bomb, "number");
+}
+
+bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+			rows[0].default_platform = null;
+		}
+
+		var lang = rows[0].lang;
+		if ((match[1] == undefined) || (match[2] == undefined)){
+			bot.sendMessage(message.chat.id, lang_invalid_user_2[lang], options);
+			return;
+		}
+
+		var user1platform = "uplay";
+		var user2platform = "uplay";
+		if (rows[0].default_platform != null){
+			user1platform = rows[0].default_platform;
+			user2platform = user1platform;
+		}
+
+		var username1 = match[1].trim();
+		var username2 = match[2].trim();
+
+		var user1info = connection_sync.query("SELECT default_platform FROM user WHERE default_username = '" + username1 + "'");
+		if (Object.keys(user1info).length > 0){
+			if (user1info[0].default_platform != null)
+				user1platform = user1info[0].default_platform;
+		}
+		var user2info = connection_sync.query("SELECT default_platform FROM user WHERE default_username = '" + username2 + "'");
+		if (Object.keys(user2info).length > 0){
+			if (user2info[0].default_platform != null)
+				user2platform = user2info[0].default_platform;
+		}
+
+		console.log(getNow("it") + " Request user check for " + username1 + " and " + username2 + " on " + user1platform + " and " + user2platform);
+		
+		var player1cached = 0;
+		var player2cached = 0;
+		
+		connection.query('SELECT username, season_mmr FROM player_history WHERE platform = "' + user1platform + '" AND username = "' + username1 + '" ORDER BY id DESC', function (err, rows) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0){
+				var response1 = {};
+				response1.username = rows[0].username;
+				response1.season_mmr = rows[0].season_mmr;
+
+				player1cached = 1;
+			}
+			
+			connection.query('SELECT username, season_mmr FROM player_history WHERE platform = "' + user2platform + '" AND username = "' + username2 + '" ORDER BY id DESC', function (err, rows) {
+				if (err) throw err;
+				if (Object.keys(rows).length > 0){
+					var response2 = {};
+					response2.username = rows[0].username;
+					response2.season_mmr = rows[0].season_mmr;
+
+					player2cached = 1;
+				}
+				
+				if ((player1cached == 1) && (player2cached == 1)) {
+					bot.sendMessage(message.chat.id, getCheckStats(response1, response2, lang), options);
+					console.log(getNow("it") + " User checked from cache");
+					return;
+				}
+		
+				console.log(getNow("it") + " User checked from api request");
+		
+				bot.sendChatAction(message.chat.id, "typing").then(function () {
+					r6.stats(username1, user1platform, -1, 0).then(response1 => {
+
+						if (response1.platform == undefined){
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", options);
+							console.log(getNow("it") + " User data 1 (check) undefined for " + username1 + " on " + user1platform);
+							return;
+						}
+
+						bot.sendChatAction(message.chat.id, "typing").then(function () {
+							r6.stats(username2, user2platform, -1, 0).then(response2 => {
+
+								if (response2.platform == undefined){
+									bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", options);
+									console.log(getNow("it") + " User data 2 (check) undefined for " + username2 + " on " + user2platform);
+									return;
+								}
+
+								bot.sendMessage(message.chat.id, getCheckStats(response1, response2, lang), options);
+							}).catch(error => {
+								bot.sendMessage(message.chat.id, error, options);
+								console.log(getNow("it") + " User data not found for " + username2 + " on " + platform);
+							});
+						});
+					}).catch(error => {
+						bot.sendMessage(message.chat.id, error, options);
+						console.log(getNow("it") + " User data not found for " + username1 + " on " + platform);
+					});
+				});
+			});
+		});
+	});
+});
+
+function getCheckStats(response1, response2, lang) {
+	var season_mmr1 = Math.round(response1.season_mmr);
+	var season_mmr2 = Math.round(response2.season_mmr);
+	var diff = Math.max(season_mmr1, season_mmr2)-Math.min(season_mmr1, season_mmr2);
+	var res = lang_check_yes[lang];
+	if (diff > 1000)
+		res = lang_check_no[lang];
+
+	var lang_string = lang_check_res[lang];
+	lang_string = lang_string.replace("%a", response1.username);
+	lang_string = lang_string.replace("%b", response2.username);
+	lang_string = lang_string.replace("%c", res);
+	lang_string = lang_string.replace("%d", diff);
+	
+	return lang_string;
+}
 
 bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
@@ -4054,7 +4195,7 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		var res = parse(message.reply_to_message, 1);
 
 		if (res == "platform") {
-			bot.sendMessage(message.chat.id, "Specifica la piattaforma ed invia nuovamente il reclutamento!", options);
+			bot.sendMessage(message.chat.id, message.from.username + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
@@ -4231,7 +4372,7 @@ function capture_parse(message) {
 
 		var res = parse(message);
 		if (res == "platform") {
-			bot.sendMessage(message.chat.id, "Specifica la piattaforma ed invia nuovamente il reclutamento!", options);
+			bot.sendMessage(message.chat.id, message.from.username + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
