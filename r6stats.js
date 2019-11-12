@@ -3318,7 +3318,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 					text += "\n";
 				}
 				if (message.chat.id < 0)
-					bot.sendMessage(message.chat.id, lang_private[lang], options);
+					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
 				bot.sendMessage(message.from.id, text + lang_operator_extra[lang], options);
 			}).catch(error => {
 				console.log(error);
@@ -3591,7 +3591,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				text += "\n<b>" + lang_loadout_utility[lang] + "</b>: " + mapLoadout(utility, lang);
 
 				if (message.chat.id < 0)
-					bot.sendMessage(message.chat.id, lang_private[lang]);
+					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
 				bot.sendMessage(message.from.id, text, options);
 			}
 		});
@@ -3619,7 +3619,7 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 		};
 
 		if (message.chat.id < 0)
-			bot.sendMessage(message.chat.id, lang_private[lang]);
+			bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
 		bot.sendMessage(message.from.id, lang_help[lang], options);
 	});
 });
@@ -4095,7 +4095,7 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 				list += "\n" + rows[i].default_username;
 
 			if (message.chat.id < 0)
-				bot.sendMessage(message.chat.id, lang_private[lang], options);
+				bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
 			bot.sendMessage(message.from.id, list, options);
 		});
 	});
