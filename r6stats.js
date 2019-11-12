@@ -1404,21 +1404,6 @@ bot.on('message', function (message) {
 	contest_group(message);
 });
 
-function contest_group(message) {
-	if (message.chat.id == -1001246584843) {
-		// if (message.new_chat_members != undefined) {
-			connection.query("SELECT 1 FROM contest_group WHERE account_id = " + message.from.id + " AND chat_id = '" + message.chat.id + "'", function (err, rows) {
-				if (err) throw err;
-				if (Object.keys(rows).length == 0){
-					connection.query("INSERT INTO contest_group (account_id, chat_id) VALUES (" + message.from.id + ", '" + message.chat.id + "')", function (err, rows) {
-						if (err) throw err;
-					});
-				}
-			});
-		// }
-	}
-}
-
 bot.on('edited_message', function (message) {
 	capture_parse(message);
 });
@@ -2156,28 +2141,6 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 	});
 });
 
-function multipleStats(message, players, platform, options, lang) {
-	var text = "";
-	var textDone = 0;
-
-	bot.sendChatAction(message.chat.id, "typing").then(function () {
-		for (i = 0; i < players.length; i++){
-			r6.stats(players[i], platform, -1, 0).then(response => {
-				if (response.level != undefined)
-					text += getDataLine(response, lang) + "\n";
-
-				textDone++;
-				if (textDone >= players.length)
-					bot.sendMessage(message.chat.id, text, options);
-			}).catch(error => {
-				textDone++;
-				if (textDone >= players.length)
-					bot.sendMessage(message.chat.id, text, options);
-			});
-		}
-	});
-}
-
 bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2814,48 +2777,6 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 	});
 });
 
-function getCompareStats(response1, response2, lang) {
-	return "<i>" + response1.username + " vs " + response2.username + "</i>\n\n" +
-		"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response1.platform) + " - " + decodePlatform(response2.platform) + "\n" +
-		"<b>" + lang_level[lang] + "</b>: " + compare(response1.level, response2.level) + "\n" +
-		"<b>" + lang_xp[lang] + "</b>: " + compare(response1.xp, response2.xp, "number") + "\n" +
-		"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
-		"<b>" + lang_ranked_plays[lang] + "</b>: " + compare(response1.ranked_plays, response2.ranked_plays, "number") + "\n" +
-		"<b>" + lang_ranked_win[lang] + "</b>: " + compare(response1.ranked_wins, response2.ranked_wins, "number") + "\n" +
-		"<b>" + lang_ranked_losses[lang] + "</b>: " + compare(response1.ranked_losses, response2.ranked_losses, "number", lang, 1) + "\n" +
-		"<b>" + lang_ranked_wl[lang] + "</b>: " + compare(response1.ranked_wl, response2.ranked_wl, "number", lang) + "\n" +
-		"<b>" + lang_ranked_kills[lang] + "</b>: " + compare(response1.ranked_kills, response2.ranked_kills, "number") + "\n" +
-		"<b>" + lang_ranked_deaths[lang] + "</b>: " + compare(response1.ranked_deaths, response2.ranked_deaths, "number", lang, 1) + "\n" +
-		"<b>" + lang_ranked_kd[lang] + "</b>: " + compare(response1.ranked_kd, response2.ranked_kd, "number") + "\n" +
-		"<b>" + lang_ranked_playtime[lang] + "</b>: " + compare(response1.ranked_playtime, response2.ranked_playtime, "time", lang) + "\n" +
-		"\n<b>" + lang_title_casual[lang] + "</b>:\n" +
-		"<b>" + lang_casual_plays[lang] + "</b>: " + compare(response1.casual_plays, response2.casual_plays, "number") + "\n" +
-		"<b>" + lang_casual_win[lang] + "</b>: " + compare(response1.casual_wins, response2.casual_wins, "number") + "\n" +
-		"<b>" + lang_casual_losses[lang] + "</b>: " + compare(response1.casual_losses, response2.casual_losses, "number", lang, 1) + "\n" +
-		"<b>" + lang_casual_wl[lang] + "</b>: " + compare(response1.casual_wl, response2.casual_wl, "number", lang) + "\n" +
-		"<b>" + lang_casual_kills[lang] + "</b>: " + compare(response1.casual_kills, response2.casual_kills, "number") + "\n" +
-		"<b>" + lang_casual_deaths[lang] + "</b>: " + compare(response1.casual_deaths, response2.casual_deaths, "number", lang, 1) + "\n" +
-		"<b>" + lang_casual_kd[lang] + "</b>: " + compare(response1.casual_kd, response2.casual_kd, "number") + "\n" +
-		"<b>" + lang_casual_playtime[lang] + "</b>: " + compare(response1.casual_playtime, response2.casual_playtime, "time", lang) + "\n" +
-		"\n<b>" + lang_title_general[lang] + "</b>:\n" +
-		"<b>" + lang_revives[lang] + "</b>: " + compare(response1.revives, response2.revives, "number") + "\n" +
-		"<b>" + lang_suicides[lang] + "</b>: " + compare(response1.suicides, response2.suicides, "number", lang, 1) + "\n" +
-		"<b>" + lang_reinforcements[lang] + "</b>: " + compare(response1.reinforcements_deployed, response2.reinforcements_deployed, "number") + "\n" +
-		"<b>" + lang_barricades[lang] + "</b>: " + compare(response1.barricades_built, response2.barricades_built, "number") + "\n" +
-		"<b>" + lang_bullets_hit[lang] + "</b>: " + compare(response1.bullets_hit, response2.bullets_hit, "number") + "\n" +
-		"<b>" + lang_headshots[lang] + "</b>: " + compare(response1.headshots, response2.headshots, "number") + "\n" +
-		"<b>" + lang_melee_kills[lang] + "</b>: " + compare(response1.melee_kills, response2.melee_kills, "number") + "\n" +
-		"<b>" + lang_penetration_kills[lang] + "</b>: " + compare(response1.penetration_kills, response2.penetration_kills, "number") + "\n" +
-		"<b>" + lang_assists[lang] + "</b>: " + compare(response1.assists, response2.assists, "number") + "\n" +
-		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.season_mmr), Math.round(response2.season_mmr), "number") + "\n" +
-		"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.season_max_mmr), Math.round(response2.season_max_mmr), "number")  + "\n" +  
-		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
-		"<b>" + lang_mode_secure[lang] + "</b>: " + compare(response1.mode_secure, response2.mode_secure, "number") + "\n" +
-		"<b>" + lang_mode_hostage[lang] + "</b>: " + compare(response1.mode_hostage, response2.mode_hostage, "number") + "\n" +
-		"<b>" + lang_mode_bomb[lang] + "</b>: " + compare(response1.mode_bomb, response2.mode_bomb, "number");
-}
-
 bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2964,23 +2885,6 @@ bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (messa
 		});
 	});
 });
-
-function getCheckStats(response1, response2, lang) {
-	var season_mmr1 = Math.round(response1.season_mmr);
-	var season_mmr2 = Math.round(response2.season_mmr);
-	var diff = Math.max(season_mmr1, season_mmr2)-Math.min(season_mmr1, season_mmr2);
-	var res = lang_check_yes[lang];
-	if (diff > 1000)
-		res = lang_check_no[lang];
-
-	var lang_string = lang_check_res[lang];
-	lang_string = lang_string.replace("%a", response1.username);
-	lang_string = lang_string.replace("%b", response2.username);
-	lang_string = lang_string.replace("%c", res);
-	lang_string = lang_string.replace("%d", diff);
-	
-	return lang_string;
-}
 
 bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
@@ -4365,6 +4269,102 @@ bot.onText(/^\/dreport(?:@\w+)?/i, function (message, match) {
 });
 
 // Functions
+
+function getCheckStats(response1, response2, lang) {
+	var season_mmr1 = Math.round(response1.season_mmr);
+	var season_mmr2 = Math.round(response2.season_mmr);
+	var diff = Math.max(season_mmr1, season_mmr2)-Math.min(season_mmr1, season_mmr2);
+	var res = lang_check_yes[lang];
+	if (diff > 1000)
+		res = lang_check_no[lang];
+
+	var lang_string = lang_check_res[lang];
+	lang_string = lang_string.replace("%a", response1.username);
+	lang_string = lang_string.replace("%b", response2.username);
+	lang_string = lang_string.replace("%c", res);
+	lang_string = lang_string.replace("%d", diff);
+	
+	return lang_string;
+}
+
+function getCompareStats(response1, response2, lang) {
+	return "<i>" + response1.username + " vs " + response2.username + "</i>\n\n" +
+		"<b>" + lang_platform[lang] + "</b>: " + decodePlatform(response1.platform) + " - " + decodePlatform(response2.platform) + "\n" +
+		"<b>" + lang_level[lang] + "</b>: " + compare(response1.level, response2.level) + "\n" +
+		"<b>" + lang_xp[lang] + "</b>: " + compare(response1.xp, response2.xp, "number") + "\n" +
+		"\n<b>" + lang_title_ranked[lang] + "</b>:\n" +
+		"<b>" + lang_ranked_plays[lang] + "</b>: " + compare(response1.ranked_plays, response2.ranked_plays, "number") + "\n" +
+		"<b>" + lang_ranked_win[lang] + "</b>: " + compare(response1.ranked_wins, response2.ranked_wins, "number") + "\n" +
+		"<b>" + lang_ranked_losses[lang] + "</b>: " + compare(response1.ranked_losses, response2.ranked_losses, "number", lang, 1) + "\n" +
+		"<b>" + lang_ranked_wl[lang] + "</b>: " + compare(response1.ranked_wl, response2.ranked_wl, "number", lang) + "\n" +
+		"<b>" + lang_ranked_kills[lang] + "</b>: " + compare(response1.ranked_kills, response2.ranked_kills, "number") + "\n" +
+		"<b>" + lang_ranked_deaths[lang] + "</b>: " + compare(response1.ranked_deaths, response2.ranked_deaths, "number", lang, 1) + "\n" +
+		"<b>" + lang_ranked_kd[lang] + "</b>: " + compare(response1.ranked_kd, response2.ranked_kd, "number") + "\n" +
+		"<b>" + lang_ranked_playtime[lang] + "</b>: " + compare(response1.ranked_playtime, response2.ranked_playtime, "time", lang) + "\n" +
+		"\n<b>" + lang_title_casual[lang] + "</b>:\n" +
+		"<b>" + lang_casual_plays[lang] + "</b>: " + compare(response1.casual_plays, response2.casual_plays, "number") + "\n" +
+		"<b>" + lang_casual_win[lang] + "</b>: " + compare(response1.casual_wins, response2.casual_wins, "number") + "\n" +
+		"<b>" + lang_casual_losses[lang] + "</b>: " + compare(response1.casual_losses, response2.casual_losses, "number", lang, 1) + "\n" +
+		"<b>" + lang_casual_wl[lang] + "</b>: " + compare(response1.casual_wl, response2.casual_wl, "number", lang) + "\n" +
+		"<b>" + lang_casual_kills[lang] + "</b>: " + compare(response1.casual_kills, response2.casual_kills, "number") + "\n" +
+		"<b>" + lang_casual_deaths[lang] + "</b>: " + compare(response1.casual_deaths, response2.casual_deaths, "number", lang, 1) + "\n" +
+		"<b>" + lang_casual_kd[lang] + "</b>: " + compare(response1.casual_kd, response2.casual_kd, "number") + "\n" +
+		"<b>" + lang_casual_playtime[lang] + "</b>: " + compare(response1.casual_playtime, response2.casual_playtime, "time", lang) + "\n" +
+		"\n<b>" + lang_title_general[lang] + "</b>:\n" +
+		"<b>" + lang_revives[lang] + "</b>: " + compare(response1.revives, response2.revives, "number") + "\n" +
+		"<b>" + lang_suicides[lang] + "</b>: " + compare(response1.suicides, response2.suicides, "number", lang, 1) + "\n" +
+		"<b>" + lang_reinforcements[lang] + "</b>: " + compare(response1.reinforcements_deployed, response2.reinforcements_deployed, "number") + "\n" +
+		"<b>" + lang_barricades[lang] + "</b>: " + compare(response1.barricades_built, response2.barricades_built, "number") + "\n" +
+		"<b>" + lang_bullets_hit[lang] + "</b>: " + compare(response1.bullets_hit, response2.bullets_hit, "number") + "\n" +
+		"<b>" + lang_headshots[lang] + "</b>: " + compare(response1.headshots, response2.headshots, "number") + "\n" +
+		"<b>" + lang_melee_kills[lang] + "</b>: " + compare(response1.melee_kills, response2.melee_kills, "number") + "\n" +
+		"<b>" + lang_penetration_kills[lang] + "</b>: " + compare(response1.penetration_kills, response2.penetration_kills, "number") + "\n" +
+		"<b>" + lang_assists[lang] + "</b>: " + compare(response1.assists, response2.assists, "number") + "\n" +
+		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
+		"<b>" + lang_season_mmr[lang] + "</b>: " + compare(Math.round(response1.season_mmr), Math.round(response2.season_mmr), "number") + "\n" +
+		"<b>" + lang_season_max_mmr[lang] + "</b>: " + compare(Math.round(response1.season_max_mmr), Math.round(response2.season_max_mmr), "number")  + "\n" +  
+		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
+		"<b>" + lang_mode_secure[lang] + "</b>: " + compare(response1.mode_secure, response2.mode_secure, "number") + "\n" +
+		"<b>" + lang_mode_hostage[lang] + "</b>: " + compare(response1.mode_hostage, response2.mode_hostage, "number") + "\n" +
+		"<b>" + lang_mode_bomb[lang] + "</b>: " + compare(response1.mode_bomb, response2.mode_bomb, "number");
+}
+
+function multipleStats(message, players, platform, options, lang) {
+	var text = "";
+	var textDone = 0;
+
+	bot.sendChatAction(message.chat.id, "typing").then(function () {
+		for (i = 0; i < players.length; i++){
+			r6.stats(players[i], platform, -1, 0).then(response => {
+				if (response.level != undefined)
+					text += getDataLine(response, lang) + "\n";
+
+				textDone++;
+				if (textDone >= players.length)
+					bot.sendMessage(message.chat.id, text, options);
+			}).catch(error => {
+				textDone++;
+				if (textDone >= players.length)
+					bot.sendMessage(message.chat.id, text, options);
+			});
+		}
+	});
+}
+
+function contest_group(message) {
+	if (message.chat.id == -1001246584843) {
+		// if (message.new_chat_members != undefined) {
+			connection.query("SELECT 1 FROM contest_group WHERE account_id = " + message.from.id + " AND chat_id = '" + message.chat.id + "'", function (err, rows) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0){
+					connection.query("INSERT INTO contest_group (account_id, chat_id) VALUES (" + message.from.id + ", '" + message.chat.id + "')", function (err, rows) {
+						if (err) throw err;
+					});
+				}
+			});
+		// }
+	}
+}
 
 function capture_parse(message) {
 	if (message.chat.id == -1001246584843) {
