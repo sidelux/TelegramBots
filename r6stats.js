@@ -591,6 +591,11 @@ var lang_check_res = [];
 var lang_check_yes = [];
 var lang_check_no = [];
 
+var lang_nickhistory_nodata = [];
+var lang_nickhistory_nochange = [];
+var lang_nickhistory_title = [];
+var lang_nickhistory_actual = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate in %g gruppi diversi";
@@ -648,6 +653,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/seasons' - Permette di visualizzare la lista completa del rango massimo ottenuto in tutte le stagioni del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/rank' - Permette di visualizzare il rango attuale del giocatore specificato utilizzando /setusername e /setplatform.\n" +
 	"> '/history' - Permette di visualizzare i risultati delle ultime partite del giocatore specificato utilizzando /setusername e /setplatform.\n" +
+	"> '/userhistory' - Permette di visualizzare la cronologia dei cambiamenti al proprio nickname da quando si utilizza il bot.\n" +
 	"> '/compare <username1>,<username2>' - Permette di confrontare le statistiche di due giocatori.\n" +
 	"> '/canplay <username1>,<username2>' - Permette di verificare se due giocatori possono giocare insieme in classificata.\n" +
 	"> '/graph <parametro>' - Genera un grafico per il parametro specificato.\n" +
@@ -679,6 +685,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/seasons' - Allow to print seasons max ranks details specified as parameter using /setusername and /setplatform.\n" +
 	"> '/rank' - Allow to print rank specified as parameter using /setusername and /setplatform.\n" +
 	"> '/history' - Allow to print match history specified as parameter using /setusername and /setplatform.\n" +
+	"> '/userhistory' - Allow to show username changes history from bot starts.\n" +
 	"> '/compare <username1>,<username2>' - Allow to compare two players stats.\n" +
 	"> '/canplay <username1>,<username2>' - Allow to check if two players can play together in ranked.\n" +
 	"> '/graph <parameter>' - Generate a graph using parameter specified.\n" +
@@ -704,6 +711,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata\n" +
 	"20/09/19 - Aggiunto il comando /scan per analizzare gli screenshot delle classifiche in game (solo pc)\n" +
 	"19/09/19 - Aggiunta la possibilità di utilizzare il comando /seasons ordinando per un criterio specifico, aggiunto il comando /history e la dicitura relativa al posizionamento del grado Campione\n" +
@@ -722,7 +730,8 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
-	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked.\n" +
+	"11/13/19 - Added /userhistory command to show username changes history saved in bot\n" +
+	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked\n" +
 	"09/20/19 - Added /scan command to analyze leaderboard screenshot taken in-game (only pc)\n" +
 	"09/19/19 - Added possibility to use /seasons command with custom order method, added /history command and position relative to Champion rank\n" +
 	"09/18/19 - Updated with Ember Rise complete support\n" +
@@ -1313,6 +1322,15 @@ lang_check_yes["it"] = "SI!";
 lang_check_yes["en"] = "YES!";
 lang_check_no["it"] = "NO :(";
 lang_check_no["en"] = "NO :(";
+				
+lang_nickhistory_nodata["it"] = "Non ci sono abbastanza dati salvati nel database per ottenere questa informazione";
+lang_nickhistory_nodata["en"] = "There are no enough data saved to database to get this information";
+lang_nickhistory_nochange["it"] = "Sembra che tu non abbia mai cambiato il tuo username da quando usi il bot...";
+lang_nickhistory_nochange["en"] = "Seems that you have never changed your username from bot starts...";
+lang_nickhistory_title["it"] = "Storia dei tuoi username";
+lang_nickhistory_title["en"] = "Your usernames history";
+lang_nickhistory_actual["it"] = "Attuale";
+lang_nickhistory_actual["en"] = "Actual";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2478,8 +2496,8 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 					var text = getData(response, lang);
 					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang);
-
-					bot.sendMessage(message.chat.id, text + insert_date + extra_info, options);
+					
+					bot.sendMessage(message.chat.id, text + insert_date + extra_info + nick_history, options);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				}
@@ -2597,6 +2615,76 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 						console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 					});
 				});
+			});
+		});
+	});
+});
+
+bot.onText(/^\/userhistory(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank", options);
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
+			return;
+		}
+
+		var username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
+			return;
+		}
+
+		var platform = rows[0].default_platform;
+
+		console.log(getNow("it") + " Request user history data for " + username + " on " + platform);
+		
+		connection.query('SELECT ubisoft_id FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC', function (err, rows) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, lang_nickhistory_nodata[lang], options);
+				return;
+			}
+			
+			var ubisoft_id = rows[0].ubisoft_id;
+			
+			connection.query('SELECT MIN(insert_date) As change_date, username FROM player_history WHERE ubisoft_id = "' + ubisoft_id + '" GROUP BY username ORDER BY id DESC', function (err, rows) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 1) {
+					bot.sendMessage(message.chat.id, lang_nickhistory_nochange[lang], options);
+					return;
+				}
+
+				var text = lang_nickhistory_title[lang] + ":\n";
+				var change_date = "";
+				for (i = 0; i < Object.keys(rows).length; i++) {
+					change_date = rows[i].change_date;
+					if (i == 0)
+						change_date = lang_nickhistory_actual[lang];
+					else {
+						var d = new Date(change_date);
+						if (lang == "it")
+							change_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+						else
+							change_date = addZero(d.getMonth() + 1) + "/" + addZero(d.getDate()) + "/" + d.getFullYear();
+					}	
+					text += change_date + " - " + rows[i].username + "\n";
+				}
+
+				bot.sendMessage(message.chat.id, text, options);
 			});
 		});
 	});
@@ -4099,7 +4187,13 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 		var res = parse(message.reply_to_message, 1);
 
 		if (res == "platform") {
-			bot.sendMessage(message.chat.id, message.from.username + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
+			var nick = "";
+			if (message.from.username == undefined)
+				nick = message.from.first_name;
+			else
+				nick = message.from.username;
+			
+			bot.sendMessage(message.chat.id, nick + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
@@ -4372,7 +4466,13 @@ function capture_parse(message) {
 
 		var res = parse(message);
 		if (res == "platform") {
-			bot.sendMessage(message.chat.id, message.from.username + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
+			var nick = "";
+			if (message.from.username == undefined)
+				nick = message.from.first_name;
+			else
+				nick = message.from.username;
+			
+			bot.sendMessage(message.chat.id, nick + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
 			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
