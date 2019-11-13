@@ -706,8 +706,8 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/setdailyreport' - Active or deactive user daily stats report.\n" +
 	"> '/botconfig' - Show guide for bot's first configuration.\n" +
 	"\nYou can also use the *inline mode* providing username and platform like /stats command!\n\nFor informations contact @fenix45.";
-lang_config["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Prima di tutto avvia il bot IN PRIVATO;\n2. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n3. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n4. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
-lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. First of all, start the bot IN PRIVATE CHAT;\n2. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n3. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n4. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
+lang_config["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Prima di tutto avvia il bot IN PRIVATO (cliccando qui >> @R6SiegeStatsBot);\n2. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n3. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n4. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
+lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. First of all, start the bot IN PRIVATE CHAT (clicking here >> @R6SiegeStatsBot);\n2. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n3. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n4. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
@@ -2497,7 +2497,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					var text = getData(response, lang);
 					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang);
 					
-					bot.sendMessage(message.chat.id, text + insert_date + extra_info + nick_history, options);
+					bot.sendMessage(message.chat.id, text + insert_date + extra_info, options);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				}
@@ -4194,7 +4194,6 @@ bot.onText(/^\/parse(?:@\w+)?/i, function (message, match) {
 				nick = message.from.username;
 			
 			bot.sendMessage(message.chat.id, nick + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
-			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
 			var iKeys = [];
@@ -4473,7 +4472,6 @@ function capture_parse(message) {
 				nick = message.from.username;
 			
 			bot.sendMessage(message.chat.id, nick + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
-			bot.deleteMessage(message.chat.id, message.message_id);
 		}
 		if (res == "ok") {
 			var iKeys = [];
@@ -4604,11 +4602,11 @@ function parse(message, force = 0){
 		return;
 	}
 
+	bot.deleteMessage(message.chat.id, message.message_id);
 	if (miss_plat == 1)
 		return "platform";
 
 	response += "\n<i>Contattare</i> " + author;
-	bot.deleteMessage(message.chat.id, message.message_id);
 
 	bot.sendMessage(-1001326797846, header + response, html);
 
