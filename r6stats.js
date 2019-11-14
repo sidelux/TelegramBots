@@ -1493,36 +1493,7 @@ bot.on("inline_query", function (query) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length > 0){
-				var response = {};
-				response.player = {};
-				response.player.stats = {};
-				response.player.stats.progression = {};
-				response.player.stats.ranked = {};
-				response.player.stats.casual = {};
-
-				response.username = rows[0].username;
-				response.level = rows[0].level;
-				response.platform = rows[0].platform;
-				response.ranked_kd = rows[0].ranked_kd;
-				response.ranked_playtime = rows[0].ranked_playtime;
-				response.casual_kd = rows[0].casual_kd;
-				response.casual_playtime = rows[0].casual_playtime;
-				response.ranked_kills = rows[0].ranked_kills;
-				response.ranked_deaths = rows[0].ranked_deaths;
-				response.casual_kills = rows[0].casual_kills;
-				response.casual_deaths = rows[0].casual_deaths;
-				response.ranked_wins = rows[0].ranked_wins;
-				response.ranked_losses = rows[0].ranked_losses;
-				response.casual_wins = rows[0].casual_wins;
-				response.casual_losses = rows[0].casual_losses;
-
-				response.season_id = rows[0].season_id;
-				response.season_rank = rows[0].season_rank;
-				response.season_mmr = rows[0].season_mmr;
-				response.season_max_mmr = rows[0].season_max_mmr;
-
-				response.operator_max_wl = rows[0].operator_max_wl;
-				response.operator_max_wl_name = rows[0].operator_max_wl_name;
+				var response = JSON.parse(JSON.stringify(rows[0]));
 
 				printInline(query.id, response, lang);
 				return;
@@ -4761,8 +4732,8 @@ function getData(response, lang){
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills, lang) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists, lang) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_mmr[lang] + "</b>: " + formatNumber(response.season_mmr, lang) + " (" + mapRank(response.season_mmr, lang, response.top_rank_position) + ")\n" +
-		"<b>" + lang_season_max_mmr[lang] + "</b>: " + formatNumber(response.season_max_mmr, lang) + " (" + mapRank(response.season_max_mmr, lang, response.top_rank_position) + ")\n" +
+		"<b>" + lang_season_mmr[lang] + "</b>: " + formatNumber(Math.round(response.season_mmr), lang) + " (" + mapRank(response.season_mmr, lang, response.top_rank_position) + ")\n" +
+		"<b>" + lang_season_max_mmr[lang] + "</b>: " + formatNumber(Math.round(response.season_max_mmr), lang) + " (" + mapRank(response.season_max_mmr, lang, response.top_rank_position) + ")\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
 		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure, lang) + " " + lang_points[lang] + "\n" +
 		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage, lang) + " " + lang_points[lang] + "\n" +
