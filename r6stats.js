@@ -4732,8 +4732,8 @@ function getData(response, lang){
 		"<b>" + lang_penetration_kills[lang] + "</b>: " + formatNumber(response.penetration_kills, lang) + "\n" +
 		"<b>" + lang_assists[lang] + "</b>: " + formatNumber(response.assists, lang) + "\n" +
 		"\n<b>" + lang_title_season[lang] + "</b>:\n" +
-		"<b>" + lang_season_mmr[lang] + "</b>: " + formatNumber(Math.round(response.season_mmr), lang) + " (" + mapRank(response.season_mmr, lang, response.top_rank_position) + ")\n" +
-		"<b>" + lang_season_max_mmr[lang] + "</b>: " + formatNumber(Math.round(response.season_max_mmr), lang) + " (" + mapRank(response.season_max_mmr, lang, response.top_rank_position) + ")\n" +
+		"<b>" + lang_season_mmr[lang] + "</b>: " + formatNumber(Math.round(response.season_mmr), lang) + " (" + mapRank(Math.round(response.season_mmr), lang, response.top_rank_position) + ")\n" +
+		"<b>" + lang_season_max_mmr[lang] + "</b>: " + formatNumber(Math.round(response.season_max_mmr), lang) + " (" + mapRank(Math.round(response.season_max_mmr), lang, response.top_rank_position) + ")\n" +
 		"\n<b>" + lang_title_mode[lang] + "</b>:\n" +
 		"<b>" + lang_mode_secure[lang] + "</b>: " + formatNumber(response.mode_secure, lang) + " " + lang_points[lang] + "\n" +
 		"<b>" + lang_mode_hostage[lang] + "</b>: " + formatNumber(response.mode_hostage, lang) + " " + lang_points[lang] + "\n" +
