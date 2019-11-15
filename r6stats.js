@@ -1555,11 +1555,11 @@ bot.onText(/^\/avatar(?:@\w+)? (.+)|^\/avatar/i, function (message, match) {
 		var line1 = "";
 		var line2 = "";
 		if (lines.length == 1) {
-			line1 = "gravity north fill white text 0,300 '" + lines[0] + "'";
-			line2 = "gravity north fill white text 0,300 ''";
+			line1 = "text 0,300 '" + lines[0] + "'";
+			line2 = "text 0,300 ''";
 		} else if (lines.length == 2) {
-			line1 = "gravity north fill white text 0,230 '" + lines[0] + "'";
-			line2 = "gravity north fill white text 0,300 '" + lines[1] + "'";
+			line1 = "text 0,230 '" + lines[0] + "'";
+			line2 = "text 0,300 '" + lines[1] + "'";
 		}
 
 		console.log(getNow("it") + " Request avatar from " + message.from.username + " with text " + inputText);
@@ -1577,35 +1577,43 @@ bot.onText(/^\/avatar(?:@\w+)? (.+)|^\/avatar/i, function (message, match) {
 					return;
 				}
 				
-				im.convert([filePath, 
-							'-resize', '500x500',
-							'-font', 'r6res/ScoutCond-Regular.otf', 
-							'-fill', 'white', 
-							'-pointsize', '80', 
-							'-gravity', 'center',
-							'-draw', line1,
-							'-draw', line2,
-							outputFilePath], function(err, stdout){
-					if (err) throw err;
-
-					im.convert(['-composite', outputFilePath, 'r6res/' + lang + '.png',
-								'-gravity', 'center',
-								'-geometry', '+0+170',
+				im.identify(['-format', '%[fx:mean]\n', filePath], function(err, data){
+  					if (err) throw err;
+					
+					var image = 'r6';
+					if (data < 0.5)
+						image = 'r6_w';
+				
+					im.convert([filePath,
+								'-resize', '500x500',
+								'-font', 'r6res/ScoutCond-Regular.otf',
+								'-pointsize', '80',
+								'-fill', 'white',
+								'-gravity', 'north',
+								'-draw', line1,
+								'-draw', line2,
 								outputFilePath], function(err, stdout){
 						if (err) throw err;
 
-						im.convert(['-composite', outputFilePath, 'r6res/r6_w.png',
-								'-gravity', 'center',
-								'-geometry', '+0-150',
-								outputFilePath], function(err, stdout){
+						im.convert(['-composite', outputFilePath, 'r6res/' + lang + '.png',
+									'-gravity', 'center',
+									'-geometry', '+0+170',
+									outputFilePath], function(err, stdout){
 							if (err) throw err;
 
-							bot.sendPhoto(message.chat.id, outputFilePath, {reply_to_message_id: message.reply_to_message.message_id}).then(function (data) {
-								fs.unlink(filePath, function (err) {
-									if (err) throw err;
-								}); 
-								fs.unlink(outputFilePath, function (err) {
-									if (err) throw err;
+							im.convert(['-composite', outputFilePath, 'r6res/' + image + '.png',
+									'-gravity', 'center',
+									'-geometry', '+0-150',
+									outputFilePath], function(err, stdout){
+								if (err) throw err;
+
+								bot.sendPhoto(message.chat.id, outputFilePath, {reply_to_message_id: message.reply_to_message.message_id}).then(function (data) {
+									fs.unlink(filePath, function (err) {
+										if (err) throw err;
+									}); 
+									fs.unlink(outputFilePath, function (err) {
+										if (err) throw err;
+									});
 								});
 							});
 						});
