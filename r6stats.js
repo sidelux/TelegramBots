@@ -1581,14 +1581,17 @@ bot.onText(/^\/avatar(?:@\w+)? (.+)|^\/avatar/i, function (message, match) {
   					if (err) throw err;
 					
 					var image = 'r6';
-					if (data < 0.5)
+					var color = 'black';
+					if (data < 0.5) {
 						image = 'r6_w';
+						color = 'white';
+					}
 				
 					im.convert([filePath,
 								'-resize', '500x500',
 								'-font', 'r6res/ScoutCond-Regular.otf',
 								'-pointsize', '80',
-								'-fill', 'white',
+								'-fill', color,
 								'-gravity', 'north',
 								'-draw', line1,
 								'-draw', line2,
