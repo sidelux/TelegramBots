@@ -596,6 +596,10 @@ var lang_nickhistory_nochange = [];
 var lang_nickhistory_title = [];
 var lang_nickhistory_actual = [];
 
+var lang_avatar_param = [];
+var lang_avatar_photo = [];
+var lang_avatar_size = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate in %g gruppi diversi";
@@ -661,6 +665,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/loadout <nome-operatore>' - Suggerisce un equipaggiamento per l'operatore specificato.\n" +
 	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
 	"> '/news <numero>' - Permette di visualizzare le ultime news ufficiali del gioco reperite da Steam.\n" +
+	"> '/avatar <testo>' - Crea un avatar personalizzato con logo e bandiera della lingua usando il comando in risposta ad un immagine quadrata (puoi anche usare \\n per andare a capo).\n" +
 	"> '/challenges' - Permette di visualizzare le sfide settimanali in corso.\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
@@ -693,6 +698,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/loadout <operator-name>' - Suggest a full loadout for specified operator.\n" +
 	"> '/status <platform>' - Allow to print official server status of the game.\n" +
 	"> '/news <number>' - Allow to print latest official news of the game wrote by Steam.\n" +
+	"> '/avatar <text>' - Generate a custom avatar with language flag and logo using command in reply to a squared image (you can use \\n to make a newline).\n" +
 	"> '/challenges' - Allow to print current weekly challenges.\n" +
 	"> '/lang <language>' - Change bot language.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
@@ -711,6 +717,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata\n" +
 	"20/09/19 - Aggiunto il comando /scan per analizzare gli screenshot delle classifiche in game (solo pc)\n" +
@@ -730,6 +737,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"11/15/19 - Added /avatar command to generate a custom avatar\n" +
 	"11/13/19 - Added /userhistory command to show username changes history saved in bot\n" +
 	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked\n" +
 	"09/20/19 - Added /scan command to analyze leaderboard screenshot taken in-game (only pc)\n" +
@@ -1273,7 +1281,6 @@ lang_inline_invite_title["it"] = "Pubblica invito";
 lang_inline_invite_title["en"] = "Publish invite";
 lang_inline_invite_desc["it"] = "Pubblica l'invito al gruppo di R6";
 lang_inline_invite_desc["en"] = "Publish invite for R6 group";
-//lang_inline_invite_text["it"] = "Entra nel gruppo *Rainbow Six Siege Italy* e partecipa al contest per vincere una copia di Rainbow Six Siege per PC!\nIl contest terminerà a breve, affrettati!";
 lang_inline_invite_text["it"] = "🇮🇹 Entra nel gruppo *Rainbow Six Siege Italy*! 🇮🇹\n\nConfronta le tue statistiche con altri giocatori provenienti da tutte le piattaforme 🎮, forma team 👥, discuti aggiornamenti 💬, partecipa a contest 💰 e tanto altro!\n\n🔥 Ti aspettiamo 🔥";
 lang_inline_invite_text["en"] = "English version not available";
 
@@ -1298,8 +1305,6 @@ lang_scan_error["it"] = "Nessun giocatore trovato nell'immagine scansionata";
 lang_scan_error["en"] = "No players found in scanned image";
 lang_scan_limit["it"] = "E' possibile ottenere informazioni solamente solo su 10 giocatori alla volta";
 lang_scan_limit["en"] = "Is possibile to get infos only for 10 players at time";
-lang_scan_reply["it"] = "Il comando deve essere utilizzato in risposta";
-lang_scan_reply["en"] = "This command should be used in reply";
 lang_scan_photo["it"] = "Il comando deve essere utilizzato in risposta su una foto (non inviata come documento)";
 lang_scan_photo["en"] = "This command should be used in reply on a photo (not sent as document)";
 lang_scan_video["it"] = "Il comando deve essere utilizzato in risposta su un video MP4";
@@ -1331,6 +1336,13 @@ lang_nickhistory_title["it"] = "Storia dei tuoi username";
 lang_nickhistory_title["en"] = "Your usernames history";
 lang_nickhistory_actual["it"] = "Attuale";
 lang_nickhistory_actual["en"] = "Actual";
+
+lang_avatar_param["it"] = "Specifica il testo che vuoi inserire nell'immagine";
+lang_avatar_param["en"] = "Specify text you want to insert in the image";
+lang_avatar_photo["it"] = "Il comando deve essere utilizzato in risposta su una foto (non inviata come documento)";
+lang_avatar_photo["en"] = "This command should be used in reply on a photo (not sent as document)";
+lang_avatar_size["it"] = "L'immagine deve essere quadrata";
+lang_avatar_size["en"] = "Image must be squared";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1507,6 +1519,99 @@ bot.on("inline_query", function (query) {
 				message_text: lang_user_not_ready[lang],
 				parse_mode: "HTML"
 			}]);
+		});
+	});
+});
+
+bot.onText(/^\/avatar(?:@\w+)? (.+)|^\/avatar/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /avatar", options);
+			return;
+		}
+
+		var lang = rows[0].lang;
+		
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, lang_avatar_param[lang], options);
+			return;
+		}
+
+		if ((message.reply_to_message == undefined) || (message.reply_to_message.photo == undefined)) {
+			bot.sendMessage(message.chat.id, lang_avatar_photo[lang], options);
+			return;
+		}
+		
+		var inputText = match[1];
+		var lines = inputText.split("\\n");
+		
+		var line1 = "";
+		var line2 = "";
+		if (lines.length == 1) {
+			line1 = "gravity north fill white text 0,300 '" + lines[0] + "'";
+			line2 = "gravity north fill white text 0,300 ''";
+		} else if (lines.length == 2) {
+			line1 = "gravity north fill white text 0,230 '" + lines[0] + "'";
+			line2 = "gravity north fill white text 0,300 '" + lines[1] + "'";
+		}
+
+		console.log(getNow("it") + " Request avatar from " + message.from.username + " with text " + inputText);
+
+		var image = message.reply_to_message.photo;
+		bot.downloadFile(image[image.length-1].file_id, "r6tmp/").then(function (data) {
+			var filePath = data;
+			var outputFilePath = data.replace(".", "_output.");	
+
+			im.identify(filePath, function(err, data){
+  				if (err) throw err;
+				
+				if (data.width/data.height != 1) {
+					bot.sendMessage(message.chat.id, lang_avatar_size[lang], options);
+					return;
+				}
+				
+				im.convert([filePath, 
+							'-resize', '500x500',
+							'-font', 'r6res/ScoutCond-Regular.otf', 
+							'-fill', 'white', 
+							'-pointsize', '80', 
+							'-gravity', 'center',
+							'-draw', line1,
+							'-draw', line2,
+							outputFilePath], function(err, stdout){
+					if (err) throw err;
+
+					im.convert(['-composite', outputFilePath, 'r6res/' + lang + '.png',
+								'-gravity', 'center',
+								'-geometry', '+0+170',
+								outputFilePath], function(err, stdout){
+						if (err) throw err;
+
+						im.convert(['-composite', outputFilePath, 'r6res/r6_w.png',
+								'-gravity', 'center',
+								'-geometry', '+0-150',
+								outputFilePath], function(err, stdout){
+							if (err) throw err;
+
+							bot.sendPhoto(message.chat.id, outputFilePath, {reply_to_message_id: message.reply_to_message.message_id}).then(function (data) {
+								fs.unlink(filePath, function (err) {
+									if (err) throw err;
+								}); 
+								fs.unlink(outputFilePath, function (err) {
+									if (err) throw err;
+								});
+							});
+						});
+					});
+				});
+			});
 		});
 	});
 });
@@ -2146,12 +2251,7 @@ bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 
 		var lang = rows[0].lang;
 
-		if (message.reply_to_message == undefined) {
-			bot.sendMessage(message.chat.id, lang_scan_reply[lang], options);
-			return;
-		}
-
-		if (message.reply_to_message.photo == undefined) {
+		if ((message.reply_to_message == undefined) || (message.reply_to_message.photo == undefined)) {
 			bot.sendMessage(message.chat.id, lang_scan_photo[lang], options);
 			return;
 		}
