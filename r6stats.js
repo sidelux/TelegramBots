@@ -1577,9 +1577,10 @@ bot.onText(/^\/avatar(?:@\w+)? (.+)|^\/avatar/i, function (message, match) {
 					return;
 				}
 				
-				im.identify(['-format', '%[fx:mean]\n', filePath], function(err, data){
+				im.identify(['-format', '%[fx:mean]', filePath], function(err, data){
   					if (err) throw err;
 					
+					console.log(data);
 					var image = 'r6';
 					var color = 'black';
 					if (data < 0.5) {
