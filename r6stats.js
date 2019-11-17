@@ -45,8 +45,8 @@ class RainbowSixApi {
 			if (extra == 1){
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
-					if(!error && response.statusCode == '200') {
-						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));
+					if (!error && response.statusCode == '200') {
+						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));	// nokk fix (ubi pls)
 
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
@@ -61,8 +61,8 @@ class RainbowSixApi {
 			}else if (extra == 2){
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
-					if(!error && response.statusCode == '200') {
-						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));
+					if (!error && response.statusCode == '200') {
+						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));	// nokk fix (ubi pls)
 						var objOps = objResp.operators;
 						return resolve(objOps);
 					}
@@ -72,7 +72,7 @@ class RainbowSixApi {
 
 				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&season=" + season + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
-					if(!error && response.statusCode == '200') {
+					if (!error && response.statusCode == '200') {
 						var objResp = JSON.parse(body);
 
 						var keys = Object.keys(objResp.players);
@@ -179,7 +179,7 @@ class RainbowSixApi {
 								if (!isFinite(objStats.casual_kd)) objStats.casual_kd = objStats.casual_kills;
 
 								return resolve(objStats);
-							}else
+							} else
 								console.log(error);
 						});
 					}else
@@ -271,6 +271,7 @@ var lang_invalid_platform_2 = [];
 var lang_default_platform_changed = [];
 var lang_default = [];
 var lang_user_not_found = [];
+var lang_user_no_data = [];
 var lang_graph_no_data = [];
 var lang_graph_no_param = [];
 var lang_no_defaultuser = [];
@@ -630,6 +631,8 @@ lang_default["it"] = "Impostazioni attuali: ";
 lang_default["en"] = "Actual settings: ";
 lang_user_not_found["it"] = "Username non trovato per la piattaforma selezionata.";
 lang_user_not_found["en"] = "Username not found for selected platform.";
+lang_user_no_data["it"] = "L'utente inserito non possiede abbastanza dati.";
+lang_user_no_data["en"] = "Specified username has not enough data.";
 lang_graph_no_data["it"] = "Non ci sono abbastanza dati salvati per creare un grafico, usa /stats per salvarli.";
 lang_graph_no_data["en"] = "Not enough data saved found to create a graph, use /stats to save more.";
 lang_graph_no_param["it"] = "Parametro non valido. Parametri disponibili: ";
@@ -2603,7 +2606,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
+							bot.sendMessage(message.chat.id, lang_user_no_data[lang] + " (" + username + ", " + platform + ")", options);
 							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 							return;
 						}
@@ -2633,13 +2636,13 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 							console.log(getNow("it") + " User data served for " + username + " on " + platform);
 						}).catch(error => {
-							console.log(error);
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
+							console.log(username, platform, error);
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
 							console.log(getNow("it") + " User data operators not found for " + username + " on " + platform);
 						});
 					}).catch(error => {
-						console.log(error);
-						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
+						console.log(username, platform, error);
+						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
 						console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 					});
 				});
@@ -2699,15 +2702,15 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
+							bot.sendMessage(message.chat.id, lang_user_no_data[lang] + " (" + username + ", " + platform + ")", options);
 							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 							return;
 						}
 
 						bot.sendMessage(message.chat.id, getRankData(responseStats, lang), options);
 					}).catch(error => {
-						console.log(error);
-						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
+						console.log(username, platform, error);
+						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
 						console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 					});
 				});
@@ -3166,7 +3169,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				var responseStats = response;
 
 				if (responseStats.platform == undefined){
-					bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + platform + ")", options);
+					bot.sendMessage(message.chat.id, lang_user_no_data[lang] + " (" + username + ", " + platform + ")", options);
 					console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 					return;
 				}
@@ -3409,8 +3412,8 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
 				bot.sendMessage(message.from.id, text + lang_operator_extra[lang], options);
 			}).catch(error => {
-				console.log(error);
-				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + default_platform + ")", options);
+				console.log(default_username, default_platform, error);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
 				console.log(getNow("it") + " Operators data not found for " + default_username + " on " + default_platform);
 			});
 		});
@@ -3499,7 +3502,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 					var found = 0;
 					var validSpecials = 0;
 					for (i = 0; i < operators.length; i++){
-						if (operators[i] == "nakk")
+						if (operators[i] == "nakk")	// nokk fix (ubi pls)
 							operators[i] = "nokk";
 						if (operators[i] == operator_name.toLowerCase()){
 							name = jsUcfirst(operators[i]);
