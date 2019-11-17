@@ -2450,6 +2450,15 @@ bot.onText(/^\/checklang/, function (message, match) {
 	bot.sendMessage(message.from.id, message.from.language_code + " - " + lang, options);
 });
 
+function checkPlatformArray(array, value) {
+	var found = "";
+  	array.forEach(function(item) {
+		if (value.endsWith(item) != false)
+			found = item;
+	});
+	return found;
+}
+
 bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?|^\/!stats(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2485,7 +2494,12 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 		if (match[3] != undefined){
 			username = match[3];
-			if (rows[0].default_platform != null)
+			
+			var checkPlatform = checkPlatformArray(["ps4", "psn", "pc", "uplay", "xbox", "xbl"], match[3]);
+			if (checkPlatform != "") {
+				username = username.replace(checkPlatform, "");
+				platform = checkPlatform;
+			} else if (rows[0].default_platform != null)
 				platform = rows[0].default_platform;
 		}else{
 			if (match[1] == undefined){
@@ -2743,7 +2757,7 @@ bot.onText(/^\/userhistory(?:@\w+)?/i, function (message, match) {
 			
 			var ubisoft_id = rows[0].ubisoft_id;
 			
-			connection.query('SELECT MIN(insert_date) As change_date, username FROM player_history WHERE ubisoft_id = "' + ubisoft_id + '" GROUP BY username ORDER BY id DESC', function (err, rows) {
+			connection.query('SELECT MAX(insert_date) As change_date, username FROM player_history WHERE ubisoft_id = "' + ubisoft_id + '" GROUP BY username ORDER BY change_date DESC', function (err, rows) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 1) {
 					bot.sendMessage(message.chat.id, lang_nickhistory_nochange[lang], options);
