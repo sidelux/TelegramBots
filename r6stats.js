@@ -2035,6 +2035,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 
 bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	var image_options = {reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, default_username, default_platform, last_graph FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -2127,7 +2128,7 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, fu
 					if (error) 
 						return console.log (error);
 
-					bot.sendPhoto(message.chat.id, imageStream);
+					bot.sendPhoto(message.chat.id, imageStream, image_options);
 
 					connection.query("UPDATE user SET last_graph = '" + param + "' WHERE account_id = '" + message.from.id + "'", function (err, rows) {
 						if (err) throw err;
