@@ -2497,11 +2497,12 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 		}
 
 		if (match[3] != undefined){
+			match[3] = match[3].toLowerCase();
 			username = match[3];
 			
 			var checkPlatform = checkPlatformArray(["ps4", "psn", "pc", "uplay", "xbox", "xbl"], match[3]);
 			if (checkPlatform != "") {
-				username = username.replace(checkPlatform, "");
+				username = username.replace(checkPlatform, "").trim();
 				platform = checkPlatform;
 			} else if (rows[0].default_platform != null)
 				platform = rows[0].default_platform;
