@@ -271,7 +271,7 @@ var lang_invalid_platform_2 = [];
 var lang_default_platform_changed = [];
 var lang_default = [];
 var lang_user_not_found = [];
-var lang_user_no_data = [];
+var lang_user_wrong_platform = [];
 var lang_graph_no_data = [];
 var lang_graph_no_param = [];
 var lang_no_defaultuser = [];
@@ -631,8 +631,8 @@ lang_default["it"] = "Impostazioni attuali: ";
 lang_default["en"] = "Actual settings: ";
 lang_user_not_found["it"] = "Username non trovato per la piattaforma selezionata.";
 lang_user_not_found["en"] = "Username not found for selected platform.";
-lang_user_no_data["it"] = "L'utente inserito non possiede abbastanza dati.";
-lang_user_no_data["en"] = "Specified username has not enough data.";
+lang_user_wrong_platform["it"] = "L'utente inserito non corrisponde alla piattaforma specificata, riprova cambiandola.";
+lang_user_wrong_platform["en"] = "Inserted user not match specified platform, retry by change it.";
 lang_graph_no_data["it"] = "Non ci sono abbastanza dati salvati per creare un grafico, usa /stats per salvarli.";
 lang_graph_no_data["en"] = "Not enough data saved found to create a graph, use /stats to save more.";
 lang_graph_no_param["it"] = "Parametro non valido. Parametri disponibili: ";
@@ -2608,7 +2608,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_no_data[lang] + " (" + username + ", " + platform + ")", options);
+							bot.sendMessage(message.chat.id, lang_user_wrong_platform[lang] + " (" + username + ", " + platform + ")", options);
 							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 							return;
 						}
@@ -2704,7 +2704,7 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
-							bot.sendMessage(message.chat.id, lang_user_no_data[lang] + " (" + username + ", " + platform + ")", options);
+							bot.sendMessage(message.chat.id, lang_user_wrong_platform[lang] + " (" + username + ", " + platform + ")", options);
 							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 							return;
 						}
@@ -3171,7 +3171,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				var responseStats = response;
 
 				if (responseStats.platform == undefined){
-					bot.sendMessage(message.chat.id, lang_user_no_data[lang] + " (" + username + ", " + platform + ")", options);
+					bot.sendMessage(message.chat.id, lang_user_wrong_platform[lang] + " (" + username + ", " + platform + ")", options);
 					console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
 					return;
 				}
