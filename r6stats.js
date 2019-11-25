@@ -3933,7 +3933,7 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/addteam(?:@\w+)? (.+)/i, function (message, match) {
+bot.onText(/^\/addteam(?:@\w+)? (.+)|^\/addteam(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
