@@ -3128,7 +3128,8 @@ bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, ma
 								lang_season_mmr[lang] + ": " + mapRank(Math.round(response.season_mmr), lang) + "\n" +
 								lang_season_max_mmr[lang] + ": " + mapRank(Math.round(response.season_max_mmr), lang) + "\n", options);
 			}).catch(error => {
-				bot.sendMessage(message.chat.id, lang_season_error[lang], options);
+				console.log(default_username, default_platform, error);
+				bot.sendMessage(message.chat.id, lang_season_error[lang] + " (" + error + ")", options);
 				console.log(getNow("it") + " Season data not found for " + default_username + " on " + default_platform);
 			});
 		});
@@ -3186,7 +3187,6 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 						r6.stats(default_username, default_platform, i, 0).then(response => {
 							if ((response.season_id != undefined) && (response.season_rank != 0)) {
 								seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + mapRank(Math.round(response.season_max_mmr), lang) + "\n";
-
 								if (response.season_id != lastSeason) {
 									connection.query("INSERT INTO season_history (username, platform, season_id, mmr, max_mmr) VALUES ('" + default_username + "', '" + default_platform + "', " + response.season_id + ", " + response.season_mmr + ", " + response.season_max_mmr + ")", function (err, rows) {
 										if (err) throw err;
@@ -3208,6 +3208,10 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 							bot.sendMessage(message.chat.id, lang_seasons_intro[lang] + sortSeasons(seasonArray), options);
 					}
 				}
+			}).catch(error => {
+				console.log(username, platform, error);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
+				console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 			});
 		});
 	});
