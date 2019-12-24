@@ -3277,14 +3277,15 @@ bot.onText(/^\/history(?:@\w+)?/i, function (message) {
 					}
 				}
 
-				bot.sendMessage(message.from.id, text, options);
+				bot.sendMessage(message.chat.id, text, options);
 			});
 		});
 	});
 });
 
 bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (message, match) {
-	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	var options_reply = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	var options = {parse_mode: "HTML"};
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3293,21 +3294,21 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operators", options);
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operators", options_reply);
 			return;
 		}
 
 		var lang = rows[0].lang;
 
 		if (rows[0].default_username == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options_reply);
 			return;
 		}
 
 		var default_username = rows[0].default_username;
 
 		if (rows[0].default_platform == null){
-			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options_reply);
 			return;
 		}
 
@@ -3320,7 +3321,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 			if (orderList.indexOf(match[1]) != -1)
 				orderMethod = match[1];
 			else {
-				bot.sendMessage(message.chat.id, lang_seasons_invalid_order[lang] + orderList.join(", "), options);
+				bot.sendMessage(message.chat.id, lang_seasons_invalid_order[lang] + orderList.join(", "), options_reply);
 				return;
 			}
 		}
@@ -3415,11 +3416,11 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 					text += "\n";
 				}
 				if (message.chat.id < 0)
-					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
+					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options_reply);
 				bot.sendMessage(message.from.id, text + lang_operator_extra[lang], options);
 			}).catch(error => {
 				console.log(default_username, default_platform, error);
-				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options_reply);
 				console.log(getNow("it") + " Operators data not found for " + default_username + " on " + default_platform);
 			});
 		});
@@ -3593,7 +3594,8 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 });
 
 bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, match) {
-	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	var options_reply = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	var options = {parse_mode: "HTML"};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3609,7 +3611,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 		var lang = rows[0].lang;
 		var operator_name;
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_operator_no_name[lang], options);
+			bot.sendMessage(message.chat.id, lang_operator_no_name[lang], options_reply);
 			return;
 		}
 
@@ -3622,7 +3624,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 			if (sim.bestMatch.rating >= 0.6)
 				operator_name = sim.bestMatch.target;
 			else {
-				bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options);
+				bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options_reply);
 				return;
 			}
 		}
@@ -3635,7 +3637,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				var equip = resp[operator_name];
 
 				if (equip == undefined){
-					bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options);
+					bot.sendMessage(message.chat.id, lang_operator_not_found[lang], options_reply);
 					return;
 				}
 
@@ -3688,7 +3690,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 				text += "\n<b>" + lang_loadout_utility[lang] + "</b>: " + mapLoadout(utility, lang);
 
 				if (message.chat.id < 0)
-					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
+					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options_reply);
 				bot.sendMessage(message.from.id, text, options);
 			}
 		});
@@ -3697,7 +3699,7 @@ bot.onText(/^\/loadout(?:@\w+)? (.+)|^\/loadout(?:@\w+)?$/i, function (message, 
 
 bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	var options_markdown = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+	var options_markdown = {parse_mode: "Markdown"};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3719,7 +3721,8 @@ bot.onText(/^\/help(?:@\w+)?/i, function (message, match) {
 });
 
 bot.onText(/^\/botconfig(?:@\w+)?/i, function (message, match) {
-	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+	var options_reply = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+	var options = {parse_mode: "Markdown"};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -3739,7 +3742,7 @@ bot.onText(/^\/botconfig(?:@\w+)?/i, function (message, match) {
 		};
 
 		if (message.chat.id < 0)
-			bot.sendMessage(message.chat.id, lang_config[lang], options);
+			bot.sendMessage(message.chat.id, lang_config[lang], options_reply);
 		else
 			bot.sendMessage(message.from.id, lang_config_private[lang], options);
 	});
@@ -4146,7 +4149,8 @@ bot.onText(/^\/delteam(?:@\w+)? (.+)/i, function (message, match) {
 });
 
 bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, match) {
-	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	var options_reply = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	var options = {parse_mode: "HTML"};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
@@ -4166,13 +4170,13 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 		};
 
 		if (match[1] == undefined){
-			bot.sendMessage(message.chat.id, lang_invalid_platform[lang], options);
+			bot.sendMessage(message.chat.id, lang_invalid_platform[lang], options_reply);
 			return;
 		}
 
 		var platform = match[1].toLowerCase();
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
-			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
+			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options_reply);
 			return;
 		}
 
@@ -4180,7 +4184,7 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, lang_search_noplayers[lang], options);
+				bot.sendMessage(message.chat.id, lang_search_noplayers[lang], options_reply);
 				return;
 			}
 
@@ -4189,7 +4193,7 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 				list += "\n" + rows[i].default_username;
 
 			if (message.chat.id < 0)
-				bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options);
+				bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options_reply);
 			bot.sendMessage(message.from.id, list, options);
 		});
 	});
