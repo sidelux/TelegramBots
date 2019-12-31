@@ -292,6 +292,7 @@ var lang_update_err = [];
 var lang_update_err_2 = [];
 var lang_update_err_3 = [];
 var lang_config_inline = [];
+var lang_disabled = [];
 
 var lang_username = [];
 var lang_platform = [];
@@ -774,6 +775,8 @@ lang_update_err_3["it"] = "Puoi aggiornare il profilo manualmente solo ogni 3 or
 lang_update_err_3["en"] = "You can update your profile only every 3 hours after last saved stats";
 lang_config_inline["it"] = "Configura il bot";
 lang_config_inline["en"] = "Configure bot";
+lang_disabled["it"] = "Questo comando è temporaneamente disabilitato";
+lang_disabled["en"] = "This command is temporarily disabled";
 
 lang_username["it"] = "Nome utente";
 lang_username["en"] = "Username";
@@ -3156,6 +3159,10 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
 		}
+		
+		// disabled
+		bot.sendMessage(message.chat.id, lang_disabled[lang], options);
+		return;
 
 		var default_username = rows[0].default_username;
 
