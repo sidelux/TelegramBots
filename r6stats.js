@@ -266,6 +266,7 @@ var lang_invalid_user = [];
 var lang_invalid_user_1 = [];
 var lang_default_user_changed = [];
 var lang_invalid_user_2 = [];
+var lang_invalid_user_3 = [];
 var lang_invalid_platform = [];
 var lang_invalid_platform_2 = [];
 var lang_default_platform_changed = [];
@@ -622,6 +623,8 @@ lang_default_user_changed["it"] = "Nome utente predefinito modificato!";
 lang_default_user_changed["en"] = "Default username changed!";
 lang_invalid_user_2["it"] = "Username non specificati, esempio: '/compare username1,username2'.";
 lang_invalid_user_2["en"] = "Username not specified, example: '/compare username1,username2'.";
+lang_invalid_user_3["it"] = "Username non specificati, esempio: '/canplay username1,username2'.";
+lang_invalid_user_3["en"] = "Username not specified, example: '/canplay username1,username2'.";
 lang_invalid_platform["it"] = "Piattaforma non specificata.";
 lang_invalid_platform["en"] = "Platform not specified.";
 lang_invalid_platform_2["it"] = "Piattaforma non valida. Piattaforme disponibili: uplay (pc), psn (ps4) o xbl (xbox one).";
@@ -2986,7 +2989,7 @@ bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (messa
 
 		var lang = rows[0].lang;
 		if ((match[1] == undefined) || (match[2] == undefined)){
-			bot.sendMessage(message.chat.id, lang_invalid_user_2[lang], options);
+			bot.sendMessage(message.chat.id, lang_invalid_user_3[lang], options);
 			return;
 		}
 
@@ -4187,7 +4190,7 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 			return;
 		}
 
-		connection.query("SELECT default_username FROM user WHERE default_platform = '" + platform + "' AND lang = '" + lang + "' AND default_username IS NOT NULL", function (err, rows, fields) {
+		connection.query("SELECT default_username FROM user WHERE default_platform = '" + platform + "' AND lang = '" + lang + "' AND default_username IS NOT NULL ORDER BY default_username", function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
