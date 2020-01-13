@@ -254,8 +254,8 @@ var no_preview = {
 var validLang = ["en", "it"];
 var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
-var operatorList = ["Alibi", "Maestro", "Finka", "Lion", "Vigil", "Dokkaebi", "Zofia", "Ela", "Ying", "Lesion", "Mira", "Jackal", "Hibana", "Echo", "Caveira", "Capitao", "Blackbeard", "Valkyrie", "Buck", "Frost", "Mute", "Sledge", "Smoke", "Thatcher", "Ash", "Castle", "Pulse", "Thermite", "Montagne", "Twitch", "Doc", "Rook", "Jager", "Bandit", "Blitz", "IQ", "Fuze", "Glaz", "Tachanka", "Kapkan", "Maverick", "Clash", "Nomad", "Kaid", "Mozzie", "Gridlock", "Nokk", "Warden", "Goyo", "Amaru"];
-var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon", "Phantom Sight", "Ember Rise"];
+var operatorList = ["Alibi", "Maestro", "Finka", "Lion", "Vigil", "Dokkaebi", "Zofia", "Ela", "Ying", "Lesion", "Mira", "Jackal", "Hibana", "Echo", "Caveira", "Capitao", "Blackbeard", "Valkyrie", "Buck", "Frost", "Mute", "Sledge", "Smoke", "Thatcher", "Ash", "Castle", "Pulse", "Thermite", "Montagne", "Twitch", "Doc", "Rook", "Jager", "Bandit", "Blitz", "IQ", "Fuze", "Glaz", "Tachanka", "Kapkan", "Maverick", "Clash", "Nomad", "Kaid", "Mozzie", "Gridlock", "Nokk", "Warden", "Goyo", "Amaru", "Wamai", "Kali"];
+var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon", "Phantom Sight", "Ember Rise", "Shifting Tides"];
 var lang_main = [];
 var lang_stats = [];
 var lang_startme = [];
@@ -724,6 +724,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata\n" +
@@ -744,6 +745,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
 	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"01/13/20 - Updated with Shifting Tides complete support\n" +
 	"11/15/19 - Added /avatar command to generate a custom avatar\n" +
 	"11/13/19 - Added /userhistory command to show username changes history saved in bot\n" +
 	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked\n" +
@@ -4698,9 +4700,9 @@ function parse(message, force = 0){
 		else if (lev[2] != undefined)
 			response += "<b>Livello</b>: " + lev[2].trim() + "\n";
 	}
-	var competitive = text.search(/competitivo|esl|cw|go4|ladder/gmi);
+	var competitive = text.search(/competitivo|esl|cw|go4|ladder|g4g/gmi);
 	if (competitive != -1) {
-		var competitive_more = text.match(/esl|cw|go4|ladder/gmi);
+		var competitive_more = text.match(/esl|cw|go4|ladder|g4g/gmi);
 		if (competitive_more != null) {
 			for (var i = 0; i < competitive_more.length; i++)
 				competitive_more[i] = jsUcfirst(competitive_more[i].toLowerCase());
@@ -4712,6 +4714,27 @@ function parse(message, force = 0){
 	var audition = text.search(/provino|provini/gmi);
 	if (audition != -1)
 		response += "<b>Provino</b>: Sì\n";
+	var training = text.search(/allenament/gmi);
+	if (training != -1) {
+		var weekly = text.search(/settimana/gmi);
+		var daily = text.search(/giornaliero/gmi);
+		if (weekly != -1)
+			response += "<b>Allenamenti</b>: Settimanali\n";
+		else if (daily != -1)
+			response += "<b>Allenamenti</b>: Giornalieri\n";
+		else
+			response += "<b>Allenamenti</b>: Sì\n";
+	}
+	var social = text.search(/instagram|twitter|sito web|discord|whatsapp|telegram/gmi);
+	if (social != -1) {
+		var social_more = text.match(/instagram|twitter|sito web|discord|whatsapp|telegram/gmi);
+		if (social_more != null) {
+			for (var i = 0; i < social_more.length; i++)
+				social_more[i] = jsUcfirst(social_more[i].toLowerCase());
+			social_more = uniq(social_more);
+			response += "<b>Social</b>: " + social_more.join(", ") + "\n";
+		}
+	}
 
 	if (response == ""){
 		console.log("Response empty");
