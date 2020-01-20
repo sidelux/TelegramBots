@@ -1382,7 +1382,12 @@ var j2 = Schedule.scheduleJob('0 12 1 * *', function () {
 
 bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 	var options = {disable_web_page_preview: true, parse_mode: "HTML", reply_to_message_id: message.message_id};
+	/*
 	if ((message.chat.id < 0) && (message.text.indexOf("@") != -1) && (message.text.indexOf("r6siegestatsbot") == -1))
+		return;
+	*/
+	
+	if (message.chat.id < 0)
 		return;
 
 	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
@@ -1441,12 +1446,22 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 });
 
 bot.on('message', function (message) {
-	capture_parse(message);
-	contest_group(message);
+	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
+		if ((data.status == "creator") || (data.status == "administrator")) {
+			capture_parse(message);
+			contest_group(message);
+			capture_url(message);
+		}
+	});
 });
 
 bot.on('edited_message', function (message) {
-	capture_parse(message);
+	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
+		if ((data.status == "creator") || (data.status == "administrator")) {
+			capture_parse(message);
+			capture_url(message);
+		}
+	});
 });
 
 bot.on("inline_query", function (query) {
@@ -4577,6 +4592,32 @@ function contest_group(message) {
 	}
 }
 
+function capture_url(message) {
+	if (message.chat.id == -1001246584843) {
+		var options = {parse_mode: "HTML", disable_web_page_preview: true};
+		
+		var nick = "";
+		if (message.from.username == undefined)
+			nick = message.from.first_name;
+		else
+			nick = message.from.username;
+
+		var twitch = message.text.match(/(?:https|http):\/\/(?:www\.)?twitch\.tv\/([a-zA-Z0-9]+)/gi);
+		if (twitch != null) {
+			bot.deleteMessage(message.chat.id, message.message_id);
+
+			bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale Twitch: " + twitch[0], options);
+		}
+		
+		var youtube = message.text.match(/(?:https|http):\/\/(?:www\.)?youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
+		if (youtube != null) {
+			bot.deleteMessage(message.chat.id, message.message_id);
+
+			bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale YouTube: " + youtube[0], options);
+		}
+	}
+}
+
 function capture_parse(message) {
 	if (message.chat.id == -1001246584843) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
@@ -4736,8 +4777,8 @@ function parse(message, force = 0){
 		}
 	}
 
-	if (response == ""){
-		console.log("Response empty");
+	if (response == "") {
+		// console.log("Response empty");
 		return;
 	}
 

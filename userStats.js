@@ -149,7 +149,12 @@ bot.on('message', function (message) {
 });
 
 bot.onText(/^\/start/i, function (message) {
+	/*
 	if ((message.chat.id < 0) && (message.text.indexOf("@") != -1) && (message.text.indexOf("userstatstrackerbot") == -1))
+		return;
+	*/
+	
+	if (message.chat.id < 0)
 		return;
 
 	var no_preview = {
