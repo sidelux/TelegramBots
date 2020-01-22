@@ -111,7 +111,7 @@ class RainbowSixApi {
 						if (objStats.season_mmr == undefined) objStats.season_mmr = 0;
 						if (objStats.season_max_mmr == undefined) objStats.season_max_mmr = 0;
 
-						endpoint = "http://fenixweb.net/r6api/getStats.php?name=" + username + "&platform=" + platform + "&appcode=r6apitelegram";
+						endpoint = "http://fenixweb.net/r6api/getStats.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 						request.get(endpoint, (error, response, body) => {
 							if(!error && response.statusCode == '200') {
 								var objResp = JSON.parse(body);
@@ -602,6 +602,8 @@ var lang_nickhistory_actual = [];
 var lang_avatar_param = [];
 var lang_avatar_photo = [];
 var lang_avatar_size = [];
+
+var lang_unavailable = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -1355,6 +1357,9 @@ lang_avatar_photo["en"] = "This command should be used in reply on a photo (not 
 lang_avatar_size["it"] = "L'immagine deve essere quadrata";
 lang_avatar_size["en"] = "Image must be squared";
 
+lang_unavailable["it"] = "Le statistiche fornite da Ubisoft sono temporaneamente non disponibili, riprovare più tardi.";
+lang_unavailable["en"] = "Ubisoft stats are temporary unavailable, please retry later.";
+
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
 	autoTrack();
@@ -1447,7 +1452,7 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 
 bot.on('message', function (message) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
-		if ((data.status == "creator") || (data.status == "administrator")) {
+		if ((data.status != "creator") && (data.status != "administrator")) {
 			capture_parse(message);
 			contest_group(message);
 			capture_url(message);
@@ -1457,7 +1462,7 @@ bot.on('message', function (message) {
 
 bot.on('edited_message', function (message) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
-		if ((data.status == "creator") || (data.status == "administrator")) {
+		if ((data.status != "creator") && (data.status != "administrator")) {
 			capture_parse(message);
 			capture_url(message);
 		}
@@ -2625,6 +2630,9 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				}
+				
+				bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+				return;
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username, platform, -1, 0).then(response => {
