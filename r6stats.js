@@ -2631,8 +2631,10 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					return;
 				}
 				
+				/*
 				bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
 				return;
+				*/
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username, platform, -1, 0).then(response => {
@@ -4604,24 +4606,26 @@ function capture_url(message) {
 	if (message.chat.id == -1001246584843) {
 		var options = {parse_mode: "HTML", disable_web_page_preview: true};
 		
-		var nick = "";
-		if (message.from.username == undefined)
-			nick = message.from.first_name;
-		else
-			nick = message.from.username;
+		if (message.text != undefined) {
+			var nick = "";
+			if (message.from.username == undefined)
+				nick = message.from.first_name;
+			else
+				nick = message.from.username;
+			
+			var twitch = message.text.match(/twitch\.tv\/([a-zA-Z0-9]+)/gi);
+			if (twitch != null) {
+				bot.deleteMessage(message.chat.id, message.message_id);
 
-		var twitch = message.text.match(/(?:https|http):\/\/(?:www\.)?twitch\.tv\/([a-zA-Z0-9]+)/gi);
-		if (twitch != null) {
-			bot.deleteMessage(message.chat.id, message.message_id);
+				bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale Twitch: " + twitch[0], options);
+			}
 
-			bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale Twitch: " + twitch[0], options);
-		}
-		
-		var youtube = message.text.match(/(?:https|http):\/\/(?:www\.)?youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
-		if (youtube != null) {
-			bot.deleteMessage(message.chat.id, message.message_id);
+			var youtube = message.text.match(/youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
+			if (youtube != null) {
+				bot.deleteMessage(message.chat.id, message.message_id);
 
-			bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale YouTube: " + youtube[0], options);
+				bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale YouTube: " + youtube[0], options);
+			}
 		}
 	}
 }
