@@ -140,6 +140,22 @@ CREATE TABLE `player_history` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `recruit_history`
+--
+
+DROP TABLE IF EXISTS `recruit_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `recruit_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `account_id` int(11) NOT NULL,
+  `chat_id` varchar(32) NOT NULL,
+  `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `season_history`
 --
 

@@ -32,6 +32,8 @@ var im = require('imagemagick');
 var tesseract = require('node-tesseract-ocr');
 var ffmpeg = require('fluent-ffmpeg');
 
+var r6italy_chatid = -1001246584843;
+
 class RainbowSixApi {
 	constructor() {}
 
@@ -1747,7 +1749,7 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 			platform = "psn";
 		else if (platform == "pc")
 			platform = "uplay";
-		else if (platform == "xbox")
+		else if (platform.indexOf("xbox") != -1)
 			platform = "xbl";
 
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
@@ -1847,7 +1849,7 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 			platform = "psn";
 		else if (platform == "pc")
 			platform = "uplay";
-		else if (platform == "xbox")
+		else if (platform.indexOf("xbox") != -1)
 			platform = "xbl";
 		
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
@@ -2412,7 +2414,7 @@ bot.onText(/^\/compress(?:@\w+)?/i, function (message, match) {
 */
 
 bot.onText(/^\/contest(?:@\w+)? (.+)|^\/contest(?:@\w+)?/i, function (message, match) {
-	if (message.chat.id == -1001246584843) {
+	if (message.chat.id == r6italy_chatid) {
 		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 		connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 			if (err) throw err;
@@ -2528,7 +2530,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 			match[3] = match[3].toLowerCase();
 			username = match[3];
 			
-			var checkPlatform = checkPlatformArray(["ps4", "psn", "pc", "uplay", "xbox", "xbl"], match[3]);
+			var checkPlatform = checkPlatformArray(["ps4", "psn", "pc", "uplay", "xbox", "xbl", "xbox one"], match[3]);
 			if (checkPlatform != "") {
 				username = username.replace(checkPlatform, "").trim();
 				platform = checkPlatform;
@@ -2576,7 +2578,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 			platform = "psn";
 		else if (platform == "pc")
 			platform = "uplay";
-		else if (platform == "xbox")
+		else if (platform.indexOf("xbox") != -1)
 			platform = "xbl";
 
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
@@ -4588,7 +4590,7 @@ function multipleStats(message, players, platform, options, lang) {
 }
 
 function contest_group(message) {
-	if (message.chat.id == -1001246584843) {
+	if (message.chat.id == r6italy_chatid) {
 		// if (message.new_chat_members != undefined) {
 			connection.query("SELECT 1 FROM contest_group WHERE account_id = " + message.from.id + " AND chat_id = '" + message.chat.id + "'", function (err, rows) {
 				if (err) throw err;
@@ -4603,7 +4605,7 @@ function contest_group(message) {
 }
 
 function capture_url(message) {
-	if (message.chat.id == -1001246584843) {
+	if (message.chat.id == r6italy_chatid) {
 		var options = {parse_mode: "HTML", disable_web_page_preview: true};
 		
 		if (message.text != undefined) {
@@ -4631,19 +4633,20 @@ function capture_url(message) {
 }
 
 function capture_parse(message) {
-	if (message.chat.id == -1001246584843) {
-		var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-
+	if (message.chat.id == r6italy_chatid) {
+		var options = {parse_mode: "HTML"};
+		
+		var nick = "";
+		if (message.from.username == undefined)
+			nick = message.from.first_name;
+		else
+			nick = message.from.username;
+		
 		var res = parse(message);
-		if (res == "platform") {
-			var nick = "";
-			if (message.from.username == undefined)
-				nick = message.from.first_name;
-			else
-				nick = message.from.username;
-			
+		if (res == "platform")
 			bot.sendMessage(message.chat.id, nick + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
-		}
+		if (res == "duplicate")
+			bot.sendMessage(message.chat.id, nick + ", hai appena postato un reclutamento, riprova tra un po' di tempo!", options);
 		if (res == "ok") {
 			var iKeys = [];
 			iKeys.push([{
@@ -4657,13 +4660,11 @@ function capture_parse(message) {
 				}
 			};
 
-			var nick = "";
-			if (message.from.username == undefined)
-				nick = message.from.first_name;
-			else
-				nick = message.from.username;
-
 			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+
+			connection.query("INSERT INTO recruit_history (account_id, chat_id) VALUES (" + message.from.id + ", '" + message.chat.id + "')", function (err, rows) {
+				if (err) throw err;
+			});
 		}
 	}
 }
@@ -4799,10 +4800,13 @@ function parse(message, force = 0){
 		return "platform";
 
 	response += "\n<i>Contattare</i> " + author;
-
-	bot.sendMessage(-1001326797846, header + response, html);
-
-	return "ok";
+	
+	var check = connection_sync.query("SELECT account_id, chat_id FROM recruit_history ORDER BY id DESC");
+	if ((Object.keys(check).length == 0) || (check[0].account_id != message.from.id) || (check[0].chat_id != message.chat.id)) {
+		bot.sendMessage(-1001326797846, header + response, html);
+		return "ok";
+	} else
+		return "duplicate";
 }
 
 function mapLoadout(itemOrig, lang){
