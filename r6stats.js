@@ -20,7 +20,7 @@ var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var bodyParser = require('body-parser');
-var humanizeDuration = require('humanize-duration')
+var humanizeDuration = require('humanize-duration');
 var request = require("request");
 var plotly = require('plotly')('redfenix45', config.plotlytoken);
 var Schedule = require('node-schedule');
@@ -4613,7 +4613,7 @@ function capture_url(message) {
 			else
 				nick = message.from.username;
 			
-			var twitch = message.text.match(/twitch\.tv\/([a-zA-Z0-9]+)/gi);
+			var twitch = message.text.match(/twitch\.tv\/([a-zA-Z0-9_-]+)/gi);
 			if (twitch != null) {
 				bot.deleteMessage(message.chat.id, message.message_id);
 
