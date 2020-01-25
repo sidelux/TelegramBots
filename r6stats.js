@@ -1454,11 +1454,11 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 
 bot.on('message', function (message) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
-		if ((data.status != "creator") && (data.status != "administrator")) {
+		// if ((data.status != "creator") && (data.status != "administrator")) {
 			capture_parse(message);
 			contest_group(message);
 			capture_url(message);
-		}
+		// }
 	});
 });
 
@@ -4608,21 +4608,25 @@ function capture_url(message) {
 	if (message.chat.id == r6italy_chatid) {
 		var options = {parse_mode: "HTML", disable_web_page_preview: true};
 		
-		if (message.text != undefined) {
+		if ((message.text != undefined) || (message.caption != undefined)) {
+			var text = message.text;
+			if (message.caption != undefined)
+				text = message.caption;
+			
 			var nick = "";
 			if (message.from.username == undefined)
 				nick = message.from.first_name;
 			else
 				nick = message.from.username;
 			
-			var twitch = message.text.match(/twitch\.tv\/([a-zA-Z0-9_-]+)/gi);
+			var twitch = text.match(/twitch\.tv\/([a-zA-Z0-9_-]+)/gi);
 			if (twitch != null) {
 				bot.deleteMessage(message.chat.id, message.message_id);
 
 				bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale Twitch: " + twitch[0], options);
 			}
 
-			var youtube = message.text.match(/youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
+			var youtube = text.match(/youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
 			if (youtube != null) {
 				bot.deleteMessage(message.chat.id, message.message_id);
 
