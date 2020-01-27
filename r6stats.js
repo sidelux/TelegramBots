@@ -1454,11 +1454,11 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 
 bot.on('message', function (message) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
-		// if ((data.status != "creator") && (data.status != "administrator")) {
+		if ((data.status != "creator") && (data.status != "administrator")) {
 			capture_parse(message);
 			contest_group(message);
 			capture_url(message);
-		// }
+		}
 	});
 });
 
@@ -4700,6 +4700,7 @@ function parse(message, force = 0){
 		author = "@" + message.from.username;
 	else if (message.from.first_name != undefined)
 		author = message.from.first_name;
+	
 	var response = "";
 
 	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo|provini|provino|requisiti/gmi) == -1) && (force == 0))
@@ -4783,14 +4784,27 @@ function parse(message, force = 0){
 		else
 			response += "<b>Allenamenti</b>: Sì\n";
 	}
-	var social = text.search(/instagram|twitter|sito web|discord|whatsapp|telegram/gmi);
+	var regex = new RegExp(/instagram|twitter|sito web|discord|whatsapp|telegram/gmi);
+	var social = text.search(regex);
 	if (social != -1) {
-		var social_more = text.match(/instagram|twitter|sito web|discord|whatsapp|telegram/gmi);
+		var social_more = text.match(regex);
 		if (social_more != null) {
 			for (var i = 0; i < social_more.length; i++)
 				social_more[i] = jsUcfirst(social_more[i].toLowerCase());
 			social_more = uniq(social_more);
 			response += "<b>Social</b>: " + social_more.join(", ") + "\n";
+		}
+	}
+	
+	var regex = new RegExp(/igl|entry|fragger|support|breacher|roamer|anchor/gmi);
+	var role = text.search(regex);
+	if (role != -1) {
+		var role_more = text.match(regex);
+		if (role_more != null) {
+			for (var i = 0; i < role_more.length; i++)
+				role_more[i] = jsUcfirst(role_more[i].toLowerCase());
+			role_more = uniq(role_more);
+			response += "<b>Ruoli</b>: " + role_more.join(", ") + "\n";
 		}
 	}
 
