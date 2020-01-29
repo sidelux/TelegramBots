@@ -606,6 +606,10 @@ var lang_avatar_photo = [];
 var lang_avatar_size = [];
 
 var lang_unavailable = [];
+var lang_status_maintenance = [];
+var lang_status_online = [];
+var lang_status_interrupted = [];
+var lang_status_degraded = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -1361,6 +1365,14 @@ lang_avatar_size["en"] = "Image must be squared";
 
 lang_unavailable["it"] = "Le statistiche fornite da Ubisoft sono temporaneamente non disponibili, riprovare più tardi.";
 lang_unavailable["en"] = "Ubisoft stats are temporary unavailable, please retry later.";
+lang_status_maintenance["it"] = "Manutenzione";
+lang_status_maintenance["en"] = "Maintenance";
+lang_status_online["it"] = "Online";
+lang_status_online["en"] = "Online";
+lang_status_interrupted["it"] = "Interrotto";
+lang_status_interrupted["en"] = "Interrupted";
+lang_status_degraded["it"] = "Degradato";
+lang_status_degraded["en"] = "Degraded";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1838,8 +1850,53 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 		}
 
 		var lang = rows[0].lang;
+
+		var lang_complex = "";
+		if (lang == "it")
+			lang_complex = "it-it";
+		else if (lang == "en")
+			lang_complex = "en-us";
+		
+		/*
 		if (match[1] == undefined){
 			bot.sendMessage(message.chat.id, lang_invalid_platform[lang], options);
+			return;
+		}
+		*/
+		if (match[1] == undefined){
+			console.log("Request generic server status from " + message.from.username);
+			// Url source: https://ubistatic-a.akamaihd.net/0115/R6S/js/main.js?t=x1q2x3v2 and https://rainbow6.ubisoft.com/status/
+			
+			var url = "https://game-status-api.ubisoft.com/v1/instances?appIds=e3d5ea9e-50bd-43b7-88bf-39794f4e3d40,fb4cc4c9-2063-461d-a1e8-84a7d36525fc,4008612d-3baf-49e4-957a-33066726a7bc";
+			bot.sendChatAction(message.chat.id, "typing").then(function () {
+				request({
+					uri: url,
+				}, function(error, response, body) {
+					var resp = JSON.parse(body);
+					var text = "";
+					for (var j = 0; j < Object.keys(resp).length; j++)
+						text += "<b>" + decodePlatform(resp[j].Platform) + "</b>: " + decodeStatus(resp[j].Status, resp[j].Maintenance, lang) + "\n";
+					text += "\n";
+					
+					var url = "https://ingame-news.ubi.com/json-feed/v1/spaces/news?spaceid=aac52d2d-47f2-4580-812d-5d6edff9cf2e&ver=" + Math.round(Math.random()*100000);
+					bot.sendChatAction(message.chat.id, "typing").then(function () {
+						request({
+							headers: {
+								'Accept': "application/json",
+							  	'Ubi-AppId': 'f612511e-58a2-4e9a-831f-61838b1950bb',
+								'Ubi-localeCode': lang_complex
+							},
+							uri: url,
+						}, function(error, response, body) {
+							var resp = JSON.parse(body);
+							for (var j = 0; j < Object.keys(resp).length; j++)
+								text += "<b>" + resp.news[j].title + "</b>\n" + resp.news[j].body + "\n\n";
+							bot.sendMessage(message.chat.id, text, options);
+						});
+					});
+				});
+			});
+			
 			return;
 		}
 
@@ -1856,12 +1913,6 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
 			return;
 		}
-
-		var lang_complex = "";
-		if (lang == "it")
-			lang_complex = "it-it";
-		else if (lang == "en")
-			lang_complex = "en-us";
 
 		var platform_complex = 0;
 		if (platform == "uplay")
@@ -4508,6 +4559,20 @@ bot.onText(/^\/dreport(?:@\w+)?/i, function (message, match) {
 
 // Functions
 
+function decodeStatus(status, maintenance, lang) {
+	status = status.toLowerCase();
+	if (maintenance == true)
+		return lang_status_maintenance[lang];
+	else if (status == "online")
+		return lang_status_online[lang];
+	else if (status == "interrupted")
+		return lang_status_interrupted[lang];
+	else if (status == "degraded")
+		return lang_status_degraded[lang];
+	else
+		return status;
+}
+
 function getCheckStats(response1, response2, lang) {
 	var season_mmr1 = Math.round(response1.season_mmr);
 	var season_mmr2 = Math.round(response2.season_mmr);
@@ -5213,11 +5278,12 @@ function numToRank(num, lang, mmr = -1){
 }
 
 function decodePlatform(platform){
-	if (platform == "uplay")
+	platform = platform.toLowerCase();
+	if ((platform == "uplay") || (platform == "pc"))
 		return "PC";
-	else if (platform == "psn")
+	else if ((platform == "psn") || (platform == "ps4"))
 		return "Ps4";
-	else if (platform == "xbl")
+	else if ((platform == "xbl") || (platform == "xboxone"))
 		return "Xbox One";
 }
 
