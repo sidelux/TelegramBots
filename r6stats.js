@@ -1879,20 +1879,18 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 					text += "\n";
 					
 					var url = "https://ingame-news.ubi.com/json-feed/v1/spaces/news?spaceid=aac52d2d-47f2-4580-812d-5d6edff9cf2e&ver=" + Math.round(Math.random()*100000);
-					bot.sendChatAction(message.chat.id, "typing").then(function () {
-						request({
-							headers: {
-								'Accept': "application/json",
-							  	'Ubi-AppId': 'f612511e-58a2-4e9a-831f-61838b1950bb',
-								'Ubi-localeCode': lang_complex
-							},
-							uri: url,
-						}, function(error, response, body) {
-							var resp = JSON.parse(body);
-							for (var j = 0; j < Object.keys(resp).length; j++)
-								text += "<b>" + resp.news[j].title + "</b>\n" + resp.news[j].body + "\n\n";
-							bot.sendMessage(message.chat.id, text, options);
-						});
+					request({
+						headers: {
+							'Accept': "application/json",
+							'Ubi-AppId': 'f612511e-58a2-4e9a-831f-61838b1950bb',
+							'Ubi-localeCode': lang_complex
+						},
+						uri: url,
+					}, function(error, response, body) {
+						var resp = JSON.parse(body);
+						for (var j = 0; j < Object.keys(resp).length; j++)
+							text += "<b>" + resp.news[j].title + "</b>\n" + resp.news[j].body + "\n\n";
+						bot.sendMessage(message.chat.id, text, options);
 					});
 				});
 			});
@@ -5282,7 +5280,7 @@ function decodePlatform(platform){
 	if ((platform == "uplay") || (platform == "pc"))
 		return "PC";
 	else if ((platform == "psn") || (platform == "ps4"))
-		return "Ps4";
+		return "PS4";
 	else if ((platform == "xbl") || (platform == "xboxone"))
 		return "Xbox One";
 }
