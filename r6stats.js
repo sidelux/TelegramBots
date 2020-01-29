@@ -2680,6 +2680,9 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					bot.sendMessage(message.chat.id, text + insert_date + extra_info, options);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
+				} else {
+					// force save if no data
+					forceSave == 1;
 				}
 				
 				/*
@@ -2717,7 +2720,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 								connection.query("UPDATE user SET force_update = 0, last_update = NOW() WHERE account_id = " + message.from.id, function (err, rows) {
 									if (err) throw err;
 								});
-								saveData(responseStats, responseOps);
+								saveData(responseStats, responseOps, 1);
 							}
 
 							console.log(getNow("it") + " User data served for " + username + " on " + platform);
@@ -5175,7 +5178,7 @@ function printInline(query_id, response, lang){
 	}]);
 }
 
-function saveData(responseStats, responseOps){
+function saveData(responseStats, responseOps, activeLog){
 	var ops = getOperators(responseOps);
 
 	if (responseStats.profile_id == undefined){
@@ -5245,7 +5248,8 @@ function saveData(responseStats, responseOps){
 						 ops[10] + ',' +
 						 'NOW())', function (err, rows) {
 			if (err) throw err;
-			// console.log(getNow("it") + " Saved user data for " + responseStats.username);
+			if (activeLog == 1)
+				console.log(getNow("it") + " Saved user data for " + responseStats.username);
 		});
 	}
 }
@@ -5478,7 +5482,7 @@ function setAutoTrack(element, index, array) {
 				r6.stats(username, platform, -1, 1).then(response => {
 					var responseOps = response;
 					if (toSave == 1)
-						saveData(responseStats, responseOps);
+						saveData(responseStats, responseOps, 0);
 				});
 			}
 		});
