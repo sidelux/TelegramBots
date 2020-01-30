@@ -1888,7 +1888,7 @@ bot.onText(/^\/status(?:@\w+)? (.+)|^\/status(?:@\w+)?/i, function (message, mat
 						uri: url,
 					}, function(error, response, body) {
 						var resp = JSON.parse(body);
-						for (var j = 0; j < Object.keys(resp).length; j++)
+						for (var j = 0; j < Object.keys(resp.news).length; j++)
 							text += "<b>" + resp.news[j].title + "</b>\n" + resp.news[j].body + "\n\n";
 						bot.sendMessage(message.chat.id, text, options);
 					});
