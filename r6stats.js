@@ -611,6 +611,8 @@ var lang_status_online = [];
 var lang_status_interrupted = [];
 var lang_status_degraded = [];
 
+var lang_maprank_error = [];
+
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate in %g gruppi diversi";
@@ -732,46 +734,18 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"03/02/20 - Aggiunto il comando /maprank per visualizzare il corrispondente rango al mmr specificato\n" +
+	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
-	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata\n" +
-	"20/09/19 - Aggiunto il comando /scan per analizzare gli screenshot delle classifiche in game (solo pc)\n" +
-	"19/09/19 - Aggiunta la possibilità di utilizzare il comando /seasons ordinando per un criterio specifico, aggiunto il comando /history e la dicitura relativa al posizionamento del grado Campione\n" +
-	"18/09/19 - Aggiornato con il supporto completo ad Ember Rise\n" +
-	"15/08/19 - Aggiunto il comando /season per i dettagli sulla stagione specificata\n" +
-	"18/06/19 - Aggiunto il comando /tstats per le statistiche del team (e rinominato /tagteam in /ttag)\n" +
-	"07/06/19 - Aggiunto il supporto completo ai nuovi operatori Nokk e Warden\n" +
-	"03/06/19 - Aggiunta la possibilità di utilzzare il comando /compare anche se i giocatori sono su piattaforme differenti\n" +
-	"16/05/19 - Aggiunto il comando /dist per visualizzare la distribuzione del giocatori per piattaforma relativa al gruppo attuale\n" +
-	"23/04/19 - Aggiunta la possibilità di invitare qualcuno nel gruppo scrivendo 'invite' in inline\n" +
-	"21/04/19 - Aggiunto il comando /setdailyreport con la relativa funzione automatica\n" +
-	"09/04/19 - Aggiunto il comando /find\n" +
-	"01/04/19 - Aggiunto il comando /rank\n" +
-	"26/03/19 - Aggiunto il comando /seasons\n" +
-	"11/03/19 - Completata l'integrazione di Gridlock e Mozzie e aggiunto il comando /r6info\n" +
-	"22/02/19 - Aggiunto il supporto a Gridlock e Mozzie\n" +
-	"08/02/19 - Aggiunta la generazione settimanale/mensile delle statistiche operatori per gruppo, per disattivare la funzione usa /setreport";
+	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"02/03/20 - Added /maprank command to show relative tank to specified mmr\n" +
 	"01/13/20 - Updated with Shifting Tides complete support\n" +
 	"11/15/19 - Added /avatar command to generate a custom avatar\n" +
 	"11/13/19 - Added /userhistory command to show username changes history saved in bot\n" +
-	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked\n" +
-	"09/20/19 - Added /scan command to analyze leaderboard screenshot taken in-game (only pc)\n" +
-	"09/19/19 - Added possibility to use /seasons command with custom order method, added /history command and position relative to Champion rank\n" +
-	"09/18/19 - Updated with Ember Rise complete support\n" +
-	"08/15/19 - Added /season command for specified season details\n" +
-	"06/18/19 - Added /tstats command for team stats (and renamed /tagteam in /ttag)\n" +
-	"06/07/19 - Added full support for new operators Nokk and Warden\n" +
-	"06/03/19 - Added possibility to use /compare command also with player's platform are different\n" +
-	"05/16/19 - Added /dist command to show platform distribution for actual group\n" +
-	"04/21/19 - Added /setdailyreport command with relative automatic function\n" +
-	"04/09/19 - Added /find command\n" +
-	"04/01/19 - Added /rank command\n" +
-	"03/26/19 - Added /seasons command\n" +
-	"03/11/19 - Finished Gridlock and Mozzie integration and added /r6info command\n" +
-	"02/22/19 - Added support for Gridlock and Mozzie\n" +
-	"02/08/19 - Added weekly and monthly report generation for operator stats, you can disable by using /setreport";
+	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata per questo gruppo:";
@@ -1373,6 +1347,9 @@ lang_status_interrupted["it"] = "Interrotto";
 lang_status_interrupted["en"] = "Interrupted";
 lang_status_degraded["it"] = "Degradato";
 lang_status_degraded["en"] = "Degraded";
+
+lang_maprank_error["it"] = "Specifica il valore MMR dopo il comando /maprank";
+lang_maprank_error["en"] = "Insert MMR value after /maprank command";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -4556,6 +4533,30 @@ bot.onText(/^\/dreport(?:@\w+)?/i, function (message, match) {
 		console.log(getNow("it") + " Daily report generation called manually");
 		reportDailyProgress(message.chat.id);
 	}
+});
+
+bot.onText(/^\/maprank (.+)|^\/maprank/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+		}
+		
+		if (match[1] == undefined) {
+			bot.sendMessage(message.chat.id, lang_maprank_error[lang], options);
+			return;
+		}
+		
+		bot.sendMessage(message.chat.id, mapRank(match[1], rows[0].lang));
+	});
 });
 
 // Functions
