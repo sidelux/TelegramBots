@@ -5378,7 +5378,7 @@ function generateReport(element, index, array) {
 
 	var lastId;
 	var player;
-	var player_list = connection_sync.query('SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND last_chat_id = "' + last_chat_id + '"');
+	var player_list = connection_sync.query('SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND last_chat_id = "' + last_chat_id + '" LIMIT 150');
 	for (var i = 0, len = Object.keys(player_list).length; i < len; i++) {
 		player = connection_sync.query('SELECT username, platform, ranked_wl, ranked_kd, season_mmr FROM player_history WHERE username = "' + player_list[i].default_username + '" AND platform = "' + player_list[i].default_platform + '" AND insert_date BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL ' + intervalDays + ' DAY) AND CURRENT_DATE ORDER BY id DESC');
 		if (Object.keys(player).length > 1){
