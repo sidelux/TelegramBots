@@ -1,19 +1,19 @@
 # Telegram Bots Archive
 
-Un archivio di bot creati da Edoardo Cortese con il modulo "node-telegram-bot-api" per interagire con le Api di Telegram, un database MySql per memorizzare i dati e Node Js per essere eseguito.
+A bot archive created by Edoardo Cortese.
 
-## Lista Bot
+## Bots
 
-* [@Authorizatorbot](http://telegram.me/authorizatorbot) - Gestisci diversi metodi di accesso per i nuovi utenti del tuo gruppo!
-* [@InlineMathbot](http://telegram.me/inlinemathbot) - Risolvi espressioni matematiche inline!
-* [@Compactorbot](http://telegram.me/compactorbot) - Compatta i messaggi consecutivi nei gruppi su Telegram!
-* [@R6SiegeStatsbot](http://telegram.me/r6siegestatsbot) - Consulta le tue statistiche su Rainbow Six Siege, confrontale con gli altri giocatori e molto altro!
-* [@UserStatsTrackerbot](http://telegram.me/userstatstrackerbot) - Tieni traccia del conteggio dei messaggi inviati per ogni utente globalmente su Telegram!
+* [@R6SiegeStatsbot](http://telegram.me/r6siegestatsbot) - Check stats on Rainbow Six Siege, compare with other players and much more!
+* [@Authorizatorbot](http://telegram.me/authorizatorbot) - Manage multiple access method for new users of your group!
+* [@InlineMathbot](http://telegram.me/inlinemathbot) - Solve math expression in inline mode!
+* [@Compactorbot](http://telegram.me/compactorbot) - Compact consecutive messages published by users in telegram groups!
+* [@UserStatsTrackerbot](http://telegram.me/userstatstrackerbot) - Keep tracking messages count of every group on Telegram!
 
-## Autori
+## Authors
 
-* **Edoardo Cortese** - *Programmazione* - [@fenix45](http://telegram.me/fenix45)
+* **Edoardo Cortese** - *Development* - [@fenix45](http://telegram.me/fenix45)
 
-## Licenza
+## License
 
-Questo progetto è sotto licenza GPL-3 - leggi la [documentazione](https://www.gnu.org/licenses/gpl-3.0.en.html) per ulteriori dettagli.
+This project is under GPL-3 license - read the [documentation](https://www.gnu.org/licenses/gpl-3.0.en.html) for more details.
