@@ -4770,7 +4770,7 @@ function parse(message, force = 0){
 	
 	var response = "";
 
-	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo|provini|provino|requisiti/gmi) == -1) && (force == 0))
+	if ((text.search(/recluto|recluta|reclutiamo|cerchiamo|provini|provino|requisiti|cerc[o|a] player/gmi) == -1) && (force == 0))
 		return;
 
 	var clanNameFound = "";
