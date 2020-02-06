@@ -454,6 +454,8 @@ var ability_operatorpvp_nokk_observationtooldeceived = [];
 var ability_operatorpvp_warden_killswithglasses = [];
 var ability_operatorpvp_goyo_volcandetonate = [];
 var ability_operatorpvp_amaru_distancereeled = [];
+var ability_operatorpvp_kali_gadgetdestroywithexplosivelance = [];
+var ability_operatorpvp_wamai_gadgetdestroybymagnet = [];
 
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
@@ -1070,6 +1072,10 @@ ability_operatorpvp_goyo_volcandetonate["it"] = "Volcan detonati";
 ability_operatorpvp_goyo_volcandetonate["en"] = "Detonated Volcan";
 ability_operatorpvp_amaru_distancereeled["it"] = "Distanza percorsa in volo";
 ability_operatorpvp_amaru_distancereeled["en"] = "Distance reeled";
+ability_operatorpvp_kali_gadgetdestroywithexplosivelance["it"] = "Gadget distrutti con la lancia esplosiva";
+ability_operatorpvp_kali_gadgetdestroywithexplosivelance["en"] = "Gadget destroyed with explosive lance";
+ability_operatorpvp_wamai_gadgetdestroybymagnet["it"] = "Gadget distrutti con il magnet";
+ability_operatorpvp_wamai_gadgetdestroybymagnet["en"] = "Gadget destroyed with magnet";
 
 lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
 lang_loadout_intro["en"] = "Recommended loadout for";
