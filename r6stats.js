@@ -1389,6 +1389,13 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 		return;
 	*/
 	
+	if (message.chat.id == r6italy_chatid) {
+		if (match[1] != undefined) {
+			var opt = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+			bot.sendMessage(message.from.id, "Il comando corretto per richiamare le statistiche è */stats*, riprova.", opt);
+		}
+	}
+	
 	if (message.chat.id < 0)
 		return;
 

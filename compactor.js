@@ -65,14 +65,14 @@ bot.on('message', function (message) {
 					if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 						bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
 						bot.deleteMessage(message.chat.id, message.message_id);
-						var newText = mergeMessages[message.chat.id].split(";")[2] + "\n" + message.text;
+						var newText = mergeMessages[message.chat.id].split(";")[2] + "\n" + cleanForMerge(message.text);
 						bot.sendMessage(message.chat.id, "@" + message.from.username + " <i>scrive</i>:\n" + newText, html).then(function (data) {
 							mergeMessages[message.chat.id] = message.from.id + ";" + data.message_id + ";" + newText;
 						});
 					} else
-						mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
+						mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + cleanForMerge(message.text);
 				} else
-					mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
+					mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + cleanForMerge(message.text);
 			} else
 				mergeMessages[message.chat.id] = "";	// skip replies, commands and forwards
 		} else
@@ -86,7 +86,7 @@ bot.on('edited_message', function (message) {
 			if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 				var lastIdx = mergeMessages[message.chat.id].lastIndexOf(";");
 				mergeMessages[message.chat.id] = mergeMessages[message.chat.id].substr(0, lastIdx+1);
-				mergeMessages[message.chat.id] += message.text;
+				mergeMessages[message.chat.id] += cleanForMerge(message.text);
 			}
 		}
 	}
@@ -105,6 +105,10 @@ bot.onText(/^\/check/i, function (message) {
 });
 
 // Functions
+
+function cleanForMerge(text) {
+	return text.replaceAll(/<[^>]*>/, "");
+}
 
 function addZero(i) {
 	if (i < 10)
