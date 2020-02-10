@@ -736,6 +736,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"10/02/20 - Migliorato il report settimanale e mensile dei giocatori nel gruppo\n" +
 	"03/02/20 - Aggiunto il comando /maprank per visualizzare il corrispondente rango al mmr specificato\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
@@ -743,6 +744,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"02/10/20 - Improved weekly and monthly report for players in group\n" +
 	"02/03/20 - Added /maprank command to show relative tank to specified mmr\n" +
 	"01/13/20 - Updated with Shifting Tides complete support\n" +
 	"11/15/19 - Added /avatar command to generate a custom avatar\n" +
@@ -1230,10 +1232,10 @@ lang_report_activated["it"] = "Report gruppo attivato";
 lang_report_activated["en"] = "Group report activated";
 lang_report_deactivated["it"] = "Report gruppo disattivato";
 lang_report_deactivated["en"] = "Group report deactivated";
-lang_report_header_month["it"] = "Report mensile progressi di questo gruppo";
-lang_report_header_month["en"] = "Monthly report for this group";
-lang_report_header_week["it"] = "Report settimanale progressi di questo gruppo";
-lang_report_header_week["en"] = "Progress weekly report for this group";
+lang_report_header_month["it"] = "Migliori giocatori del mese per questo gruppo";
+lang_report_header_month["en"] = "Best players of the month for this group";
+lang_report_header_week["it"] = "Migliori giocatori della settimana per questo gruppo";
+lang_report_header_week["en"] = "Best players of the week for this group";
 
 lang_info_notfound["it"] = "Utente non trovato";
 lang_info_notfound["en"] = "User not found";
@@ -4541,6 +4543,14 @@ bot.onText(/^\/mreport(?:@\w+)?/i, function (message, match) {
 	}
 });
 
+bot.onText(/^\/creport(?:@\w+)? (.+)/i, function (message, match) {
+	if (message.from.id == 20471035) {
+		console.log(getNow("it") + " Weekly report generation called manually on chat id " + match[1]);
+		reportType = 1;
+		reportProgress(match[1]);
+	}
+});
+
 bot.onText(/^\/dreport(?:@\w+)?/i, function (message, match) {
 	if (message.from.id == 20471035) {
 		console.log(getNow("it") + " Daily report generation called manually");
@@ -5360,7 +5370,7 @@ function generateDailyReport(element, index, array) {
 function reportProgress(chat_id) {
 	var query = "";
 	if (chat_id != -1)
-		query = "SELECT last_chat_id, lang FROM user WHERE last_chat_id = '" + chat_id + "' AND report = 1 GROUP BY last_chat_id";
+		query = "SELECT last_chat_id, lang FROM user WHERE last_chat_id = '" + chat_id + "' GROUP BY last_chat_id";
 	else
 		query = "SELECT last_chat_id, lang FROM user WHERE last_chat_id IS NOT NULL AND report = 1 GROUP BY last_chat_id";
 	connection.query(query, function (err, rows, fields) {
@@ -5382,35 +5392,160 @@ function generateReport(element, index, array) {
 	var intervalDays = 0;
 	if (reportType == 1) {
 		intervalDays = 7;
-		interval = lang_report_header_week[lang];
+		interval = lang_report_header_week[lang] + "\n";
 	} else if (reportType == 2) {
 		intervalDays = 30;
-		interval = lang_report_header_month[lang];
+		interval = lang_report_header_month[lang] + "\n";
 	}
 	var report = "<b>" + interval + "</b>\n";
 	var cnt = 0;
 
 	var lastId;
 	var player;
-	var player_list = connection_sync.query('SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND last_chat_id = "' + last_chat_id + '" LIMIT 150');
+	
+	var most_xp = 0;
+	var username_most_xp = "";
+	var platform_most_xp = "";
+	var most_ranked_plays = 0;
+	var username_ranked_plays = "";
+	var platform_ranked_plays = "";
+	var most_ranked_wins = 0;
+	var username_most_ranked_wins = "";
+	var platform_most_ranked_wins = "";
+	var most_ranked_losses = 0;
+	var username_most_ranked_losses = "";
+	var platform_most_ranked_losses = "";
+	var most_ranked_kills = 0;
+	var username_most_ranked_kills = "";
+	var platform_most_ranked_kills = "";
+	var most_ranked_deaths = 0;
+	var username_most_ranked_deaths = "";
+	var platform_most_ranked_deaths = "";
+	var most_ranked_wl = 0;
+	var username_most_ranked_wl = "";
+	var platform_most_ranked_wl = "";
+	var most_ranked_kd = 0;
+	var username_most_ranked_kd = "";
+	var platform_most_ranked_kd = "";
+	var most_season_mmr = 0;
+	var username_most_season_mmr = "";
+	var platform_most_season_mmr = "";
+	var most_headshots = 0;
+	var username_most_headshots = "";
+	var platform_most_headshots = "";
+	
+	var player_list = connection_sync.query('SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND last_chat_id = "' + last_chat_id + '"');
 	for (var i = 0, len = Object.keys(player_list).length; i < len; i++) {
-		player = connection_sync.query('SELECT username, platform, ranked_wl, ranked_kd, season_mmr FROM player_history WHERE username = "' + player_list[i].default_username + '" AND platform = "' + player_list[i].default_platform + '" AND insert_date BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL ' + intervalDays + ' DAY) AND CURRENT_DATE ORDER BY id DESC');
-		if (Object.keys(player).length > 1){
+		player = connection_sync.query('SELECT username, platform, xp, ranked_plays, ranked_wins, ranked_losses, ranked_wl, ranked_kills, ranked_deaths, ranked_kd, season_mmr, headshots FROM player_history WHERE username = "' + player_list[i].default_username + '" AND platform = "' + player_list[i].default_platform + '" AND insert_date BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL ' + intervalDays + ' DAY) AND CURRENT_DATE ORDER BY id DESC');
+		if (Object.keys(player).length > 1) {
 			var lastId = Object.keys(player).length-1;
-			report_head = "\n<b>" + player[0].username + "</b> " + lang_on[lang] + " " + decodePlatform(player[0].platform) + ":\n";
-			report_line = "";
-			report_line += calculateSym(lang_operator_wlratio[lang], player[0].ranked_wl, player[lastId].ranked_wl, 1, lang);
-			report_line += calculateSym(lang_operator_kdratio[lang], player[0].ranked_kd, player[lastId].ranked_kd, 1, lang);
-			report_line += calculateSym(lang_season_mmr[lang], Math.round(player[0].season_mmr), player[lastId].season_mmr, 0, lang);
-			if (report_line != ""){
-				report += report_head + report_line;
-				cnt++;
+			if (player[0].xp > player[lastId].xp) {
+				var value = player[0].xp-player[lastId].xp;
+				if (value > most_xp) {
+					most_xp = value;
+					username_most_xp = player[0].username;
+					platform_most_xp = player[0].platform;
+				}
+			}
+			if (player[0].ranked_plays > player[lastId].ranked_plays) {
+				var value = player[0].ranked_plays-player[lastId].ranked_plays;
+				if (value > most_ranked_plays) {
+					most_ranked_plays = value;
+					username_most_ranked_plays = player[0].username;
+					platform_most_ranked_plays = player[0].platform;
+				}
+			}
+			if (player[0].ranked_wins > player[lastId].ranked_wins) {
+				var value = player[0].ranked_wins-player[lastId].ranked_wins;
+				if (value > most_ranked_plays) {
+					most_ranked_wins = value;
+					username_most_ranked_wins = player[0].username;
+					platform_most_ranked_wins = player[0].platform;
+				}
+			}
+			if (player[0].ranked_losses > player[lastId].ranked_losses) {
+				var value = player[0].ranked_losses-player[lastId].ranked_losses;
+				if (value > most_ranked_losses) {
+					most_ranked_losses = value;
+					username_most_ranked_losses = player[0].username;
+					platform_most_ranked_losses = player[0].platform;
+				}
+			}
+			if (player[0].ranked_wl > player[lastId].ranked_wl) {
+				var value = player[0].ranked_wl-player[lastId].ranked_wl;
+				if (value > most_ranked_wl) {
+					most_ranked_wl = value;
+					username_most_ranked_wl = player[0].username;
+					platform_most_ranked_wl = player[0].platform;
+				}
+			}
+			if (player[0].ranked_kills > player[lastId].ranked_kills) {
+				var value = player[0].ranked_kills-player[lastId].ranked_kills;
+				if (value > most_ranked_kills) {
+					most_ranked_kills = value;
+					username_most_ranked_kills = player[0].username;
+					platform_most_ranked_kills = player[0].platform;
+				}
+			}
+			if (player[0].ranked_deaths > player[lastId].ranked_deaths) {
+				var value = player[0].ranked_deaths-player[lastId].ranked_deaths;
+				if (value > most_ranked_deaths) {
+					most_ranked_deaths = value;
+					username_most_ranked_deaths = player[0].username;
+					platform_most_ranked_deaths = player[0].platform;
+				}
+			}
+			if (player[0].ranked_kd > player[lastId].ranked_kd) {
+				var value = player[0].ranked_kd-player[lastId].ranked_kd;
+				if (value > most_ranked_kd) {
+					most_ranked_kd = value;
+					username_most_ranked_kd = player[0].username;
+					platform_most_ranked_kd = player[0].platform;
+				}
+			}
+			if (player[0].season_mmr > player[lastId].season_mmr) {
+				var value = player[0].season_mmr-player[lastId].season_mmr;
+				if (value > most_season_mmr) {
+					most_season_mmr = value;
+					username_most_season_mmr = player[0].username;
+					platform_most_season_mmr = player[0].platform;
+				}
+			}
+			if (player[0].headshots > player[lastId].headshots) {
+				var value = player[0].headshots-player[lastId].headshots;
+				if (value > most_headshots) {
+					most_headshots = value;
+					username_most_headshots = player[0].username;
+					platform_most_headshots = player[0].platform;
+				}
 			}
 		}
 	}
-
-	if (cnt > 0) {
-		bot.sendMessage(last_chat_id, report, html);
+	
+	var report_line = "";
+	if (most_xp > 0)
+		report_line += "<b>" + lang_xp[lang] + "</b>: " + username_most_xp + " " + lang_on[lang] + " " + platform_most_xp + " (" + formatNumber(most_xp, lang) + ")\n";
+	if (most_ranked_plays > 0)
+		report_line += "<b>" + lang_ranked_plays[lang] + "</b>: " + username_most_ranked_plays + " " + lang_on[lang] + " " + platform_most_ranked_plays + " (" + formatNumber(most_ranked_plays, lang) + ")\n";
+	if (most_ranked_wins > 0)
+		report_line += "<b>" + lang_ranked_wins[lang] + "</b>: " + username_most_ranked_wins + " " + lang_on[lang] + " " + platform_most_ranked_wins + " (" + formatNumber(most_ranked_wins, lang) + ")\n";
+	if (most_ranked_losses > 0)
+		report_line += "<b>" + lang_ranked_losses[lang] + "</b>: " + username_most_ranked_losses + " " + lang_on[lang] + " " + platform_most_ranked_losses + " (" + formatNumber(most_ranked_losses, lang) + ")\n";
+	if (most_ranked_wl > 0)
+		report_line += "<b>" + lang_ranked_wl[lang] + "</b>: " + username_most_ranked_wl + " " + lang_on[lang] + " " + platform_most_ranked_wl + " (" + formatDecimal(most_ranked_wl, lang) + ")\n";
+	if (most_ranked_kills > 0)
+		report_line += "<b>" + lang_ranked_kills[lang] + "</b>: " + username_most_ranked_kills + " " + lang_on[lang] + " " + platform_most_ranked_kills + " (" + formatNumber(most_ranked_kills, lang) + ")\n";
+	if (most_ranked_deaths > 0)
+		report_line += "<b>" + lang_ranked_deaths[lang] + "</b>: " + username_most_ranked_deaths + " " + lang_on[lang] + " " + platform_most_ranked_deaths + " (" + formatNumber(most_ranked_deaths, lang) + ")\n";
+	if (most_ranked_kd > 0)
+		report_line += "<b>" + lang_ranked_kd[lang] + "</b>: " + username_most_ranked_kd + " " + lang_on[lang] + " " + platform_most_ranked_kd + " (" + formatDecimal(most_ranked_kd, lang) + ")\n";
+	if (most_season_mmr > 0)
+		report_line += "<b>" + lang_season_mmr[lang] + "</b>: " + username_most_season_mmr + " " + lang_on[lang] + " " + platform_most_season_mmr + " (" + formatNumber(most_season_mmr, lang) + ")\n";
+	if (most_headshots > 0)
+		report_line += "<b>" + lang_headshots[lang] + "</b>: " + username_most_headshots + " " + lang_on[lang] + " " + platform_most_headshots + " (" + formatNumber(most_headshots, lang) + ")\n";
+	
+	if (report_line != "") {
+		bot.sendMessage(last_chat_id, report + report_line, html);
 		console.log("Weekly/Monthly report sent for group " + last_chat_id);
 	} else
 		console.log("No data report for group " + last_chat_id);
