@@ -345,6 +345,7 @@ var lang_title_season = [];
 var lang_title_operators = [];
 
 var lang_insert_date = [];
+var lang_full_stats = [];
 
 var lang_inline_total_kills = [];
 var lang_inline_total_deaths = [];
@@ -736,6 +737,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"11/02/20 - Accorciate le statistiche del comando /stats, quelle complete sono comunque visibili con il nuovo comando /fullstats\n" +
 	"10/02/20 - Migliorato il report settimanale e mensile dei giocatori nel gruppo\n" +
 	"03/02/20 - Aggiunto il comando /maprank per visualizzare il corrispondente rango al mmr specificato\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
@@ -744,6 +746,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"02/11/20 - Reduced stats of /stats command, full stats are in the new /fullstats command\n" +
 	"02/10/20 - Improved weekly and monthly report for players in group\n" +
 	"02/03/20 - Added /maprank command to show relative tank to specified mmr\n" +
 	"01/13/20 - Updated with Shifting Tides complete support\n" +
@@ -861,6 +864,8 @@ lang_title_operators["en"] = "Operators";
 
 lang_insert_date["it"] = "Ultimo aggiornamento: ";
 lang_insert_date["en"] = "Last update: ";
+lang_full_stats["it"] = "Per visualizzare le statistiche complete usa /fullstats"
+lang_full_stats["en"] = "To show full stats use /fullstats"
 
 lang_inline_total_kills["it"] = "Uccisioni totali";
 lang_inline_total_kills["en"] = "Total kills";
@@ -2629,6 +2634,219 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 		updateChatId(message.from.id, message.chat.id);
 		updateUsername(message.from.id, message.from.username);
+
+		console.log(getNow("it") + " Request user data for " + username + " on " + platform);
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			connection.query('UPDATE user SET last_stats = NOW() WHERE account_id = ' + message.from.id, function (err, rows) {
+				if (err) throw err;
+			});
+			connection.query('SELECT * FROM player_history WHERE platform = "' + platform + '" AND username = "' + username + '" ORDER BY id DESC', function (err, rows) {
+				if (err) throw err;
+
+				if ((Object.keys(rows).length > 0) && (forceSave == 0)){
+					var d = new Date(rows[0].insert_date);
+					var insert_date;
+					if (lang == "it")
+						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+					else
+						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " of " + addZero(d.getMonth() + 1) + "/" + addZero(d.getDate()) + "/" + d.getFullYear();
+					insert_date = "\n\n<i>" + lang_insert_date[lang] + insert_date + "</i>";
+					
+					var response = JSON.parse(JSON.stringify(rows[0]));
+					
+					bot.sendMessage(message.chat.id, shortStats(response, lang) + "\n" + lang_full_stats[lang] + insert_date + extra_info, options);
+					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
+					return;
+				} else {
+					// force save if no data
+					forceSave == 1;
+				}
+				
+				/*
+				bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+				return;
+				*/
+
+				bot.sendChatAction(message.chat.id, "typing").then(function () {
+					r6.stats(username, platform, -1, 0).then(response => {
+						var responseStats = response;
+
+						if (responseStats.platform == undefined){
+							bot.sendMessage(message.chat.id, lang_user_wrong_platform[lang] + " (" + username + ", " + platform + ")", options);
+							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
+							return;
+						}
+						
+						var text = shortStats(responseStats, lang);
+						r6.stats(username, platform, -1, 1).then(response => {
+							var responseOps = response;
+
+							if (undefined_track == 1){
+								connection.query("UPDATE user SET undefined_track = 0 WHERE account_id = " + message.from.id, function (err, rows) {
+									if (err) throw err;
+									console.log(getNow("it") + " User unlocked for " + username + " on " + platform);
+								});
+							}
+
+							bot.sendMessage(message.chat.id, text + "\n" + extra_info + "\n" + lang_full_stats[lang], options);
+
+							if (forceSave == 1){
+								connection.query("UPDATE user SET force_update = 0, last_update = NOW() WHERE account_id = " + message.from.id, function (err, rows) {
+									if (err) throw err;
+								});
+								saveData(responseStats, responseOps, 1);
+							}
+
+							console.log(getNow("it") + " User data served for " + username + " on " + platform);
+						}).catch(error => {
+							console.log(username, platform, error);
+							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
+							console.log(getNow("it") + " User data operators not found for " + username + " on " + platform);
+						});
+					}).catch(error => {
+						console.log(username, platform, error);
+						bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
+						console.log(getNow("it") + " User data not found for " + username + " on " + platform);
+					});
+				});
+			});
+		});
+	});
+});
+
+bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullstats(?:@\w+)?|^\/!fullstats(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /fullstats", options);
+			return;
+		}
+
+		var lang = rows[0].lang;
+
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
+			return;
+		}
+
+		var username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
+			return;
+		}
+
+		var platform = rows[0].default_platform;
+		
+		var undefined_track = rows[0].undefined_track;
+
+		var extra_info = "";
+		if (lang_extra_info[lang] != "")
+			extra_info = lang_extra_info[lang];
+
+		var forceSave = 0;
+		if (rows[0].force_update == 1){
+			forceSave = 1;
+			console.log("ForceSave enabled");
+		}
+		
+		/*
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+			rows[0].undefined_track = 0;
+			rows[0].force_update = 0;
+			rows[0].default_username = null;
+			rows[0].default_platform = null;
+		}
+
+		var lang = rows[0].lang;
+		var undefined_track = rows[0].undefined_track;
+		var username = "";
+		var platform = "uplay";
+
+		var extra_info = "";
+		if (lang_extra_info[lang] != "")
+			extra_info = lang_extra_info[lang];
+
+		var forceSave = 0;
+		if (rows[0].force_update == 1){
+			forceSave = 1;
+			console.log("ForceSave enabled");
+		}
+
+		if (match[3] != undefined){
+			match[3] = match[3].toLowerCase();
+			username = match[3];
+			
+			var checkPlatform = checkPlatformArray(["ps4", "psn", "pc", "uplay", "xbox", "xbl", "xbox one"], match[3]);
+			if (checkPlatform != "") {
+				username = username.replace(checkPlatform, "").trim();
+				platform = checkPlatform;
+			} else if (rows[0].default_platform != null)
+				platform = rows[0].default_platform;
+		}else{
+			if (match[1] == undefined){
+				if (message.reply_to_message != undefined) {
+					var user = connection_sync.query("SELECT default_username FROM user WHERE account_id = " + message.reply_to_message.from.id);
+					if (Object.keys(user).length > 0)
+						username = user[0].default_username;
+					else
+						username = message.reply_to_message.from.username;
+				} else if (rows[0].default_username != null)
+					username = rows[0].default_username;
+				else{
+					var iKeys = [];
+					iKeys.push([{
+						text: lang_config_inline[lang] + " ⚙️",
+						url: "https://t.me/r6siegestatsbot?start=config"
+					}]);
+					var opt =	{
+						parse_mode: 'HTML',
+						reply_markup: {
+							inline_keyboard: iKeys
+						}
+					};
+					bot.sendMessage(message.chat.id, lang_invalid_user[lang], opt);
+					return;
+				}
+			}else
+				username = match[1];
+
+			if (match[2] == undefined){
+				if (rows[0].default_platform != null)
+					platform = rows[0].default_platform;
+			}else
+				platform = match[2].toLowerCase();
+		}
+
+		username = username.trim();
+		platform = platform.trim();
+
+		if (platform == "ps4")
+			platform = "psn";
+		else if (platform == "pc")
+			platform = "uplay";
+		else if (platform.indexOf("xbox") != -1)
+			platform = "xbl";
+
+		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
+			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
+			return;
+		}
+		*/
 
 		console.log(getNow("it") + " Request user data for " + username + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -5187,7 +5405,13 @@ function printInline(query_id, response, lang){
 		type: 'article',
 		title: lang_inline_userinfo[lang],
 		description: lang_inline_userfound[lang],
-		message_text: 	"<b>" + response.username + "</b> (Lv " + response.level + " - " + decodePlatform(response.platform) + ")\n" +
+		message_text: shortStats(response, lang) + "\n\n" + lang_inline_infos[lang],
+		parse_mode: "HTML"
+	}]);
+}
+
+function shortStats(response, lang) {
+	return "<b>" + response.username + "</b> (Lv " + response.level + " - " + decodePlatform(response.platform) + ")\n\n" +
 		"<b>" + lang_inline_season[lang] + "</b>: " + numToRank(response.season_rank, lang) + " (" + Math.round(response.season_mmr) + ")\n" + 
 		"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + formatDecimal(response.ranked_kd, lang) + "\n" +
 		"<b>" + lang_inline_ranked_playtime[lang] + "</b>: " + toTime(response.ranked_playtime, lang, true) + "\n" +
@@ -5197,9 +5421,7 @@ function printInline(query_id, response, lang){
 		"<b>" + lang_inline_total_deaths[lang] + "</b>: " + formatNumber(response.ranked_deaths + response.casual_deaths, lang) + "\n" +
 		"<b>" + lang_inline_total_wins[lang] + "</b>: " + formatNumber(response.ranked_wins + response.casual_wins, lang) + "\n" +
 		"<b>" + lang_inline_total_losses[lang] + "</b>: " + formatNumber(response.ranked_losses + response.casual_losses, lang) + "\n" +
-		"<b>" + lang_inline_best_operator[lang] + "</b>: " + response.operator_max_wl_name + " (" + formatDecimal(response.operator_max_wl, lang) + ")\n\n" + lang_inline_infos[lang],
-		parse_mode: "HTML"
-	}]);
+		"<b>" + lang_inline_best_operator[lang] + "</b>: " + response.operator_max_wl_name + " (" + formatDecimal(response.operator_max_wl, lang) + ")";
 }
 
 function saveData(responseStats, responseOps, activeLog){
@@ -5524,25 +5746,25 @@ function generateReport(element, index, array) {
 	
 	var report_line = "";
 	if (most_xp > 0)
-		report_line += "<b>" + lang_xp[lang] + "</b>: " + username_most_xp + " " + lang_on[lang] + " " + platform_most_xp + " (" + formatNumber(most_xp, lang) + ")\n";
+		report_line += "<b>" + lang_xp[lang] + "</b>: " + username_most_xp + " " + lang_on[lang] + " " + platform_most_xp + " (+" + formatNumber(most_xp, lang) + ")\n";
 	if (most_ranked_plays > 0)
-		report_line += "<b>" + lang_ranked_plays[lang] + "</b>: " + username_most_ranked_plays + " " + lang_on[lang] + " " + platform_most_ranked_plays + " (" + formatNumber(most_ranked_plays, lang) + ")\n";
+		report_line += "<b>" + lang_ranked_plays[lang] + "</b>: " + username_most_ranked_plays + " " + lang_on[lang] + " " + platform_most_ranked_plays + " (+" + formatNumber(most_ranked_plays, lang) + ")\n";
 	if (most_ranked_wins > 0)
-		report_line += "<b>" + lang_ranked_wins[lang] + "</b>: " + username_most_ranked_wins + " " + lang_on[lang] + " " + platform_most_ranked_wins + " (" + formatNumber(most_ranked_wins, lang) + ")\n";
+		report_line += "<b>" + lang_ranked_wins[lang] + "</b>: " + username_most_ranked_wins + " " + lang_on[lang] + " " + platform_most_ranked_wins + " (+" + formatNumber(most_ranked_wins, lang) + ")\n";
 	if (most_ranked_losses > 0)
-		report_line += "<b>" + lang_ranked_losses[lang] + "</b>: " + username_most_ranked_losses + " " + lang_on[lang] + " " + platform_most_ranked_losses + " (" + formatNumber(most_ranked_losses, lang) + ")\n";
+		report_line += "<b>" + lang_ranked_losses[lang] + "</b>: " + username_most_ranked_losses + " " + lang_on[lang] + " " + platform_most_ranked_losses + " (+" + formatNumber(most_ranked_losses, lang) + ")\n";
 	if (most_ranked_wl > 0)
-		report_line += "<b>" + lang_ranked_wl[lang] + "</b>: " + username_most_ranked_wl + " " + lang_on[lang] + " " + platform_most_ranked_wl + " (" + formatDecimal(most_ranked_wl, lang) + ")\n";
+		report_line += "<b>" + lang_ranked_wl[lang] + "</b>: " + username_most_ranked_wl + " " + lang_on[lang] + " " + platform_most_ranked_wl + " (+" + formatDecimal(most_ranked_wl, lang) + ")\n";
 	if (most_ranked_kills > 0)
-		report_line += "<b>" + lang_ranked_kills[lang] + "</b>: " + username_most_ranked_kills + " " + lang_on[lang] + " " + platform_most_ranked_kills + " (" + formatNumber(most_ranked_kills, lang) + ")\n";
+		report_line += "<b>" + lang_ranked_kills[lang] + "</b>: " + username_most_ranked_kills + " " + lang_on[lang] + " " + platform_most_ranked_kills + " (+" + formatNumber(most_ranked_kills, lang) + ")\n";
 	if (most_ranked_deaths > 0)
-		report_line += "<b>" + lang_ranked_deaths[lang] + "</b>: " + username_most_ranked_deaths + " " + lang_on[lang] + " " + platform_most_ranked_deaths + " (" + formatNumber(most_ranked_deaths, lang) + ")\n";
+		report_line += "<b>" + lang_ranked_deaths[lang] + "</b>: " + username_most_ranked_deaths + " " + lang_on[lang] + " " + platform_most_ranked_deaths + " (+" + formatNumber(most_ranked_deaths, lang) + ")\n";
 	if (most_ranked_kd > 0)
-		report_line += "<b>" + lang_ranked_kd[lang] + "</b>: " + username_most_ranked_kd + " " + lang_on[lang] + " " + platform_most_ranked_kd + " (" + formatDecimal(most_ranked_kd, lang) + ")\n";
+		report_line += "<b>" + lang_ranked_kd[lang] + "</b>: " + username_most_ranked_kd + " " + lang_on[lang] + " " + platform_most_ranked_kd + " (+" + formatDecimal(most_ranked_kd, lang) + ")\n";
 	if (most_season_mmr > 0)
-		report_line += "<b>" + lang_season_mmr[lang] + "</b>: " + username_most_season_mmr + " " + lang_on[lang] + " " + platform_most_season_mmr + " (" + formatNumber(most_season_mmr, lang) + ")\n";
+		report_line += "<b>" + lang_season_mmr[lang] + "</b>: " + username_most_season_mmr + " " + lang_on[lang] + " " + platform_most_season_mmr + " (+" + formatNumber(most_season_mmr, lang) + ")\n";
 	if (most_headshots > 0)
-		report_line += "<b>" + lang_headshots[lang] + "</b>: " + username_most_headshots + " " + lang_on[lang] + " " + platform_most_headshots + " (" + formatNumber(most_headshots, lang) + ")\n";
+		report_line += "<b>" + lang_headshots[lang] + "</b>: " + username_most_headshots + " " + lang_on[lang] + " " + platform_most_headshots + " (+" + formatNumber(most_headshots, lang) + ")\n";
 	
 	if (report_line != "") {
 		bot.sendMessage(last_chat_id, report + report_line, html);
