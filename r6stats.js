@@ -4753,7 +4753,7 @@ bot.onText(/^\/autotrack(?:@\w+)?/i, function (message, match) {
 	if (message.from.id == 20471035) {
 		console.log(getNow("it") + " Autotrack called manually");
 		autoTrack();
-		bot.sendMessage(messsage.chat.id, "Done");
+		bot.sendMessage(message.chat.id, "Done");
 	}
 });
 
@@ -5430,7 +5430,7 @@ function printInline(query_id, response, lang){
 
 function shortStats(response, lang) {
 	return "<b>" + response.username + "</b> (Lv " + response.level + " - " + decodePlatform(response.platform) + ")\n\n" +
-		"<b>" + lang_inline_season[lang] + "</b>: " + numToRank(response.season_rank, lang) + " (" + Math.round(response.season_mmr) + ")\n" + 
+		"<b>" + lang_inline_season[lang] + "</b>: " + mapRank(Math.round(response.season_mmr), lang) + " (" + Math.round(response.season_mmr) + ")\n" + 
 		"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + formatDecimal(response.ranked_kd, lang) + "\n" +
 		"<b>" + lang_inline_ranked_playtime[lang] + "</b>: " + toTime(response.ranked_playtime, lang, true) + "\n" +
 		"<b>" + lang_inline_casual_kd[lang] + "</b>: " + formatDecimal(response.casual_kd, lang) + "\n" +
