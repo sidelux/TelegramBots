@@ -49,7 +49,10 @@ class RainbowSixApi {
 				request.get(endpoint, (error, response, body) => {
 					if (!error && response.statusCode == '200') {
 						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));	// nokk fix (ubi pls)
-
+						
+						if (objResp.error != undefined)
+							return reject(mapError(objResp.error.errorCode, objResp.error.message));
+						
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
 
@@ -63,8 +66,12 @@ class RainbowSixApi {
 			}else if (extra == 2){
 				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
-					if (!error && response.statusCode == '200') {
+					if (!error && response.statusCode == '200') {						
 						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));	// nokk fix (ubi pls)
+						
+						if (objResp.error != undefined)
+							return reject(mapError(objResp.error.errorCode, objResp.error.message));
+						
 						var objOps = objResp.operators;
 						return resolve(objOps);
 					}
@@ -73,15 +80,15 @@ class RainbowSixApi {
 				var objStats = {};
 
 				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&season=" + season + "&appcode=" + appcode;
-				request.get(endpoint, (error, response, body) => {
+				request.get(endpoint, (error, response, body) => {					
 					if (!error && response.statusCode == '200') {
 						var objResp = JSON.parse(body);
 
+						if (objResp.error != undefined)
+							return reject(mapError(objResp.error.errorCode, objResp.error.message));
+
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
-
-						if (objResp.error != undefined)
-							return reject(objResp.error.message);
 
 						if (objResp.players[ubi_id] == undefined)
 							return reject("User not found (0) - " + username);
@@ -2673,7 +2680,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 						if (responseStats.platform == undefined){
 							bot.sendMessage(message.chat.id, lang_user_wrong_platform[lang] + " (" + username + ", " + platform + ")", options);
-							console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
+							console.log(getNow("it") + " User data wrong platform for " + username + " on " + platform);
 							return;
 						}
 						
@@ -4806,6 +4813,12 @@ bot.onText(/^\/maprank (.+)|^\/maprank/i, function (message, match) {
 });
 
 // Functions
+
+function mapError(errorCode, errorMsg) {
+	if (errorCode == 1100)
+		return "Api overloaded, retry after some minutes";
+	return errorMsg;
+}
 
 function decodeStatus(status, maintenance, lang) {
 	status = status.toLowerCase();
