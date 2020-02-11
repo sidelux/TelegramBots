@@ -2650,16 +2650,16 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 					else
 						insert_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " of " + addZero(d.getMonth() + 1) + "/" + addZero(d.getDate()) + "/" + d.getFullYear();
-					insert_date = "\n\n<i>" + lang_insert_date[lang] + insert_date + "</i>";
+					insert_date = "\n<i>" + lang_insert_date[lang] + insert_date + "</i>";
 					
 					var response = JSON.parse(JSON.stringify(rows[0]));
 					
-					bot.sendMessage(message.chat.id, shortStats(response, lang) + "\n" + lang_full_stats[lang] + insert_date + extra_info, options);
+					bot.sendMessage(message.chat.id, shortStats(response, lang) + "\n\n" + lang_full_stats[lang] + insert_date + extra_info, options);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
 					return;
 				} else {
 					// force save if no data
-					forceSave == 1;
+					forceSave = 1;
 				}
 				
 				/*
@@ -2677,9 +2677,14 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 							return;
 						}
 						
-						var text = shortStats(responseStats, lang);
 						r6.stats(username, platform, -1, 1).then(response => {
 							var responseOps = response;
+							
+							var ops = getOperators(responseOps);
+							responseStats.operator_max_wl = ops[14];
+							responseStats.operator_max_wl_name = ops[15];
+							
+							var text = shortStats(responseStats, lang);
 
 							if (undefined_track == 1){
 								connection.query("UPDATE user SET undefined_track = 0 WHERE account_id = " + message.from.id, function (err, rows) {
@@ -2892,7 +2897,7 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 					return;
 				} else {
 					// force save if no data
-					forceSave == 1;
+					forceSave = 1;
 				}
 				
 				/*
