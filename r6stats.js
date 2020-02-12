@@ -6,7 +6,8 @@ process.on('uncaughtException', function (error) {
 });
 
 process.on('unhandledRejection', function (error, p) {
-	console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
+	if (error.message.indexOf("ECONNRESET") == -1)
+		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");	
 });
 
 const appcode = "r6apitelegram";
@@ -1426,7 +1427,13 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 		if (Object.keys(rows).length == 0){
 			connection.query("INSERT INTO user (account_id, lang) VALUES (" + message.from.id + ", '" + lang + "')", function (err, rows) {
 				if (err) throw err;
-				console.log(getNow("it") + " New user " + message.from.username + " (" + message.from.id + " - " + lang + ")");
+				var nick = "";
+				if (message.from.username == undefined)
+					nick = message.from.first_name;
+				else
+					nick = message.from.username;
+				
+				console.log(getNow("it") + " New user " + nick + " (" + message.from.id + " - " + lang + ")");
 			});
 		}else{
 			lang = rows[0].lang;
