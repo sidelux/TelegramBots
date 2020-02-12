@@ -32,6 +32,8 @@ var im = require('imagemagick');
 var tesseract = require('node-tesseract-ocr');
 var ffmpeg = require('fluent-ffmpeg');
 
+// require('longjohn');		// enable to detailed error log
+
 var r6italy_chatid = -1001246584843;
 
 class RainbowSixApi {
@@ -627,8 +629,8 @@ lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also 
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
 lang_stats["it"] = "%n operatori registrati, %s statistiche memorizzate in %g gruppi diversi";
 lang_stats["en"] = "%n operators registered, %s stats saved in %g different groups";
-lang_startme["it"] = "Questo comando necessita della configurazione del giocatore con nome utente e piattaforma\nAvviami in privato per configurare il bot e poter utilizzare il comando";
-lang_startme["en"] = "This command needs player configuration with username and platform\nStart me in private mode to configure bot and use the command";
+lang_startme["it"] = "Questo comando necessita della configurazione del giocatore con nome utente e piattaforma\nClicca il pulsante per configurare il bot e poter utilizzare il comando";
+lang_startme["en"] = "This command needs player configuration with username and platform\nClick the button to configure bot and use the command";
 lang_only_groups["it"] = "Questo comando funziona solo nei gruppi";
 lang_only_groups["en"] = "This command work only in groups";
 lang_changed["it"] = "Lingua modificata!";
@@ -1582,7 +1584,19 @@ bot.onText(/^\/avatar(?:@\w+)? (.+)|^\/avatar/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /avatar", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /avatar", opt);
 			return;
 		}
 
@@ -1686,7 +1700,19 @@ bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /lang", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /lang", opt);
 			return;
 		}
 
@@ -1719,7 +1745,19 @@ bot.onText(/^\/setusername(?:@\w+)? (.+)|^\/setusername(?:@\w+)?/i, function (me
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setusername", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setusername", opt);
 			return;
 		}
 
@@ -1748,7 +1786,19 @@ bot.onText(/^\/setplatform(?:@\w+)? (.+)|^\/setplatform(?:@\w+)?/i, function (me
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setplatform", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setplatform", opt);
 			return;
 		}
 
@@ -1789,7 +1839,19 @@ bot.onText(/^\/setreport(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setreport", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setreport", opt);
 			return;
 		}
 
@@ -1819,7 +1881,19 @@ bot.onText(/^\/setdailyreport(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setdailyreport", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /setdailyreport", opt);
 			return;
 		}
 
@@ -2127,7 +2201,19 @@ bot.onText(/^\/graph(?:@\w+)? (.+)|^\/graph(?:@\w+)?|^\/lastgraph(?:@\w+)?/i, fu
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /graph", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /graph", opt);
 			return;
 		}
 
@@ -2232,7 +2318,19 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /update", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /update", opt);
 			return;
 		}
 
@@ -2737,7 +2835,19 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /fullstats", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /fullstats", opt);
 			return;
 		}
 
@@ -2972,7 +3082,19 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank", opt);
 			return;
 		}
 
@@ -3040,7 +3162,19 @@ bot.onText(/^\/userhistory(?:@\w+)?/i, function (message, match) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /rank", opt);
 			return;
 		}
 
@@ -3394,7 +3528,19 @@ bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, ma
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /season", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /season", opt);
 			return;
 		}
 
@@ -3455,7 +3601,19 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /seasons", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /seasons", opt);
 			return;
 		}
 
@@ -3540,7 +3698,19 @@ bot.onText(/^\/history(?:@\w+)?/i, function (message) {
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /history", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /history", opt);
 			return;
 		}
 
@@ -3607,7 +3777,19 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operators", options_reply);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operators", opt);
 			return;
 		}
 
@@ -3750,7 +3932,19 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operator", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /operator", opt);
 			return;
 		}
 
@@ -4650,7 +4844,19 @@ bot.onText(/^\/find (.+)(?:@\w+)?|^\/find(?:@\w+)?/i, function (message, match) 
 				if (validLang.indexOf(message.from.language_code) != -1)
 					lang = message.from.language_code;
 			}
-			bot.sendMessage(message.chat.id, lang_startme[lang] + " /find", options);
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /find", opt);
 			return;
 		}
 
