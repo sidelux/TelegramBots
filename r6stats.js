@@ -5248,7 +5248,7 @@ function parse(message, force = 0){
 	var clanNameFound = "";
 	var clanName = text.match(/^clan [\w ]+$|^team [\w ]+$/gmi);
 	if (clanName != null)
-		clanNameFound = " " + jsUcall(clanName[0]);
+		clanNameFound = " " + jsUcall(clanName[0].replace(/\s+/g, ' '));
 	else {
 		var team = text.search(/team/gmi);
 		var clan = text.search(/clan/gmi);
@@ -5643,7 +5643,7 @@ function printInline(query_id, response, lang){
 
 function shortStats(response, lang) {
 	return "<b>" + response.username + "</b> (Lv " + response.level + " - " + decodePlatform(response.platform) + ")\n\n" +
-		"<b>" + lang_inline_season[lang] + "</b>: " + mapRank(Math.round(response.season_mmr), lang) + " (" + Math.round(response.season_mmr) + ")\n" + 
+		"<b>" + lang_inline_season[lang] + "</b>: " + mapRank(Math.round(response.season_mmr), lang, response.top_rank_position) + " (" + Math.round(response.season_mmr) + ")\n" + 
 		"<b>" + lang_inline_ranked_kd[lang] + "</b>: " + formatDecimal(response.ranked_kd, lang) + "\n" +
 		"<b>" + lang_inline_ranked_playtime[lang] + "</b>: " + toTime(response.ranked_playtime, lang, true) + "\n" +
 		"<b>" + lang_inline_casual_kd[lang] + "</b>: " + formatDecimal(response.casual_kd, lang) + "\n" +
