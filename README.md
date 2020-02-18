@@ -9,6 +9,7 @@ A bot archive created by Edoardo Cortese.
 * [@InlineMathbot](http://telegram.me/inlinemathbot) - Solve math expression in inline mode!
 * [@Compactorbot](http://telegram.me/compactorbot) - Compact consecutive messages published by users in telegram groups!
 * [@UserStatsTrackerbot](http://telegram.me/userstatstrackerbot) - Keep tracking messages count of every group on Telegram!
+* [@ManPinnerbot](http://telegram.me/manpinnerbot) - Allow normal users to pin messages to your group chat!
 
 ## Authors
 
