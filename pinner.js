@@ -168,6 +168,7 @@ bot.onText(/^\/enable/i, function (message) {
 			connection.query('INSERT INTO user (account_id, chat_id) VALUES (' + account_id + ', ' + chat_id + ')', function (err, rows) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, lang_added[lang], options);
+				console.log(getNow("it") + " Enabled user for chat_id " + chat_id);
 			});
 		});
 	});
@@ -201,7 +202,7 @@ bot.onText(/^\/disable/i, function (message) {
 		connection.query('SELECT 1 FROM user WHERE account_id = ' + account_id + ' AND chat_id = ' + chat_id, function (err, rows) {
 			if (err) throw err;
 			
-			if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, lang_notenabled[lang], options);
 				return;
 			}
@@ -209,6 +210,7 @@ bot.onText(/^\/disable/i, function (message) {
 			connection.query('DELETE FROM user WHERE account_id = ' + account_id + ' AND chat_id = ' + chat_id, function (err, rows) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, lang_disabled[lang], options);
+				console.log(getNow("it") + " Disabled user for chat_id " + chat_id);
 			});
 		});
 	});
@@ -242,7 +244,8 @@ bot.onText(/^\/manpin/i, function (message) {
 			return;
 		}
 		
-		bot.pinChatMessage(chat_id, message.reply_to_message.message_id, false);
+		bot.pinChatMessage(chat_id, message.reply_to_message.message_id);
+		console.log(getNow("it") + " Pinned for chat_id " + chat_id);
 	});
 });
 
