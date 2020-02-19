@@ -266,8 +266,8 @@ var no_preview = {
 var validLang = ["en", "it"];
 var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
-var operatorList = ["Alibi", "Maestro", "Finka", "Lion", "Vigil", "Dokkaebi", "Zofia", "Ela", "Ying", "Lesion", "Mira", "Jackal", "Hibana", "Echo", "Caveira", "Capitao", "Blackbeard", "Valkyrie", "Buck", "Frost", "Mute", "Sledge", "Smoke", "Thatcher", "Ash", "Castle", "Pulse", "Thermite", "Montagne", "Twitch", "Doc", "Rook", "Jager", "Bandit", "Blitz", "IQ", "Fuze", "Glaz", "Tachanka", "Kapkan", "Maverick", "Clash", "Nomad", "Kaid", "Mozzie", "Gridlock", "Nokk", "Warden", "Goyo", "Amaru", "Wamai", "Kali"];
-var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon", "Phantom Sight", "Ember Rise", "Shifting Tides"];
+var operatorList = ["Alibi", "Maestro", "Finka", "Lion", "Vigil", "Dokkaebi", "Zofia", "Ela", "Ying", "Lesion", "Mira", "Jackal", "Hibana", "Echo", "Caveira", "Capitao", "Blackbeard", "Valkyrie", "Buck", "Frost", "Mute", "Sledge", "Smoke", "Thatcher", "Ash", "Castle", "Pulse", "Thermite", "Montagne", "Twitch", "Doc", "Rook", "Jager", "Bandit", "Blitz", "IQ", "Fuze", "Glaz", "Tachanka", "Kapkan", "Maverick", "Clash", "Nomad", "Kaid", "Mozzie", "Gridlock", "Nokk", "Warden", "Goyo", "Amaru", "Wamai", "Kali", "Oryx", "Iana"];
+var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon", "Phantom Sight", "Ember Rise", "Shifting Tides", "Void Edge"];
 var lang_main = [];
 var lang_stats = [];
 var lang_startme = [];
@@ -625,6 +625,9 @@ var lang_status_interrupted = [];
 var lang_status_degraded = [];
 
 var lang_maprank_error = [];
+var lang_reddit = [];
+var lang_twitch = [];
+var lang_youtube = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -1373,6 +1376,12 @@ lang_status_degraded["en"] = "Degraded";
 
 lang_maprank_error["it"] = "Specifica il valore MMR dopo il comando /maprank";
 lang_maprank_error["en"] = "Insert MMR value after /maprank command";
+lang_reddit["it"] = "Nuovo video di reddit pubblicato da ";
+lang_reddit["en"] = "New reddit video published by ";
+lang_twitch["it"] = " ha pubblicato un link ad un canale Twitch: ";
+lang_twitch["en"] = " has published a Twitch channel link: ";
+lang_youtube["it"] = " ha pubblicato un link ad un canale Youtube: ";
+lang_youtube["en"] = " has published a Youtube channel link: ";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -1485,6 +1494,7 @@ bot.on('message', function (message) {
 			capture_url(message);
 		}
 	});
+	capture_reddit(message);
 });
 
 bot.on('edited_message', function (message) {
@@ -1637,7 +1647,7 @@ bot.onText(/^\/avatar(?:@\w+)? (.+)|^\/avatar/i, function (message, match) {
 		var image = message.reply_to_message.photo;
 		bot.downloadFile(image[image.length-1].file_id, "r6tmp/").then(function (data) {
 			var filePath = data;
-			var outputFilePath = data.replace(".", "_output.");	
+			var outputFilePath = data.replace(".", "_output.");
 
 			im.identify(filePath, function(err, data){
   				if (err) throw err;
@@ -5144,71 +5154,180 @@ function contest_group(message) {
 }
 
 function capture_url(message) {
-	if (message.chat.id == r6italy_chatid) {
-		var options = {parse_mode: "HTML", disable_web_page_preview: true};
-		
-		if ((message.text != undefined) || (message.caption != undefined)) {
-			var text = message.text;
-			if (message.caption != undefined)
-				text = message.caption;
-			
-			var nick = "";
-			if (message.from.username == undefined)
-				nick = message.from.first_name;
-			else
-				nick = message.from.username;
-			
-			var twitch = text.match(/twitch\.tv\/([a-zA-Z0-9_-]+)/gi);
-			if (twitch != null) {
-				bot.deleteMessage(message.chat.id, message.message_id);
-
-				bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale Twitch: " + twitch[0], options);
-			}
-
-			var youtube = text.match(/youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
-			if (youtube != null) {
-				bot.deleteMessage(message.chat.id, message.message_id);
-
-				bot.sendMessage(message.chat.id, nick + " ha pubblicato un link ad un canale YouTube: " + youtube[0], options);
-			}
-		}
+	if (message.chat.id != r6italy_chatid)
+		return;
+	
+	var lang = "en";
+	if (message.from.language_code != undefined){
+		if (validLang.indexOf(message.from.language_code) != -1)
+			lang = message.from.language_code;
 	}
-}
+	
+	var nick = "";
+	if (message.from.username == undefined)
+		nick = message.from.first_name;
+	else
+		nick = message.from.username;
+	
+	var options = {parse_mode: "HTML", disable_web_page_preview: true};
 
-function capture_parse(message) {
-	if (message.chat.id == r6italy_chatid) {
-		var options = {parse_mode: "HTML"};
-		
+	if ((message.text != undefined) || (message.caption != undefined)) {
+		var text = message.text;
+		if (message.caption != undefined)
+			text = message.caption;
+
 		var nick = "";
 		if (message.from.username == undefined)
 			nick = message.from.first_name;
 		else
 			nick = message.from.username;
+
+		var twitch = text.match(/twitch\.tv\/([a-zA-Z0-9_-]+)/gi);
+		if (twitch != null) {
+			bot.deleteMessage(message.chat.id, message.message_id);
+			
+			bot.sendMessage(message.chat.id, nick + lang_twitch[lang] + twitch[0], options);
+		}
+
+		var youtube = text.match(/youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
+		if (youtube != null) {
+			bot.deleteMessage(message.chat.id, message.message_id);
+
+			bot.sendMessage(message.chat.id, nick + lang_youtube[lang] + youtube[0], options);
+		}
+	}
+}
+
+function capture_reddit(message) {
+	if (message.chat.id != r6italy_chatid)
+		return;
+	
+	if (message.text == undefined)
+		return;
+	
+	var lang = "en";
+	if (message.from.language_code != undefined){
+		if (validLang.indexOf(message.from.language_code) != -1)
+			lang = message.from.language_code;
+	}
+	
+	var nick = "";
+	if (message.from.username == undefined)
+		nick = message.from.first_name;
+	else
+		nick = message.from.username;
+	
+	var found = /https:\/\/www.reddit\.com\/r\//i.test(message.text);
+	if (found == false)
+		return;
+	
+	var url = message.text;
+	
+	request({
+		uri: url + ".json",
+	}, function(error, response, body) {
+		var resp = JSON.parse(body);
+		var media = resp[0]["data"]["children"][0]["data"]["media"];
+		if (media == null)
+			return;
+		var video_url = media["reddit_video"]["fallback_url"];
+		var audio_url = video_url.split("DASH_")[0] + "audio";
 		
-		var res = parse(message);
-		if (res == "platform")
-			bot.sendMessage(message.chat.id, nick + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
-		if (res == "duplicate")
-			bot.sendMessage(message.chat.id, nick + ", hai appena postato un reclutamento, riprova tra un po' di tempo!", options);
-		if (res == "ok") {
-			var iKeys = [];
-			iKeys.push([{
-				text: "Vai al Canale 🔰",
-				url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
-			}]);
-			var opt =	{
-				parse_mode: 'HTML',
-				reply_markup: {
-					inline_keyboard: iKeys
-				}
-			};
-
-			bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
-
-			connection.query("INSERT INTO recruit_history (account_id, chat_id) VALUES (" + message.from.id + ", '" + message.chat.id + "')", function (err, rows) {
-				if (err) throw err;
+		console.log("New reddit video found, parsing...");
+		
+		const downloadFile = (url, dest, callback) => {
+			const file = fs.createWriteStream(dest);
+			const req = https.get(url, (res) => {
+				if (res.statusCode !== 200)
+					return callback('File not found');
+				const len = parseInt(res.headers['content-length'], 10);
+				let dowloaded = 0;
+				res.pipe(file);
+				res.on('data', (chunk) => {
+					dowloaded += chunk.length;
+				}).on('end', () => {
+					file.end();
+					callback(null);
+				}).on('error', (err) => {
+					callback(err.message);
+				})
+			}).on('error', (err) => {
+				fs.unlink(dest);
+				callback(err.message);
 			});
 		}
+		
+		var fileVideoPath = "r6tmp/tmp.mp4";
+		var fileAudioPath = "r6tmp/tmp.mp3";
+		var outputFilePath = "r6tmp/res.mp4";
+		
+		downloadFile(video_url, fileVideoPath, (err) => {
+			if (err) {
+				console.log(err);
+			} else {
+				downloadFile(audio_url, fileAudioPath, (err) => {
+					if (err) {
+						console.log(err);
+					} else {
+						var command = ffmpeg().addInput(fileVideoPath).addInput(fileAudioPath).on('error', function(err) {
+							console.log('Error: ' + err.message);
+						}).on('end', function() {
+							bot.deleteMessage(message.chat.id, message.message_id);
+							bot.sendVideo(message.chat.id, outputFilePath, {caption: lang_reddit[lang] + nick}).then(function (data) {
+								fs.unlink(fileVideoPath, function (err) {
+									if (err) throw err;
+								}); 
+								fs.unlink(fileAudioPath, function (err) {
+									if (err) throw err;
+								});
+								fs.unlink(outputFilePath, function (err) {
+									if (err) throw err;
+								});
+							});
+							console.log("Reddit video published");
+						}).save(outputFilePath);
+					}
+				});
+			}
+		});
+	});
+}
+
+function capture_parse(message) {
+	if (message.chat.id != r6italy_chatid)
+		return;
+	
+	var options = {parse_mode: "HTML"};
+
+	var nick = "";
+	if (message.from.username == undefined)
+		nick = message.from.first_name;
+	else
+		nick = message.from.username;
+
+	var res = parse(message);
+	if (res == "platform")
+		bot.sendMessage(message.chat.id, nick + ", specifica la piattaforma ed invia nuovamente il reclutamento!", options);
+	if (res == "duplicate")
+		bot.sendMessage(message.chat.id, nick + ", hai appena postato un reclutamento, riprova tra un po' di tempo!", options);
+	if (res == "ok") {
+		var iKeys = [];
+		iKeys.push([{
+			text: "Vai al Canale 🔰",
+			url: "https://t.me/joinchat/AAAAAE8VVBZcHbmaF3JuLw"
+		}]);
+		var opt =	{
+			parse_mode: 'HTML',
+			reply_markup: {
+				inline_keyboard: iKeys
+			}
+		};
+
+		bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+
+		connection.query("INSERT INTO recruit_history (account_id, chat_id) VALUES (" + message.from.id + ", '" + message.chat.id + "')", function (err, rows) {
+			if (err) throw err;
+		});
 	}
 }
 
