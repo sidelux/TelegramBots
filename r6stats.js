@@ -751,15 +751,16 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"20/02/20 - Aggiunto il supporto parziale per Void Edge\n" +
 	"11/02/20 - Accorciate le statistiche del comando /stats, quelle complete sono comunque visibili con il nuovo comando /fullstats\n" +
 	"10/02/20 - Migliorato il report settimanale e mensile dei giocatori nel gruppo\n" +
 	"03/02/20 - Aggiunto il comando /maprank per visualizzare il corrispondente rango al mmr specificato\n" +
-	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"02/20/20 - Added partial support for Void Edge\n" +
 	"02/11/20 - Reduced stats of /stats command, full stats are in the new /fullstats command\n" +
 	"02/10/20 - Improved weekly and monthly report for players in group\n" +
 	"02/03/20 - Added /maprank command to show relative tank to specified mmr\n" +
