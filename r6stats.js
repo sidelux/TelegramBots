@@ -32,6 +32,7 @@ var stringSimilarity = require('string-similarity');
 var im = require('imagemagick');
 var tesseract = require('node-tesseract-ocr');
 var ffmpeg = require('fluent-ffmpeg');
+var PDFDocument = require('./pdfkit-tables.js');
 
 // require('longjohn');		// enable to detailed error log
 
@@ -3837,11 +3838,14 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 				return;
 			}
 		}
+		
+		var header = [];
+		var content = [];
 
 		console.log(getNow("it") + " Request operators data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(default_username, default_platform, -1, 1).then(response => {
-				var text = "<b>" + lang_operator_title[lang] + " - " + lang_operator_plays[lang] + " - " + lang_operator_wins[lang] + " - " + lang_operator_losses[lang] + " - " + lang_operator_kills[lang] + " - " + lang_operator_deaths[lang] + " - " + lang_operator_playtime[lang] + " - " + lang_operator_specials[lang] + "</b>\n";
+				header = [lang_operator_title[lang], lang_operator_plays[lang], lang_operator_wins[lang], lang_operator_losses[lang], lang_operator_kills[lang], lang_operator_deaths[lang], lang_operator_playtime[lang], lang_operator_specials[lang]];
 
 				var operators = response;
 
@@ -3901,7 +3905,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 				var operators_name = Object.keys(operators);
 
 				for (i = 0; i < Object.keys(operators).length; i++){
-					text += "<b>" + jsUcfirst(operators_name[i]) + "</b> - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon+response[operators_name[i]].operatorpvp_roundlost, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundwon, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_roundlost, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_kills, lang) + " - " + formatNumber(response[operators_name[i]].operatorpvp_death, lang) + " - " + toTime(response[operators_name[i]].operatorpvp_timeplayed, lang, true);
+					content[i] = [jsUcfirst(operators_name[i]), formatNumber(response[operators_name[i]].operatorpvp_roundwon+response[operators_name[i]].operatorpvp_roundlost, lang), formatNumber(response[operators_name[i]].operatorpvp_roundwon, lang), formatNumber(response[operators_name[i]].operatorpvp_roundlost, lang), formatNumber(response[operators_name[i]].operatorpvp_kills, lang), formatNumber(response[operators_name[i]].operatorpvp_death, lang), toTime(response[operators_name[i]].operatorpvp_timeplayed, lang, true)];
 
 					var specials = Object.keys(operators[operators_name[i]]);
 
@@ -3924,12 +3928,13 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 								sum += parseInt(eval("operators[operators_name[" + i + "]]." + specials[j]));
 						}
 					}
-					text += " - " + formatNumber(sum, lang);
-					text += "\n";
+					content[i].push(formatNumber(sum, lang));
 				}
 				if (message.chat.id < 0)
 					bot.sendMessage(message.chat.id, "<i>" + lang_private[lang] + "</i>", options_reply);
-				bot.sendMessage(message.from.id, text + lang_operator_extra[lang], options);
+				var fileName = "Operators" + (orderMethod != "" ? "_" + orderMethod : "") + ".pdf";
+				operatorsPdf(message, header, content, fileName);
+				// bot.sendMessage(message.from.id, lang_operator_extra[lang], options);
 			}).catch(error => {
 				console.log(default_username, default_platform, error);
 				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options_reply);
@@ -5036,6 +5041,41 @@ bot.onText(/^\/maprank (.+)|^\/maprank/i, function (message, match) {
 });
 
 // Functions
+
+function operatorsPdf(message, header, content, fileName) {
+	var doc = new PDFDocument ({
+		margin: 25
+	})
+	var writeStream = fs.createWriteStream(fileName);
+	doc.pipe(writeStream);
+	var c = 1;
+	var tableRows = [];
+	for (var i = 0, len = content.length; i < len; i++) {
+		if (content[i] == undefined)
+			continue;
+		tableRows.push(content[i]);
+		c++;
+	}
+
+	var table = {
+		headers: header,
+		rows: tableRows
+	};
+
+	doc.table(table, {
+		prepareHeader: () => doc.font('Helvetica-Bold').fontSize(11),
+		prepareRow: (row, i) => doc.font('Helvetica').fontSize(11)
+	});
+
+	doc.end();
+	writeStream.on('finish', function () {
+		bot.sendDocument(message.chat.id, fileName).then(function (data) {
+			fs.unlink(fileName, function (err) {
+				if (err) throw err;
+			});
+		});
+	});
+}
 
 function mapError(errorCode, errorMsg) {
 	if (errorCode == 1100)
