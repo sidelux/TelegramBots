@@ -2121,10 +2121,10 @@ bot.onText(/^\/challenges(?:@\w+)? (.+)|^\/challenges(?:@\w+)?/i, function (mess
 		var type_desc = "";
 		if (match[1] != undefined) {
 			match[1] = match[1].toLowerCase();
-			type_desc = " with type " + filterType;
-			if (validParam.indexOf(match[1]) != -1)
+			if (validParam.indexOf(match[1]) != -1) {
 				filterType = match[1];
-			else {
+				type_desc = " with type " + filterType;
+			} else {
 				bot.sendMessage(message.chat.id, lang_invalid_type[lang] + validParam.join(", "), options);
 				return;
 			}
