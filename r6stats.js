@@ -500,6 +500,7 @@ var lang_loadout_map_lasertrue = [];
 var lang_challenges_preview = [];
 var lang_challenges_rewards = [];
 var lang_challenges_refresh = [];
+var lang_challenges_invalid_type = [];
 
 var lang_team_invalid_syntax = [];
 var lang_team_invalid_name = [];
@@ -629,7 +630,6 @@ var lang_maprank_error = [];
 var lang_reddit = [];
 var lang_twitch = [];
 var lang_youtube = [];
-var lang_invalid_type = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -752,7 +752,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
-	"20/02/20 - Aggiunto il supporto parziale per Void Edge\n" +
+	"20/02/20 - Aggiornato con il supporto parziale a Void Edge\n" +
 	"11/02/20 - Accorciate le statistiche del comando /stats, quelle complete sono comunque visibili con il nuovo comando /fullstats\n" +
 	"10/02/20 - Migliorato il report settimanale e mensile dei giocatori nel gruppo\n" +
 	"03/02/20 - Aggiunto il comando /maprank per visualizzare il corrispondente rango al mmr specificato\n" +
@@ -761,7 +761,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
-	"02/20/20 - Added partial support for Void Edge\n" +
+	"02/20/20 - Updated with Void Eddge partial support\n" +
 	"02/11/20 - Reduced stats of /stats command, full stats are in the new /fullstats command\n" +
 	"02/10/20 - Improved weekly and monthly report for players in group\n" +
 	"02/03/20 - Added /maprank command to show relative tank to specified mmr\n" +
@@ -1143,6 +1143,8 @@ lang_challenges_preview["it"] = "Anteprima";
 lang_challenges_preview["en"] = "Reward";
 lang_challenges_refresh["it"] = "Aggiornamento il";
 lang_challenges_refresh["en"] = "Refresh on";
+lang_challenges_invalid_type["it"] = "Tipo non valido. Tipi disponibili: ";
+lang_challenges_invalid_type["en"] = "Invalid type. Available types: ";
 
 lang_team_invalid_syntax["it"] = "Sintassi non valida, riprova";
 lang_team_invalid_syntax["en"] = "Invalid syntax, retry.";
@@ -1385,8 +1387,6 @@ lang_twitch["it"] = " ha pubblicato un link ad un canale Twitch: ";
 lang_twitch["en"] = " has published a Twitch channel link: ";
 lang_youtube["it"] = " ha pubblicato un link ad un canale Youtube: ";
 lang_youtube["en"] = " has published a Youtube channel link: ";
-lang_invalid_type["it"] = "Tipo non valida. Tipi disponibili: ";
-lang_invalid_type["en"] = "Invalid type. Available types: ";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2118,8 +2118,10 @@ bot.onText(/^\/challenges(?:@\w+)? (.+)|^\/challenges(?:@\w+)?/i, function (mess
 		
 		var validParam = ["event", "regular"];
 		var filterType = null;
+		var type_desc = "";
 		if (match[1] != undefined) {
 			match[1] = match[1].toLowerCase();
+			type_desc = " with type " + filterType;
 			if (validParam.indexOf(match[1]) != -1)
 				filterType = match[1];
 			else {
@@ -2136,7 +2138,7 @@ bot.onText(/^\/challenges(?:@\w+)? (.+)|^\/challenges(?:@\w+)?/i, function (mess
 
 		var image_url = "https://static8.cdn.ubi.com/u/Uplay";
 
-		console.log(getNow("it") + " Request challenges in " + lang_complex + " from " + message.from.username + " with type " + filterType);
+		console.log(getNow("it") + " Request challenges in " + lang_complex + " from " + message.from.username + type_desc);
 		var endpoint = "https://public-ubiservices.ubi.com/v3/spaces/5172a557-50b5-4665-b7db-e3f2e8c5041d/club/challengepools?locale=" + lang_complex;
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			request.get(endpoint, (error, response, body) => {
