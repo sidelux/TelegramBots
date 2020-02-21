@@ -629,6 +629,7 @@ var lang_maprank_error = [];
 var lang_reddit = [];
 var lang_twitch = [];
 var lang_youtube = [];
+var lang_invalid_type = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -700,7 +701,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/status <piattaforma>' - Permette di visualizzare lo status ufficiale dei server di gioco.\n" +
 	"> '/news <numero>' - Permette di visualizzare le ultime news ufficiali del gioco reperite da Steam.\n" +
 	"> '/avatar <testo>' - Crea un avatar personalizzato con logo e bandiera della lingua usando il comando in risposta ad un immagine quadrata (puoi anche usare \\n per andare a capo).\n" +
-	"> '/challenges' - Permette di visualizzare le sfide settimanali in corso.\n" +
+	"> '/challenges <tipo>' - Permette di visualizzare le sfide settimanali in corso, eventualmente con il tipo di sfida.\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
@@ -733,7 +734,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/status <platform>' - Allow to print official server status of the game.\n" +
 	"> '/news <number>' - Allow to print latest official news of the game wrote by Steam.\n" +
 	"> '/avatar <text>' - Generate a custom avatar with language flag and logo using command in reply to a squared image (you can use \\n to make a newline).\n" +
-	"> '/challenges' - Allow to print current weekly challenges.\n" +
+	"> '/challenges <type>' - Allow to print current weekly challenges, eventually with the challenge type.\n" +
 	"> '/lang <language>' - Change bot language.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
@@ -1384,6 +1385,8 @@ lang_twitch["it"] = " ha pubblicato un link ad un canale Twitch: ";
 lang_twitch["en"] = " has published a Twitch channel link: ";
 lang_youtube["it"] = " ha pubblicato un link ad un canale Youtube: ";
 lang_youtube["en"] = " has published a Youtube channel link: ";
+lang_invalid_type["it"] = "Tipo non valida. Tipi disponibili: ";
+lang_invalid_type["en"] = "Invalid type. Available types: ";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2097,7 +2100,7 @@ bot.onText(/^\/news(?:@\w+)?/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
+bot.onText(/^\/challenges(?:@\w+)? (.+)|^\/challenges(?:@\w+)?/i, function (message, match) {
 	var options = {disable_web_page_preview: true, parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -2112,6 +2115,18 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
+		
+		var validParam = ["event", "regular"];
+		var filterType = null;
+		if (match[1] != undefined) {
+			match[1] = match[1].toLowerCase();
+			if (validParam.indexOf(match[1]) != -1)
+				filterType = match[1];
+			else {
+				bot.sendMessage(message.chat.id, lang_invalid_type[lang] + validParam.join(", "), options);
+				return;
+			}
+		}
 
 		var lang_complex = "";
 		if (lang == "it")
@@ -2121,7 +2136,7 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 
 		var image_url = "https://static8.cdn.ubi.com/u/Uplay";
 
-		console.log(getNow("it") + " Request challenges in " + lang_complex + " from " + message.from.username);
+		console.log(getNow("it") + " Request challenges in " + lang_complex + " from " + message.from.username + " with type " + filterType);
 		var endpoint = "https://public-ubiservices.ubi.com/v3/spaces/5172a557-50b5-4665-b7db-e3f2e8c5041d/club/challengepools?locale=" + lang_complex;
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			request.get(endpoint, (error, response, body) => {
@@ -2150,6 +2165,8 @@ bot.onText(/^\/challenges(?:@\w+)?/i, function (message, match) {
 							else
 								continue;
 							for (var i = 0, len = Object.keys(challenges).length; i < len; i++) {
+								if ((filterType != null) && (challenges[i].type != filterType))
+									continue;
 								challengesCat.push(resp[j]["localizations"][0]["value"]);
 								challengesExpire.push(resp[j]["expirationDate"]);
 								challengesName.push(challenges[i]["localizations"][0]["value"]);
