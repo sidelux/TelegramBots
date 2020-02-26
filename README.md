@@ -10,6 +10,7 @@ A bot archive created by Edoardo Cortese.
 * [@Compactorbot](http://telegram.me/compactorbot) - Compact consecutive messages published by users in telegram groups!
 * [@UserStatsTrackerbot](http://telegram.me/userstatstrackerbot) - Keep tracking messages count of every group on Telegram!
 * [@ManPinnerbot](http://telegram.me/manpinnerbot) - Allow normal users to pin messages to your group chat!
+* [@ExpellerBot](http://telegram.me/expellerbot) - Auto ban users with specific language in their first name!
 
 ## Authors
 
