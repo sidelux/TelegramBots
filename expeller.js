@@ -132,7 +132,7 @@ bot.on('message', function (message) {
 				var regex_chinese = /[\u3000\u3400-\u4DBF\u4E00-\u9FFF]/g;
 				var regex_arabic = /[\u0600-\u06ff]|[\u0750-\u077f]|[\ufb50-\ufbc1]|[\ufbd3-\ufd3f]|[\ufd50-\ufd8f]|[\ufd92-\ufdc7]|[\ufe70-\ufefc]|[\uFDF0-\uFDFD]/;
 				if (rows[0].whole_word == 1) {
-					regex_japanese = "^([\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|[\u203B])+$";
+					regex_japanese = /^([\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|[\u203B])+$/;
 					regex_chinese = /^[\u3000\u3400-\u4DBF\u4E00-\u9FFF]+$/g;
 					regex_arabic = /^([\u0600-\u06ff]|[\u0750-\u077f]|[\ufb50-\ufbc1]|[\ufbd3-\ufd3f]|[\ufd50-\ufd8f]|[\ufd92-\ufdc7]|[\ufe70-\ufefc]|[\uFDF0-\uFDFD])+$/;
 				}
