@@ -1381,8 +1381,8 @@ lang_status_degraded["en"] = "Degraded";
 
 lang_maprank_error["it"] = "Specifica il valore MMR dopo il comando /maprank";
 lang_maprank_error["en"] = "Insert MMR value after /maprank command";
-lang_reddit["it"] = "Nuovo video di reddit pubblicato da ";
-lang_reddit["en"] = "New reddit video published by ";
+lang_reddit["it"] = "Pubblicato da ";
+lang_reddit["en"] = "Published by ";
 lang_twitch["it"] = " ha pubblicato un link ad un canale Twitch: ";
 lang_twitch["en"] = " has published a Twitch channel link: ";
 lang_youtube["it"] = " ha pubblicato un link ad un canale Youtube: ";
@@ -5271,12 +5271,6 @@ function capture_reddit(message) {
 			lang = message.from.language_code;
 	}
 	
-	var nick = "";
-	if (message.from.username == undefined)
-		nick = message.from.first_name;
-	else
-		nick = message.from.username;
-	
 	var found = /https:\/\/www.reddit\.com\/r\//i.test(message.text);
 	if (found == false)
 		return;
@@ -5287,13 +5281,17 @@ function capture_reddit(message) {
 		uri: url + ".json",
 	}, function(error, response, body) {
 		var resp = JSON.parse(body);
-		var media = resp[0]["data"]["children"][0]["data"]["media"];
+		
+		var data = resp[0]["data"]["children"][0]["data"];
+		var title = data["title"];
+		var author = data["author"];
+		var media = data["media"];
 		if (media == null)
 			return;
 		var video_url = media["reddit_video"]["fallback_url"];
 		var audio_url = video_url.split("DASH_")[0] + "audio";
 		
-		console.log("New reddit video found, parsing...");
+		console.log("New reddit video found, parsing... " + message.text);
 		
 		const downloadFile = (url, dest, callback) => {
 			const file = fs.createWriteStream(dest);
@@ -5329,11 +5327,16 @@ function capture_reddit(message) {
 					if (err) {
 						console.log(err);
 					} else {
-						var command = ffmpeg().addInput(fileVideoPath).addInput(fileAudioPath).on('error', function(err) {
+						var command = ffmpeg().addInput(fileVideoPath).addInput(fileAudioPath).outputOptions([
+							'-vcodec h264',
+							'-acodec mp2',
+							'-vf scale=1280:-1',
+							'-crf 25'
+						]).on('error', function(err) {
 							console.log('Error: ' + err.message);
 						}).on('end', function() {
 							bot.deleteMessage(message.chat.id, message.message_id);
-							bot.sendVideo(message.chat.id, outputFilePath, {caption: lang_reddit[lang] + nick}).then(function (data) {
+							bot.sendVideo(message.chat.id, outputFilePath, {caption: title + "\n" + lang_reddit[lang] + author}).then(function (data) {
 								fs.unlink(fileVideoPath, function (err) {
 									if (err) throw err;
 								}); 
