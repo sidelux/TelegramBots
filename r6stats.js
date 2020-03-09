@@ -41,7 +41,7 @@ var r6italy_chatid = -1001246584843;
 class RainbowSixApi {
 	constructor() {}
 
-	stats(username, platform, season, extra) {
+	stats(username, platform, season, region, extra) {
 		return new Promise((resolve, reject) => {
 
 			var endpoint;
@@ -49,7 +49,7 @@ class RainbowSixApi {
 			username = encodeURI(username);
 
 			if (extra == 1){
-				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
+				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&region=" + region + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
 					if (!error && response.statusCode == '200') {
 						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));	// nokk fix (ubi pls)
@@ -68,7 +68,7 @@ class RainbowSixApi {
 					}
 				});
 			}else if (extra == 2){
-				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&appcode=" + appcode;
+				endpoint = "http://fenixweb.net/r6api/getOperators.php?name=" + username + "&platform=" + platform + "&region=" + region + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {
 					if (!error && response.statusCode == '200') {						
 						var objResp = JSON.parse(body.replaceAll("nakk", "nokk"));	// nokk fix (ubi pls)
@@ -83,7 +83,7 @@ class RainbowSixApi {
 			}else{
 				var objStats = {};
 
-				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&season=" + season + "&appcode=" + appcode;
+				endpoint = "http://fenixweb.net/r6api/getUser.php?name=" + username + "&platform=" + platform + "&region=" + region + "&season=" + season + "&appcode=" + appcode;
 				request.get(endpoint, (error, response, body) => {					
 					if (!error && response.statusCode == '200') {
 						var objResp = JSON.parse(body);
@@ -265,6 +265,7 @@ var no_preview = {
 };
 
 var validLang = ["en", "it"];
+var validRegion = ["emea", "ncsa", "apac"];
 var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
 var operatorList = ["Alibi", "Maestro", "Finka", "Lion", "Vigil", "Dokkaebi", "Zofia", "Ela", "Ying", "Lesion", "Mira", "Jackal", "Hibana", "Echo", "Caveira", "Capitao", "Blackbeard", "Valkyrie", "Buck", "Frost", "Mute", "Sledge", "Smoke", "Thatcher", "Ash", "Castle", "Pulse", "Thermite", "Montagne", "Twitch", "Doc", "Rook", "Jager", "Bandit", "Blitz", "IQ", "Fuze", "Glaz", "Tachanka", "Kapkan", "Maverick", "Clash", "Nomad", "Kaid", "Mozzie", "Gridlock", "Nokk", "Warden", "Goyo", "Amaru", "Wamai", "Kali", "Oryx", "Iana"];
@@ -274,7 +275,9 @@ var lang_stats = [];
 var lang_startme = [];
 var lang_only_groups = [];
 var lang_changed = [];
+var lang_region_changed = [];
 var lang_invalid_lang = [];
+var lang_invalid_region = [];
 var lang_invalid_user = [];
 var lang_invalid_user_1 = [];
 var lang_default_user_changed = [];
@@ -641,8 +644,12 @@ lang_only_groups["it"] = "Questo comando funziona solo nei gruppi";
 lang_only_groups["en"] = "This command work only in groups";
 lang_changed["it"] = "Lingua modificata!";
 lang_changed["en"] = "Language changed!";
+lang_region_changed["it"] = "Regione modificata!";
+lang_region_changed["en"] = "Region changed!";
 lang_invalid_lang["it"] = "Lingua non valida. Lingue disponibili: ";
 lang_invalid_lang["en"] = "Invalid language. Available languages: ";
+lang_invalid_region["it"] = "Regione non valida. Regioni disponibili: ";
+lang_invalid_region["en"] = "Invalid region. Available regions:";
 lang_invalid_user["it"] = "Nome utente non specificato, esempio: '/stats username,piattaforma' (uplay, xbl o psn).";
 lang_invalid_user["en"] = "Username not specified, example: '/stats username,platform' (uplay, xbl or psn).";
 lang_invalid_user_1["it"] = "Nome utente non valido.";
@@ -703,6 +710,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/avatar <testo>' - Crea un avatar personalizzato con logo e bandiera della lingua usando il comando in risposta ad un immagine quadrata (puoi anche usare \\n per andare a capo).\n" +
 	"> '/challenges <tipo>' - Permette di visualizzare le sfide settimanali in corso, eventualmente con il tipo di sfida.\n" +
 	"> '/lang <lingua>' - Imposta la lingua del bot.\n" +
+	"> '/region <regione>' - Imposta la regione del giocatore.\n" +
 	"> '/setusername <username>' - Imposta il nome utente di default necessario per alcune funzioni.\n" +
 	"> '/setplatform <piattaforma>' - Imposta la piattaforma di default necessaria per alcune funzioni.\n" +
 	"> '/r6info' - (in risposta) Consente di visualizzare le informazioni salvate dell'utente come username e piattaforma.\n" +
@@ -736,6 +744,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/avatar <text>' - Generate a custom avatar with language flag and logo using command in reply to a squared image (you can use \\n to make a newline).\n" +
 	"> '/challenges <type>' - Allow to print current weekly challenges, eventually with the challenge type.\n" +
 	"> '/lang <language>' - Change bot language.\n" +
+	"> '/region <region>' - Change player region.\n" +
 	"> '/setusername <username>' - Change default username to use some functions.\n" +
 	"> '/setplatform <platform>' - Change default platform to use some functions.\n" +
 	"> '/r6info' - (in reply) Allow to show infos about saved user like username and platform.\n" +
@@ -752,6 +761,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"09/03/20 - Aggiunta la possibilità di cambiare regione\n" +
 	"20/02/20 - Aggiornato con il supporto parziale a Void Edge\n" +
 	"11/02/20 - Accorciate le statistiche del comando /stats, quelle complete sono comunque visibili con il nuovo comando /fullstats\n" +
 	"10/02/20 - Migliorato il report settimanale e mensile dei giocatori nel gruppo\n" +
@@ -761,6 +771,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"03/09/20 - Added support for different regions\n" +
 	"02/20/20 - Updated with Void Eddge partial support\n" +
 	"02/11/20 - Reduced stats of /stats command, full stats are in the new /fullstats command\n" +
 	"02/10/20 - Improved weekly and monthly report for players in group\n" +
@@ -1430,7 +1441,7 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 	if (message.chat.id < 0)
 		return;
 
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		var lang = defaultLang;
 		if (message.from.language_code != undefined){
@@ -1439,7 +1450,7 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 		}
 		var default_text = "";
 		if (Object.keys(rows).length == 0){
-			connection.query("INSERT INTO user (account_id, lang) VALUES (" + message.from.id + ", '" + lang + "')", function (err, rows) {
+			connection.query("INSERT INTO user (account_id, lang, region) VALUES (" + message.from.id + ", '" + lang + "', 'emea')", function (err, rows) {
 				if (err) throw err;
 				var nick = "";
 				if (message.from.username == undefined)
@@ -1451,13 +1462,18 @@ bot.onText(/^\/start (.+)|^\/start/i, function (message, match) {
 			});
 		}else{
 			lang = rows[0].lang;
-			if ((rows[0].default_username != null) && (rows[0].default_platform != null))
-				default_text = "\n" + lang_default[lang] + rows[0].default_username + ", " + rows[0].default_platform + "\n";
-			else {
+			if ((rows[0].default_username != null) || (rows[0].default_platform != null) || (rows[0].region != null)) {
+				default_text = "\n" + lang_default[lang];
+				
+				var params = [];
 				if (rows[0].default_username != null)
-					default_text = "\n" + lang_default[lang] + rows[0].default_username + "\n";
+					params.push(rows[0].default_username);
 				else if (rows[0].default_platform != null)
-					default_text = "\n" + lang_default[lang] + rows[0].default_platform + "\n";
+					params.push(rows[0].default_platform);
+				else if (rows[0].region != null)
+					params.push(rows[0].region);
+				
+				default_text += params.join(", ");
 			}
 		}
 
@@ -1743,16 +1759,64 @@ bot.onText(/^\/lang(?:@\w+)? (.+)|^\/lang/i, function (message, match) {
 			bot.sendMessage(message.chat.id, errMsg, options);
 			return;
 		}
-		match[1] = match[1].toLowerCase();
-		if (validLang.indexOf(match[1]) == -1){
+		
+		var lang = match[1];
+		lang = lang.toLowerCase();
+		if (validLang.indexOf(lang) == -1){
 			bot.sendMessage(message.chat.id, errMsg, options);
 			return;
 		}
 
-		var lang = match[1];
 		connection.query("UPDATE user SET lang = '" + lang + "' WHERE account_id = " + message.from.id, function (err, rows) {
 			if (err) throw err;
 			bot.sendMessage(message.chat.id, lang_changed[lang], options);
+		});
+	});
+});
+
+bot.onText(/^\/region(?:@\w+)? (.+)|^\/region/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /region", opt);
+			return;
+		}
+
+		var lang = rows[0].lang;
+		var errMsg = lang_invalid_region[lang] + validRegion.join(", ");
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, errMsg, options);
+			return;
+		}
+		
+		var region = match[1];
+		region = region.toLowerCase();
+		if (validRegion.indexOf(region) == -1){
+			bot.sendMessage(message.chat.id, errMsg, options);
+			return;
+		}
+		
+		connection.query("UPDATE user SET region = '" + region + "' WHERE account_id = " + message.from.id, function (err, rows) {
+			if (err) throw err;
+			bot.sendMessage(message.chat.id, lang_region_changed[lang], options);
 		});
 	});
 });
@@ -2424,7 +2488,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 
 bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -2440,6 +2504,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (match[1] == undefined){
 			bot.sendMessage(message.chat.id, lang_invalid_multiple[lang], options);
@@ -2465,13 +2530,13 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 
 		console.log(getNow("it") + " Request multiple stats for " + players.length + " players from " + message.from.username);
 
-		multipleStats (message, players, platform, options, lang);
+		multipleStats (message, players, platform, options, lang, region);
 	});
 });
 
 bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -2484,6 +2549,7 @@ bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if ((message.reply_to_message == undefined) || (message.reply_to_message.photo == undefined)) {
 			bot.sendMessage(message.chat.id, lang_scan_photo[lang], options);
@@ -2528,7 +2594,7 @@ bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 
 					// console.log(players);
 
-					multipleStats(message, players, "uplay", options, lang);
+					multipleStats(message, players, "uplay", options, lang, region);
 				})
 			});
 		});
@@ -2684,7 +2750,7 @@ function checkPlatformArray(array, value) {
 
 bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?|^\/!stats(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -2701,6 +2767,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 		var undefined_track = rows[0].undefined_track;
 		var username = "";
 		var platform = "uplay";
@@ -2811,7 +2878,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 				*/
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username, platform, -1, 0).then(response => {
+					r6.stats(username, platform, -1, region, 0).then(response => {
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
@@ -2820,7 +2887,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 							return;
 						}
 						
-						r6.stats(username, platform, -1, 1).then(response => {
+						r6.stats(username, platform, -1, region, 1).then(response => {
 							var responseOps = response;
 							
 							var ops = getOperators(responseOps);
@@ -2864,7 +2931,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 
 bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullstats(?:@\w+)?|^\/!fullstats(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		
 		if (Object.keys(rows).length == 0){
@@ -2890,6 +2957,7 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
@@ -2916,97 +2984,6 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 			forceSave = 1;
 			console.log("ForceSave enabled");
 		}
-		
-		/*
-		if (Object.keys(rows).length == 0){
-			var lang = defaultLang;
-			if (message.from.language_code != undefined){
-				if (validLang.indexOf(message.from.language_code) != -1)
-					lang = message.from.language_code;
-			}
-			rows[0] = {};
-			rows[0].lang = lang;
-			rows[0].undefined_track = 0;
-			rows[0].force_update = 0;
-			rows[0].default_username = null;
-			rows[0].default_platform = null;
-		}
-
-		var lang = rows[0].lang;
-		var undefined_track = rows[0].undefined_track;
-		var username = "";
-		var platform = "uplay";
-
-		var extra_info = "";
-		if (lang_extra_info[lang] != "")
-			extra_info = lang_extra_info[lang];
-
-		var forceSave = 0;
-		if (rows[0].force_update == 1){
-			forceSave = 1;
-			console.log("ForceSave enabled");
-		}
-
-		if (match[3] != undefined){
-			match[3] = match[3].toLowerCase();
-			username = match[3];
-			
-			var checkPlatform = checkPlatformArray(["ps4", "psn", "pc", "uplay", "xbox", "xbl", "xbox one"], match[3]);
-			if (checkPlatform != "") {
-				username = username.replace(checkPlatform, "").trim();
-				platform = checkPlatform;
-			} else if (rows[0].default_platform != null)
-				platform = rows[0].default_platform;
-		}else{
-			if (match[1] == undefined){
-				if (message.reply_to_message != undefined) {
-					var user = connection_sync.query("SELECT default_username FROM user WHERE account_id = " + message.reply_to_message.from.id);
-					if (Object.keys(user).length > 0)
-						username = user[0].default_username;
-					else
-						username = message.reply_to_message.from.username;
-				} else if (rows[0].default_username != null)
-					username = rows[0].default_username;
-				else{
-					var iKeys = [];
-					iKeys.push([{
-						text: lang_config_inline[lang] + " ⚙️",
-						url: "https://t.me/r6siegestatsbot?start=config"
-					}]);
-					var opt =	{
-						parse_mode: 'HTML',
-						reply_markup: {
-							inline_keyboard: iKeys
-						}
-					};
-					bot.sendMessage(message.chat.id, lang_invalid_user[lang], opt);
-					return;
-				}
-			}else
-				username = match[1];
-
-			if (match[2] == undefined){
-				if (rows[0].default_platform != null)
-					platform = rows[0].default_platform;
-			}else
-				platform = match[2].toLowerCase();
-		}
-
-		username = username.trim();
-		platform = platform.trim();
-
-		if (platform == "ps4")
-			platform = "psn";
-		else if (platform == "pc")
-			platform = "uplay";
-		else if (platform.indexOf("xbox") != -1)
-			platform = "xbl";
-
-		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
-			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang]);
-			return;
-		}
-		*/
 
 		console.log(getNow("it") + " Request user data for " + username + " on " + platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -3061,7 +3038,7 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 				*/
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username, platform, -1, 0).then(response => {
+					r6.stats(username, platform, -1, region, 0).then(response => {
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
@@ -3071,7 +3048,7 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 						}
 
 						var text = getData(responseStats, lang);
-						r6.stats(username, platform, -1, 1).then(response => {
+						r6.stats(username, platform, -1, region, 1).then(response => {
 							var responseOps = response;
 
 							var ops = getOperators(responseOps);							
@@ -3112,7 +3089,7 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 
 bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -3137,6 +3114,7 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
@@ -3169,7 +3147,7 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 			console.log(getNow("it") + " Loading rank from api");
 			bot.sendChatAction(message.chat.id, "typing").then(function () {
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username, platform, -1, 0).then(response => {
+					r6.stats(username, platform, -1, region, 0).then(response => {
 						var responseStats = response;
 
 						if (responseStats.platform == undefined){
@@ -3344,7 +3322,7 @@ bot.onText(/^\/r6info(?:@\w+)? (.+)|^\/r6info(?:@\w+)?/i, function (message, mat
 
 bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -3358,6 +3336,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 		if ((match[1] == undefined) || (match[2] == undefined)){
 			bot.sendMessage(message.chat.id, lang_invalid_user_2[lang], options);
 			return;
@@ -3414,7 +3393,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 				console.log(getNow("it") + " User compared from api request");
 				
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username1, user1platform, -1, 0).then(response1 => {
+					r6.stats(username1, user1platform, -1, region, 0).then(response1 => {
 
 						if (response1.platform == undefined){
 							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", options);
@@ -3423,7 +3402,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 						}
 
 						bot.sendChatAction(message.chat.id, "typing").then(function () {
-							r6.stats(username2, user2platform, -1, 0).then(response2 => {
+							r6.stats(username2, user2platform, -1, region, 0).then(response2 => {
 
 								if (response2.platform == undefined){
 									bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", options);
@@ -3449,7 +3428,7 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 
 bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -3463,6 +3442,7 @@ bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (messa
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 		if ((match[1] == undefined) || (match[2] == undefined)){
 			bot.sendMessage(message.chat.id, lang_invalid_user_3[lang], options);
 			return;
@@ -3523,7 +3503,7 @@ bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (messa
 				console.log(getNow("it") + " User checked from api request");
 		
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
-					r6.stats(username1, user1platform, -1, 0).then(response1 => {
+					r6.stats(username1, user1platform, -1, region, 0).then(response1 => {
 
 						if (response1.platform == undefined){
 							bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username1 + ", " + user1platform + ")", options);
@@ -3532,7 +3512,7 @@ bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (messa
 						}
 
 						bot.sendChatAction(message.chat.id, "typing").then(function () {
-							r6.stats(username2, user2platform, -1, 0).then(response2 => {
+							r6.stats(username2, user2platform, -1, region, 0).then(response2 => {
 
 								if (response2.platform == undefined){
 									bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + username2 + ", " + user2platform + ")", options);
@@ -3558,7 +3538,7 @@ bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (messa
 
 bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -3583,6 +3563,7 @@ bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, ma
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
@@ -3616,7 +3597,7 @@ bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, ma
 
 		console.log(getNow("it") + " Request season data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(default_username, default_platform, (seasonIndex+1), 0).then(response => {
+			r6.stats(default_username, default_platform, (seasonIndex+1), region, 0).then(response => {
 				bot.sendMessage(message.chat.id, "<b>" + lang_season_intro[lang] + " " + seasonList[response.season_id-1] + ":</b>\n" +
 								lang_season_mmr[lang] + ": " + mapRank(Math.round(response.season_mmr), lang) + "\n" +
 								lang_season_max_mmr[lang] + ": " + mapRank(Math.round(response.season_max_mmr), lang) + "\n", options);
@@ -3631,7 +3612,7 @@ bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, ma
 
 bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -3656,6 +3637,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
@@ -3677,7 +3659,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 
 		console.log(getNow("it") + " Request seasons data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(default_username, default_platform, -1, 0).then(response => {
+			r6.stats(default_username, default_platform, -1, region, 0).then(response => {
 				var responseStats = response;
 
 				if (responseStats.platform == undefined){
@@ -3693,7 +3675,7 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 				for(i = startSeason; i < lastSeason+1; i++){
 					var seasonQuery = connection_sync.query("SELECT mmr, max_mmr FROM season_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' AND season_id = " + i);
 					if (Object.keys(seasonQuery).length == 0){
-						r6.stats(default_username, default_platform, i, 0).then(response => {
+						r6.stats(default_username, default_platform, i, region, 0).then(response => {
 							if ((response.season_id != undefined) && (response.season_rank != 0)) {
 								seasonArray[response.season_id] = "<b>" + seasonList[response.season_id-1] + ":</b> " + mapRank(Math.round(response.season_max_mmr), lang) + "\n";
 								if (response.season_id != lastSeason) {
@@ -3807,7 +3789,7 @@ bot.onText(/^\/history(?:@\w+)?/i, function (message) {
 bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (message, match) {
 	var options_reply = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	var options = {parse_mode: "HTML"};
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -3832,6 +3814,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options_reply);
@@ -3864,7 +3847,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 
 		console.log(getNow("it") + " Request operators data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
-			r6.stats(default_username, default_platform, -1, 1).then(response => {
+			r6.stats(default_username, default_platform, -1, region, 1).then(response => {
 				header = [lang_operator_title[lang], lang_operator_plays[lang], lang_operator_wins[lang], lang_operator_losses[lang], lang_operator_kills[lang], lang_operator_deaths[lang], lang_operator_playtime[lang], lang_operator_specials[lang]];
 
 				var operators = response;
@@ -3966,7 +3949,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 
 bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -3991,6 +3974,7 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
@@ -4029,10 +4013,10 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 		console.log(getNow("it") + " Request operator data for " + operator_name + " from " + message.from.username);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 
-			r6.stats(default_username, default_platform, -1, 2).then(response => {
+			r6.stats(default_username, default_platform, -1, region, 2).then(response => {
 				var operators_info = response;
 
-				r6.stats(default_username, default_platform, -1, 1).then(response => {
+				r6.stats(default_username, default_platform, -1, region, 1).then(response => {
 
 					var operators = Object.keys(response);
 
@@ -4419,7 +4403,7 @@ bot.onText(/^\/ttag(?:@\w+)? (.+)/i, function (message, match) {
 
 bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -4432,6 +4416,7 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
+		var region = rows[0].region;
 
 		if (message.chat.id > 0){
 			bot.sendMessage(message.chat.id, lang_only_groups[lang], options);
@@ -4466,7 +4451,7 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 				var text = "<b>" + message.from.username + "</b> " + lang_team_stats[lang] + ":\n";
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					for (i = 0; i < len; i++){
-						r6.stats(rows[i].default_username, rows[i].default_platform, -1, 0).then(response => {
+						r6.stats(rows[i].default_username, rows[i].default_platform, -1, region, 0).then(response => {
 							if (response.level != undefined)
 								text += getDataLine(response, lang) + "\n";
 
@@ -5176,13 +5161,13 @@ function getCompareStats(response1, response2, lang) {
 		"<b>" + lang_mode_bomb[lang] + "</b>: " + compare(response1.mode_bomb, response2.mode_bomb, "number");
 }
 
-function multipleStats(message, players, platform, options, lang) {
+function multipleStats(message, players, platform, options, lang, region) {
 	var text = "";
 	var textDone = 0;
 
 	bot.sendChatAction(message.chat.id, "typing").then(function () {
 		for (i = 0; i < players.length; i++){
-			r6.stats(players[i], platform, -1, 0).then(response => {
+			r6.stats(players[i], platform, -1, region, 0).then(response => {
 				if (response.level != undefined)
 					text += getDataLine(response, lang) + "\n";
 
@@ -6227,7 +6212,7 @@ function deleteTeam(element, index, array) {
 };
 
 function autoTrack(){
-	connection.query("SELECT default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND undefined_track = 0 ORDER BY last_force_update DESC, last_update ASC", function (err, rows, fields) {
+	connection.query("SELECT region, default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND undefined_track = 0 ORDER BY last_force_update DESC, last_update ASC", function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0){
@@ -6239,10 +6224,11 @@ function autoTrack(){
 }
 
 function setAutoTrack(element, index, array) {
+	var region = element.region;
 	var username = element.default_username;
 	var platform = element.default_platform;
 
-	r6.stats(username, platform, -1, 0).then(response => {
+	r6.stats(username, platform, -1, region, 0).then(response => {
 
 		var responseStats = response;
 
@@ -6263,7 +6249,7 @@ function setAutoTrack(element, index, array) {
 			*/
 
 			if (toSave == 1){
-				r6.stats(username, platform, -1, 1).then(response => {
+				r6.stats(username, platform, -1, region, 1).then(response => {
 					var responseOps = response;
 					if (toSave == 1)
 						saveData(responseStats, responseOps, 0);
