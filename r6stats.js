@@ -5914,7 +5914,7 @@ function numToRank(num, lang, mmr = -1){
 		"Platinum III", "Platinum II", "Platinum I", "Diamond", "Champion"
 	];
 
-	if (mmr == 0)
+	if ((mmr == 0) || (num == 0))
 		return lang_season_not_ranked[lang];
 
 	if (lang == "it")

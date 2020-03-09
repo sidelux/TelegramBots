@@ -222,6 +222,7 @@ CREATE TABLE `user` (
   `last_chat_id` varchar(32) DEFAULT NULL,
   `last_username` varchar(64) DEFAULT NULL,
   `lang` varchar(2) DEFAULT NULL,
+  `region` varchar(8) DEFAULT NULL,
   `default_username` varchar(32) DEFAULT NULL,
   `default_platform` varchar(32) DEFAULT NULL,
   `force_update` tinyint(4) NOT NULL DEFAULT '0',
