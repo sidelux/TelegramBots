@@ -26,7 +26,6 @@ var request = require("request");
 var plotly = require('plotly')('redfenix45', config.plotlytoken);
 var Schedule = require('node-schedule');
 var Parser = require('rss-parser');
-var request = require('request');
 var striptags = require('striptags');
 var stringSimilarity = require('string-similarity');
 var im = require('imagemagick');
