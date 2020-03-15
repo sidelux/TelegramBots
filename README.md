@@ -11,6 +11,7 @@ A bot archive created by Edoardo Cortese.
 * [@UserStatsTrackerbot](http://telegram.me/userstatstrackerbot) - Keep tracking messages count of every group on Telegram!
 * [@ManPinnerbot](http://telegram.me/manpinnerbot) - Allow normal users to pin messages to your group chat!
 * [@ExpellerBot](http://telegram.me/expellerbot) - Auto ban users with specific language in their first name!
+* [@DowndetectorBot](http://telegram.me/downdetectorbot) - Check service status using downdetector website!
 
 ## Authors
 

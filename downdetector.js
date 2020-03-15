@@ -142,25 +142,34 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 		var output_value = [];
 		var result;
 		while (result = regex.exec(body)) {
-			output_date.push(result[1]);
-			output_value.push(result[2]);
+			output_date.push(result[1].trim());
+			output_value.push(result[2].trim());
 		}
+		
+		var title = body.match(/<li class='breadcrumb-item active'>([\w\s]+)<\/li>/)[1].trim();
 		
 		var reversed_date = output_date.reverse();
 		var reversed_value = output_value.reverse();
 		
+		reversed_date = reversed_date.slice(0, 8);
+		reversed_value = reversed_value.slice(0, 8);
+		
+		console.log("Baseline", baseline, reversed_value);
+		
 		var haveProblems = 0;
 		var list = "";
 		for (var i = 0; i < reversed_date.length; i++) {
-			if (i < 8) {
-				var d = new Date(reversed_date[i]);
-				var min_hour = addZero(d.getHours()) + ":" + addZero(d.getMinutes());
-				if (parseInt(reversed_value[i]) > baseline) {
-					haveProblems = 1;
-					reversed_value[i] = "*" + reversed_value[i] + "*";
-				}
-				list += min_hour + " > " + reversed_value[i] + "\n";
+			var d = new Date(reversed_date[i]);
+			var min_hour = addZero(d.getHours()) + ":" + addZero(d.getMinutes());
+			if (baseline == 0) {
+				baseline = 5;
+				console.log("Using simulated baseline");
 			}
+			if (parseInt(reversed_value[i]) > (baseline+baseline*0.1)) {
+				haveProblems = 1;
+				reversed_value[i] = "*" + reversed_value[i] + "*";
+			}
+			list += min_hour + " > " + reversed_value[i] + "\n";
 		}
 		
 		var type;
@@ -174,8 +183,10 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 		regex = /100-(\d+)]/gm;
 		var cnt = 0;
 		while (type = regex.exec(body)) {
-			list_types += output_type[cnt] + " > " + type[1] + "%\n";
-			cnt++;
+			if (output_type[cnt] != undefined) {
+				list_types += output_type[cnt] + " > " + type[1] + "%\n";
+				cnt++;
+			}
 		}
 		
 		var status = "*" + lang_result_status[lang] + "*: ";
@@ -184,7 +195,7 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 		else
 			status += "_" + lang_result_ok[lang] + "_";
 		
-		var text = status + "\n\n*" + lang_latest[lang] + "*:\n" + list + "\n*" + lang_categories[lang] + "*:\n" + list_types + "\n" + lang_visit[lang] + " [" + lang_page[lang] + "](" + url + ")"
+		var text = "*" + title + "*\n\n" + status + "\n\n*" + lang_latest[lang] + "*:\n" + list + "\n*" + lang_categories[lang] + "*:\n" + list_types + "\n" + lang_visit[lang] + " [" + lang_page[lang] + "](" + url + ")"
 		
 		bot.sendMessage(message.chat.id, text, options);
 	});
