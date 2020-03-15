@@ -5398,6 +5398,12 @@ function parse(message, force = 0){
 	var text = message.text;
 	if (message.caption != undefined)
 		text = message.caption;
+	
+	var check = connection_sync.query("SELECT account_id, chat_id FROM recruit_history ORDER BY id DESC");
+	if ((Object.keys(check).length == 0) || (check[0].account_id != message.from.id) || (check[0].chat_id != message.chat.id)) {
+		// continue...
+	} else
+		return "duplicate";
 
 	var text = text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
 	var author;
@@ -5524,12 +5530,7 @@ function parse(message, force = 0){
 
 	response += "\n<i>Contattare</i> " + author;
 	
-	var check = connection_sync.query("SELECT account_id, chat_id FROM recruit_history ORDER BY id DESC");
-	if ((Object.keys(check).length == 0) || (check[0].account_id != message.from.id) || (check[0].chat_id != message.chat.id)) {
-		bot.sendMessage(-1001326797846, header + response, html);
-		return "ok";
-	} else
-		return "duplicate";
+	return "ok";
 }
 
 function mapLoadout(itemOrig, lang){

@@ -59,11 +59,12 @@ var lang_result_ok = [];
 var lang_latest = [];
 var lang_visit = [];
 var lang_page = [];
+var lang_categories = [];
 
 lang_main["en"] = "<b>Welcome to Downdetector Bot!</b>\n\nUse this bot to show in realtime services status.";
 lang_main["it"] = "<b>Benvenuto nel Downdetector Bot!</b>\n\nUtilizza questo bot per visualizzare in tempo reale lo stato dei servizi specificati.";
-lang_invalid_service["en"] = "Missing service, example: '/detect skype'.";
-lang_invalid_service["it"] = "Servizio non specificato, esempio: '/detect skype'.";
+lang_invalid_service["en"] = "Missing service, example: '/detector skype'.";
+lang_invalid_service["it"] = "Servizio non specificato, esempio: '/detector skype'.";
 lang_error["en"] = "Error, please retry.";
 lang_error["it"] = "Errore, riprova.";
 lang_result_status["en"] = "Status";
@@ -78,6 +79,8 @@ lang_visit["en"] = "Visit";
 lang_visit["it"] = "Visita la";
 lang_page["en"] = "Downdetector page";
 lang_page["it"] = "pagina Downdetector";
+lang_categories["en"] = "Categories";
+lang_categories["it"] = "Categorie";
 
 bot.onText(/^\/start/i, function (message) {
 	if (message.chat.id < 0)
@@ -118,18 +121,18 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 	var detect_service = match[1].trim().toLowerCase().replaceAll(" ", "-");
 	
 	var url = "https://downdetector." + detect_lang + "/" + detect_service + "/";
-	console.log("Requested status for " + url);
+	console.log(getNow("it") + " Requested status for " + url);
 	request({
 		uri: url,
 	}, function(error, response, body) {
 		if (error != undefined) {
-			console.log("Request error with " + detect_service);
+			console.log(getNow("it") + " Request error with " + detect_service);
 			bot.sendMessage(message.chat.id, lang_error[lang], options);
 			return;
 		}
 		var baseline = body.match(/baseline: (.+),/);
 		if (baseline == undefined) {
-			console.log("Undefined baseline with " + detect_service);
+			console.log(getNow("it") + " Undefined baseline with " + detect_service);
 			bot.sendMessage(message.chat.id, lang_error[lang], options);
 			return;
 		}
@@ -160,13 +163,28 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 			}
 		}
 		
+		var type;
+		var list_types = "";
+		var output_type = [];
+		regex = /<div class='text-center text-muted' style='margin-top: 2\.1rem;'>([\w\d\s]+)<\/div>/gm;
+		while (type = regex.exec(body)) {
+			var text = type[1].replaceAll("\n", "");
+			output_type.push(text.trim());
+		}
+		regex = /100-(\d+)]/gm;
+		var cnt = 0;
+		while (type = regex.exec(body)) {
+			list_types += output_type[cnt] + " > " + type[1] + "%\n";
+			cnt++;
+		}
+		
 		var status = "*" + lang_result_status[lang] + "*: ";
 		if (haveProblems == 1)
 			status += "_" + lang_result_problems[lang] + "_";
 		else
 			status += "_" + lang_result_ok[lang] + "_";
 		
-		var text = status + "\n\n*" + lang_latest[lang] + "*:\n" + list + "\n" + lang_visit[lang] + " [" + lang_page[lang] + "](" + url + ")";
+		var text = status + "\n\n*" + lang_latest[lang] + "*:\n" + list + "\n*" + lang_categories[lang] + "*:\n" + list_types + "\n" + lang_visit[lang] + " [" + lang_page[lang] + "](" + url + ")"
 		
 		bot.sendMessage(message.chat.id, text, options);
 	});
