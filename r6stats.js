@@ -5530,6 +5530,7 @@ function parse(message, force = 0){
 
 	response += "\n<i>Contattare</i> " + author;
 	
+	bot.sendMessage(-1001326797846, header + response, html);
 	return "ok";
 }
 
