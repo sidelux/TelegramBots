@@ -272,16 +272,27 @@ function detector(message, lang, detect_service, mode, options) {
 			};
 			
 			bot.sendMessage(message.chat.id, text, options_send);
-		} else if (mode == 1) {
-			options_send = {
-				parse_mode: 'Markdown',
-				disable_web_page_preview: true, 
-				chat_id: message.message.chat.id,
-				message_id: message.message.message_id,
-				reply_markup: {
-					inline_keyboard: iKeys
-				}
-			};
+		} else if (mode == 1) {			
+			if (message.message != undefined) {
+				options_send = {
+					parse_mode: 'Markdown',
+					disable_web_page_preview: true, 
+					chat_id: message.message.chat.id,
+					message_id: message.message.message_id,
+					reply_markup: {
+						inline_keyboard: iKeys
+					}
+				};
+			} else {
+				options_send = {
+					parse_mode: 'Markdown',
+					disable_web_page_preview: true, 
+					inline_message_id: message.inline_message_id,
+					reply_markup: {
+						inline_keyboard: iKeys
+					}
+				};
+			}
 			
 			bot.editMessageText(text, options_send);
 	
