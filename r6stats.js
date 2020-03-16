@@ -5398,12 +5398,6 @@ function parse(message, force = 0){
 	var text = message.text;
 	if (message.caption != undefined)
 		text = message.caption;
-	
-	var check = connection_sync.query("SELECT account_id, chat_id FROM recruit_history ORDER BY id DESC");
-	if ((Object.keys(check).length == 0) || (check[0].account_id != message.from.id) || (check[0].chat_id != message.chat.id)) {
-		// continue...
-	} else
-		return "duplicate";
 
 	var text = text.replace(/[^a-zA-Z0-9\-_\s\.,]/g, " ");
 	var author;
@@ -5523,6 +5517,12 @@ function parse(message, force = 0){
 		// console.log("Response empty");
 		return;
 	}
+	
+	var check = connection_sync.query("SELECT account_id, chat_id FROM recruit_history ORDER BY id DESC");
+	if ((Object.keys(check).length == 0) || (check[0].account_id != message.from.id) || (check[0].chat_id != message.chat.id)) {
+		// continue...
+	} else
+		return "duplicate";
 
 	bot.deleteMessage(message.chat.id, message.message_id);
 	if (miss_plat == 1)
