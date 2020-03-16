@@ -63,6 +63,7 @@ var lang_categories = [];
 var lang_update = [];
 var lang_updated = [];
 var lang_updated_at = [];
+var lang_service_status = [];
 
 lang_main["en"] = "<b>Welcome to Downdetector Bot!</b>\n\nUse this bot to show in realtime services status.";
 lang_main["it"] = "<b>Benvenuto nel Downdetector Bot!</b>\n\nUtilizza questo bot per visualizzare in tempo reale lo stato dei servizi specificati.";
@@ -90,6 +91,8 @@ lang_updated["en"] = "Updated";
 lang_updated["it"] = "Aggiornato";
 lang_updated_at["en"] = "Updated at ";
 lang_updated_at["it"] = "Aggiornato alle ";
+lang_service_status["en"] = "service status";
+lang_service_status["it"] = "Stato servizi";
 
 bot.onText(/^\/start/i, function (message) {
 	if (message.chat.id < 0)
@@ -109,7 +112,7 @@ bot.onText(/^\/start/i, function (message) {
 	bot.sendMessage(message.chat.id, lang_main[lang], no_preview);
 });
 
-bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
+bot.onText(/^\/detector (.+)|^\/detector/i, function (message, match) {
 	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
 	
 	var lang = "en";
@@ -140,7 +143,22 @@ bot.on('callback_query', function (message) {
 	detector(message, lang, detect_service, 1, null);
 });
 
-function detector(message, lang, detect_service, edit_mode, options) {
+bot.on("inline_query", function (query) {
+	if (query.query.length < 3)
+		return;
+	
+	var detect_service = query.query;
+	
+	var lang = "en";
+	if (query.from.language_code != undefined){
+		if (validLang.indexOf(query.from.language_code) != -1)
+			lang = query.from.language_code;
+	}
+	
+	detector(query, lang, detect_service, 2, null);
+});
+
+function detector(message, lang, detect_service, mode, options) {
 	var detect_lang;
 	if (lang == "it")
 		detect_lang = "it/problemi";
@@ -154,18 +172,18 @@ function detector(message, lang, detect_service, edit_mode, options) {
 	}, function(error, response, body) {
 		if (error != undefined) {
 			console.log(getNow("it") + " Request error with " + detect_service);
-			if (edit_mode == 0)
+			if (mode == 0)
 				bot.sendMessage(message.chat.id, lang_error[lang], options);
-			else
+			else if (mode == 1)
 				bot.answerCallbackQuery(message.id, {text: lang_error[lang]});
 			return;
 		}
 		var baseline = body.match(/baseline: (.+),/);
 		if (baseline == undefined) {
 			console.log(getNow("it") + " Undefined baseline with " + detect_service);
-			if (edit_mode == 0)
+			if (mode == 0)
 				bot.sendMessage(message.chat.id, lang_error[lang], options);
-			else
+			else if (mode == 1)
 				bot.answerCallbackQuery(message.id, {text: lang_error[lang]});
 			return;
 		}
@@ -223,10 +241,14 @@ function detector(message, lang, detect_service, edit_mode, options) {
 		}
 		
 		var status = "*" + lang_result_status[lang] + "*: ";
-		if (haveProblems == 1)
+		var inline_status = lang_result_status[lang] + ": ";
+		if (haveProblems == 1) {
 			status += "_" + lang_result_problems[lang] + "_";
-		else
+			inline_status += lang_result_problems[lang];
+		} else {
 			status += "_" + lang_result_ok[lang] + "_";
+			inline_status += lang_result_ok[lang];
+		}
 		
 		var d = new Date();
 		var update_time = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
@@ -239,7 +261,7 @@ function detector(message, lang, detect_service, edit_mode, options) {
 		}]);
 		
 		var options_send;
-		if (edit_mode == 0) {
+		if (mode == 0) {
 			options_send = {
 				parse_mode: "Markdown",
 				disable_web_page_preview: true, 
@@ -250,7 +272,7 @@ function detector(message, lang, detect_service, edit_mode, options) {
 			};
 			
 			bot.sendMessage(message.chat.id, text, options_send);
-		} else {
+		} else if (mode == 1) {
 			options_send = {
 				parse_mode: 'Markdown',
 				disable_web_page_preview: true, 
@@ -264,6 +286,24 @@ function detector(message, lang, detect_service, edit_mode, options) {
 			bot.editMessageText(text, options_send);
 	
 			bot.answerCallbackQuery(message.id, {text: lang_updated[lang]});
+		} else if (mode == 2) {
+			var title_line = "";
+			if (lang == "it")
+				title_line = lang_service_status[lang] + ' ' + title;
+			else
+				title_line = title + ' ' + lang_service_status[lang];
+			bot.answerInlineQuery(message.id, [{
+				id: '0',
+				type: 'article',
+				title: title_line,
+				description: inline_status,
+				message_text: text,
+				parse_mode: "Markdown",
+				disable_web_page_preview: true,
+				reply_markup: {
+					inline_keyboard: iKeys
+				}
+			}], {cache_time: 0});
 		}
 	});
 }
