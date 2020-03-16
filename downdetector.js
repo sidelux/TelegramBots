@@ -60,6 +60,9 @@ var lang_latest = [];
 var lang_visit = [];
 var lang_page = [];
 var lang_categories = [];
+var lang_update = [];
+var lang_updated = [];
+var lang_updated_at = [];
 
 lang_main["en"] = "<b>Welcome to Downdetector Bot!</b>\n\nUse this bot to show in realtime services status.";
 lang_main["it"] = "<b>Benvenuto nel Downdetector Bot!</b>\n\nUtilizza questo bot per visualizzare in tempo reale lo stato dei servizi specificati.";
@@ -81,6 +84,12 @@ lang_page["en"] = "Downdetector page";
 lang_page["it"] = "pagina Downdetector";
 lang_categories["en"] = "Categories";
 lang_categories["it"] = "Categorie";
+lang_update["en"] = "Update";
+lang_update["it"] = "Aggiorna";
+lang_updated["en"] = "Updated";
+lang_updated["it"] = "Aggiornato";
+lang_updated_at["en"] = "Updated at ";
+lang_updated_at["it"] = "Aggiornato alle ";
 
 bot.onText(/^\/start/i, function (message) {
 	if (message.chat.id < 0)
@@ -101,7 +110,8 @@ bot.onText(/^\/start/i, function (message) {
 });
 
 bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
-	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id, disable_web_page_preview: true};
+	var options = {parse_mode: "Markdown", reply_to_message_id: message.message_id};
+	
 	var lang = "en";
 	if (message.from.language_code != undefined){
 		if (validLang.indexOf(message.from.language_code) != -1)
@@ -113,12 +123,29 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 		return;
 	}
 	
+	var detect_service = match[1].trim().toLowerCase().replaceAll(" ", "-");
+	
+	detector(message, lang, detect_service, 0, options);
+});
+
+bot.on('callback_query', function (message) {
+	var detect_service = message.data;
+	
+	var lang = "en";
+	if (message.from.language_code != undefined){
+		if (validLang.indexOf(message.from.language_code) != -1)
+			lang = message.from.language_code;
+	}
+	
+	detector(message, lang, detect_service, 1, null);
+});
+
+function detector(message, lang, detect_service, edit_mode, options) {
 	var detect_lang;
 	if (lang == "it")
 		detect_lang = "it/problemi";
 	else
 		detect_lang = "com/status";
-	var detect_service = match[1].trim().toLowerCase().replaceAll(" ", "-");
 	
 	var url = "https://downdetector." + detect_lang + "/" + detect_service + "/";
 	console.log(getNow("it") + " Requested status for " + url);
@@ -127,13 +154,19 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 	}, function(error, response, body) {
 		if (error != undefined) {
 			console.log(getNow("it") + " Request error with " + detect_service);
-			bot.sendMessage(message.chat.id, lang_error[lang], options);
+			if (edit_mode == 0)
+				bot.sendMessage(message.chat.id, lang_error[lang], options);
+			else
+				bot.answerCallbackQuery(message.id, {text: lang_error[lang]});
 			return;
 		}
 		var baseline = body.match(/baseline: (.+),/);
 		if (baseline == undefined) {
 			console.log(getNow("it") + " Undefined baseline with " + detect_service);
-			bot.sendMessage(message.chat.id, lang_error[lang], options);
+			if (edit_mode == 0)
+				bot.sendMessage(message.chat.id, lang_error[lang], options);
+			else
+				bot.answerCallbackQuery(message.id, {text: lang_error[lang]});
 			return;
 		}
 		baseline = parseInt(baseline[1]);
@@ -154,7 +187,7 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 		reversed_date = reversed_date.slice(0, 8);
 		reversed_value = reversed_value.slice(0, 8);
 		
-		console.log("Baseline", baseline, reversed_value);
+		// console.log("Baseline", baseline, reversed_value);
 		
 		var haveProblems = 0;
 		var list = "";
@@ -163,7 +196,7 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 			var min_hour = addZero(d.getHours()) + ":" + addZero(d.getMinutes());
 			if (baseline == 0) {
 				baseline = 5;
-				console.log("Using simulated baseline");
+				// console.log("Using simulated baseline");
 			}
 			if (parseInt(reversed_value[i]) > (baseline+baseline*0.1)) {
 				haveProblems = 1;
@@ -177,8 +210,8 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 		var output_type = [];
 		regex = /<div class='text-center text-muted' style='margin-top: 2\.1rem;'>([\w\d\s]+)<\/div>/gm;
 		while (type = regex.exec(body)) {
-			var text = type[1].replaceAll("\n", "");
-			output_type.push(text.trim());
+			var type_text = type[1].replaceAll("\n", "");
+			output_type.push(type_text.trim());
 		}
 		regex = /100-(\d+)]/gm;
 		var cnt = 0;
@@ -195,11 +228,45 @@ bot.onText(/^\/detector (.+)|^\/detector$/i, function (message, match) {
 		else
 			status += "_" + lang_result_ok[lang] + "_";
 		
-		var text = "*" + title + "*\n\n" + status + "\n\n*" + lang_latest[lang] + "*:\n" + list + "\n*" + lang_categories[lang] + "*:\n" + list_types + "\n" + lang_visit[lang] + " [" + lang_page[lang] + "](" + url + ")"
+		var d = new Date();
+		var update_time = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+		var text = "*" + title + "*\n\n" + status + "\n\n*" + lang_latest[lang] + "*:\n" + list + "\n*" + lang_categories[lang] + "*:\n" + list_types + "\n" + lang_visit[lang] + " [" + lang_page[lang] + "](" + url + ")\n_" + lang_updated_at[lang] + update_time + "_";
 		
-		bot.sendMessage(message.chat.id, text, options);
+		var iKeys = [];
+		iKeys.push([{
+			text: lang_update[lang],
+			callback_data: detect_service
+		}]);
+		
+		var options_send;
+		if (edit_mode == 0) {
+			options_send = {
+				parse_mode: "Markdown",
+				disable_web_page_preview: true, 
+				reply_to_message_id: message.message_id,
+				reply_markup: {
+					inline_keyboard: iKeys
+				}
+			};
+			
+			bot.sendMessage(message.chat.id, text, options_send);
+		} else {
+			options_send = {
+				parse_mode: 'Markdown',
+				disable_web_page_preview: true, 
+				chat_id: message.message.chat.id,
+				message_id: message.message.message_id,
+				reply_markup: {
+					inline_keyboard: iKeys
+				}
+			};
+			
+			bot.editMessageText(text, options_send);
+	
+			bot.answerCallbackQuery(message.id, {text: lang_updated[lang]});
+		}
 	});
-});
+}
 
 // Functions
 
