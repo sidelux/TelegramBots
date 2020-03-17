@@ -5518,13 +5518,14 @@ function parse(message, force = 0){
 		return;
 	}
 	
+	bot.deleteMessage(message.chat.id, message.message_id);
+	
 	var check = connection_sync.query("SELECT account_id, chat_id FROM recruit_history ORDER BY id DESC");
 	if ((Object.keys(check).length == 0) || (check[0].account_id != message.from.id) || (check[0].chat_id != message.chat.id)) {
 		// continue...
 	} else
 		return "duplicate";
 
-	bot.deleteMessage(message.chat.id, message.message_id);
 	if (miss_plat == 1)
 		return "platform";
 
