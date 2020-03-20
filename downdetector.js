@@ -132,7 +132,7 @@ bot.onText(/^\/detector (.+)|^\/detector/i, function (message, match) {
 });
 
 bot.on('callback_query', function (message) {
-	var detect_service = message.data;
+	var detect_service = message.data.trim().toLowerCase().replaceAll(" ", "-");
 	
 	var lang = "en";
 	if (message.from.language_code != undefined){
@@ -147,7 +147,7 @@ bot.on("inline_query", function (query) {
 	if (query.query.length < 3)
 		return;
 	
-	var detect_service = query.query;
+	var detect_service = query.query.trim().toLowerCase().replaceAll(" ", "-");
 	
 	var lang = "en";
 	if (query.from.language_code != undefined){

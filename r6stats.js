@@ -36,6 +36,7 @@ var PDFDocument = require('./pdfkit-tables.js');
 // require('longjohn');		// enable to detailed error log
 
 var r6italy_chatid = -1001246584843;
+var api_disabled = 1;
 
 class RainbowSixApi {
 	constructor() {}
@@ -1378,8 +1379,8 @@ lang_avatar_photo["en"] = "This command should be used in reply on a photo (not 
 lang_avatar_size["it"] = "L'immagine deve essere quadrata";
 lang_avatar_size["en"] = "Image must be squared";
 
-lang_unavailable["it"] = "Le statistiche fornite da Ubisoft sono temporaneamente non disponibili, riprovare più tardi.";
-lang_unavailable["en"] = "Ubisoft stats are temporary unavailable, please retry later.";
+lang_unavailable["it"] = "Le API sono state temporaneamente disabilitate da Ubisoft.";
+lang_unavailable["en"] = "Ubisoft's API are temporary disabled by Ubisoft.";
 lang_status_maintenance["it"] = "Manutenzione";
 lang_status_maintenance["en"] = "Maintenance";
 lang_status_online["it"] = "Online";
@@ -2871,10 +2872,10 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 					forceSave = 1;
 				}
 				
-				/*
-				bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
-				return;
-				*/
+				if (api_disabled == 1) {
+					bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+					return;
+				}
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username, platform, -1, region, 0).then(response => {
@@ -3031,10 +3032,10 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 					forceSave = 1;
 				}
 				
-				/*
-				bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
-				return;
-				*/
+				if (api_disabled == 1) {
+					bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+					return;
+				}
 
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					r6.stats(username, platform, -1, region, 0).then(response => {
@@ -3140,6 +3141,11 @@ bot.onText(/^\/rank(?:@\w+)?/i, function (message, match) {
 
 				console.log(getNow("it") + " Loaded rank from cache");
 				bot.sendMessage(message.chat.id, getRankData(responseStats, lang), options);
+				return;
+			}
+			
+			if (api_disabled == 1) {
+				bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
 				return;
 			}
 		
@@ -3388,6 +3394,11 @@ bot.onText(/^\/compare(?:@\w+)? (.+),(.+)|^\/compare(?:@\w+)?/i, function (messa
 					console.log(getNow("it") + " User compared from cache");
 					return;
 				}
+				
+				if (api_disabled == 1) {
+					bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+					return;
+				}
 		
 				console.log(getNow("it") + " User compared from api request");
 				
@@ -3498,6 +3509,11 @@ bot.onText(/^\/canplay(?:@\w+)? (.+),(.+)|^\/canplay(?:@\w+)?/i, function (messa
 					console.log(getNow("it") + " User checked from cache");
 					return;
 				}
+				
+				if (api_disabled == 1) {
+					bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+					return;
+				}
 		
 				console.log(getNow("it") + " User checked from api request");
 		
@@ -3593,6 +3609,11 @@ bot.onText(/^\/season(?:@\w+)? (.+)|^\/season(?:@\w+)?$/i, function (message, ma
 		}
 
 		var default_platform = rows[0].default_platform;
+		
+		if (api_disabled == 1) {
+			bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+			return;
+		}
 
 		console.log(getNow("it") + " Request season data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -3655,6 +3676,11 @@ bot.onText(/^\/seasons(?:@\w+)?/i, function (message) {
 		}
 
 		var default_platform = rows[0].default_platform;
+		
+		if (api_disabled == 1) {
+			bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+			return;
+		}
 
 		console.log(getNow("it") + " Request seasons data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -3828,6 +3854,11 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 		}
 
 		var default_platform = rows[0].default_platform;
+		
+		if (api_disabled == 1) {
+			bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+			return;
+		}
 
 		var orderList = ["match", "win", "lose", "kill", "death", "time"];
 		var orderMethod = "";
@@ -4008,6 +4039,11 @@ bot.onText(/^\/operator(?:@\w+)? (.+)|^\/operator(?:@\w+)?$/i, function (message
 		}
 
 		operator_name = match[1];
+		
+		if (api_disabled == 1) {
+			bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+			return;
+		}
 
 		console.log(getNow("it") + " Request operator data for " + operator_name + " from " + message.from.username);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
@@ -4425,6 +4461,11 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 		var mark = {
 			parse_mode: "HTML"
 		};
+		
+		if (api_disabled == 1) {
+			bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+			return;
+		}
 
 		var team_name = match[1];
 
@@ -5163,6 +5204,11 @@ function getCompareStats(response1, response2, lang) {
 function multipleStats(message, players, platform, options, lang, region) {
 	var text = "";
 	var textDone = 0;
+	
+	if (api_disabled == 1) {
+		bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+		return;
+	}
 
 	bot.sendChatAction(message.chat.id, "typing").then(function () {
 		for (i = 0; i < players.length; i++){
@@ -6214,6 +6260,10 @@ function deleteTeam(element, index, array) {
 };
 
 function autoTrack(){
+	if (api_disabled == 1) {
+		console.log("Autotrack skipped cause api disabled");
+		return;
+	}
 	connection.query("SELECT region, default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND undefined_track = 0 ORDER BY last_force_update DESC, last_update ASC", function (err, rows, fields) {
 		if (err) throw err;
 
