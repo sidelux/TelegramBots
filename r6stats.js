@@ -36,7 +36,7 @@ var PDFDocument = require('./pdfkit-tables.js');
 // require('longjohn');		// enable to detailed error log
 
 var r6italy_chatid = -1001246584843;
-var api_disabled = 1;
+var api_disabled = 0;
 
 class RainbowSixApi {
 	constructor() {}
@@ -533,6 +533,7 @@ var lang_invalid_multiple = [];
 var lang_multiple_limit = [];
 var lang_dist_noplayers = [];
 var lang_dist = [];
+var lang_rank_dist = [];
 
 var lang_rank_copper5 = [];
 var lang_rank_copper4 = [];
@@ -716,6 +717,7 @@ lang_help["it"] = 	"*Guida ai comandi:*\n" +
 	"> '/r6info' - (in risposta) Consente di visualizzare le informazioni salvate dell'utente come username e piattaforma.\n" +
 	"> '/find <piattaforma>' - Crea un messaggio dove gli altri giocatori possono partecipare rendendosi disponibili.\n" +
 	"> '/dist' - Visualizza la lista della distribuzione giocatori per piattaforma del gruppo attuale.\n" +
+	"> '/distrank' - Visualizza la lista della distribuzione rango tra tutti i giocatori memorizzati.\n" +
 	"> '/team <nome-team> <utenti>' - Crea un team e fornisce la possibilità di taggarne tutti i membri.\n" +
 	"> '/search <piattaforma>' - Invia in privato un messaggio con tutti i nomi in game degli utenti relativi alla lingua ed alla piattaforma inserita.\n" +
 	"> '/setreport' - Attiva o disattiva il report statistiche del gruppo in cui si è usato /stats l'ultima volta.\n" +
@@ -750,6 +752,7 @@ lang_help["en"] = 	"*Commands tutorial:*\n" +
 	"> '/r6info' - (in reply) Allow to show infos about saved user like username and platform.\n" +
 	"> '/find <platform>' - Make a message where other player can join.\n" +
 	"> '/dist' - Show platform distribution for platforms for actual group.\n" +
+	"> '/distrank' - Show rank distribution for all saved players.\n" +
 	"> '/team <team-name> <users>' - Create a team and offer the possibility to tag all members.\n" +
 	"> '/search <platform>' - Send in private a message with name of users found with selected language and platform.\n" +
 	"> '/setreport' - Active or deactive stats report in group where you have used /stats last time.\n" +
@@ -761,6 +764,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"24/03/20 - Aggiunto il comando /distrank\n" +
 	"09/03/20 - Aggiunta la possibilità di cambiare regione\n" +
 	"20/02/20 - Aggiornato con il supporto parziale a Void Edge\n" +
 	"11/02/20 - Accorciate le statistiche del comando /stats, quelle complete sono comunque visibili con il nuovo comando /fullstats\n" +
@@ -771,6 +775,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
 	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"03/24/20 - Added /distrank command\n" +
 	"03/09/20 - Added support for different regions\n" +
 	"02/20/20 - Updated with Void Eddge partial support\n" +
 	"02/11/20 - Reduced stats of /stats command, full stats are in the new /fullstats command\n" +
@@ -1212,6 +1217,8 @@ lang_dist_noplayers["it"] = "Non ci sono giocatori collegati a questo gruppo";
 lang_dist_noplayers["en"] = "No players linked at this group";
 lang_dist["it"] = "Distribuzione giocatori memorizzati per questo gruppo";
 lang_dist["en"] = "Distribution of saved players for this group";
+lang_rank_dist["it"] = "Distribuzione rango giocatori memorizzati";
+lang_rank_dist["en"] = "Rank distribution of saved players";
 
 lang_rank_copper5["it"] = "Rame V";
 lang_rank_copper5["en"] = "Copper V";
@@ -4809,6 +4816,54 @@ bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
 			var list = "<b>" + lang_dist[lang] + "</b>";
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 				list += "\n" + decodePlatform(rows[i].default_platform) + ": " + Math.round(rows[i].num/rows[i].num_tot*100) + "%";
+
+			bot.sendMessage(message.chat.id, list, options);
+		});
+	});
+});
+
+bot.onText(/^\/distrank(?:@\w+)?$/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			rows[0] = {};
+			rows[0].lang = lang;
+		}
+
+		var lang = rows[0].lang;
+
+		var mark = {
+			parse_mode: "HTML"
+		};
+
+		connection.query("SELECT ROUND(MAX(season_mmr)) As max_mmr FROM player_history GROUP BY ubisoft_id HAVING max_mmr > 0 ORDER BY max_mmr ASC", function (err, rows, fields) {
+			if (err) throw err;
+
+			var rankArray = [];
+			var list = "<b>" + lang_rank_dist[lang] + "</b>";
+			var totElements = Object.keys(rows).length;
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+				var key = mapRank(rows[i].max_mmr, lang);
+				if (!Object.prototype.hasOwnProperty.call(rankArray, key))
+					rankArray[key] = 1;
+				else
+					rankArray[key] += 1;
+			}
+			
+			var rankKeys = Object.keys(rankArray);
+			var element;
+			var perc;
+			for (var i = 0; i < rankKeys.length; i++) {
+				element = rankArray[rankKeys[i]];
+				perc = (Math.round(((element/totElements*100) + Number.EPSILON) * 100) / 100);
+				list += "\n<b>" + rankKeys[i] + "</b>: " + perc + "%";
+			}
 
 			bot.sendMessage(message.chat.id, list, options);
 		});
