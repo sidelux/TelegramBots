@@ -5448,9 +5448,11 @@ function capture_parse(message) {
 	var options = {parse_mode: "HTML"};
 
 	var nick = "";
-	if (message.from.username == undefined)
+	var nick_warn = "";
+	if (message.from.username == undefined) {
 		nick = message.from.first_name;
-	else
+		nick_warn = "\nPer essere contattato più facilmente, imposta un username su Telegram, puoi farlo dalle Impostazioni."
+	} else
 		nick = message.from.username;
 
 	var res = parse(message);
@@ -5471,7 +5473,7 @@ function capture_parse(message) {
 			}
 		};
 
-		bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!", opt);
+		bot.sendMessage(message.chat.id, nick + ", il tuo reclutamento è stato postato automaticamente nel <b>Canale Reclutamenti</b>!" + nick_warn, opt);
 
 		connection.query("INSERT INTO recruit_history (account_id, chat_id) VALUES (" + message.from.id + ", '" + message.chat.id + "')", function (err, rows) {
 			if (err) throw err;
