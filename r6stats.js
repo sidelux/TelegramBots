@@ -4756,6 +4756,12 @@ bot.onText(/^\/search(?:@\w+)? (.+)|^\/search(?:@\w+)?$/i, function (message, ma
 		}
 
 		var platform = match[1].toLowerCase();
+		if (platform == "ps4")
+			platform = "psn";
+		else if (platform == "pc")
+			platform = "uplay";
+		else if (platform.indexOf("xbox") != -1)
+			platform = "xbl";
 		if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
 			bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options_reply);
 			return;
@@ -4822,7 +4828,7 @@ bot.onText(/^\/dist(?:@\w+)?$/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/distrank(?:@\w+)?$/i, function (message, match) {
+bot.onText(/^\/distrank(?:@\w+)? (.+)|^\/distrank(?:@\w+)?$/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -4837,16 +4843,34 @@ bot.onText(/^\/distrank(?:@\w+)?$/i, function (message, match) {
 		}
 
 		var lang = rows[0].lang;
+		
+		var platform_query = "";
+		var platform_desc = "";
+		if (match[1] != undefined){
+			var platform = match[1].toLowerCase();
+			if (platform == "ps4")
+				platform = "psn";
+			else if (platform == "pc")
+				platform = "uplay";
+			else if (platform.indexOf("xbox") != -1)
+				platform = "xbl";
+			if ((platform != "uplay") && (platform != "psn") && (platform != "xbl")){
+				bot.sendMessage(message.chat.id, lang_invalid_platform_2[lang], options);
+				return;
+			}
+			platform_query = "WHERE platform = '" + platform + "' ";
+			platform_desc = " (" + decodePlatform(platform) + ")";
+		}
 
 		var mark = {
 			parse_mode: "HTML"
 		};
 
-		connection.query("SELECT ROUND(MAX(season_mmr)) As max_mmr FROM player_history GROUP BY ubisoft_id HAVING max_mmr > 0 ORDER BY max_mmr ASC", function (err, rows, fields) {
+		connection.query("SELECT ROUND(MAX(season_mmr)) As max_mmr FROM player_history " + platform_query + "GROUP BY ubisoft_id HAVING max_mmr > 0 ORDER BY max_mmr ASC", function (err, rows, fields) {
 			if (err) throw err;
 
 			var rankArray = [];
-			var list = "<b>" + lang_rank_dist[lang] + "</b>";
+			var list = "<b>" + lang_rank_dist[lang] + platform_desc + "</b>";
 			var totElements = Object.keys(rows).length;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				var key = mapRank(rows[i].max_mmr, lang);
