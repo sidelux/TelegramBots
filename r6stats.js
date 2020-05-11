@@ -634,6 +634,7 @@ var lang_maprank_error = [];
 var lang_reddit = [];
 var lang_twitch = [];
 var lang_youtube = [];
+var lang_noparam = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -1405,6 +1406,8 @@ lang_twitch["it"] = " ha pubblicato un link ad un canale Twitch: ";
 lang_twitch["en"] = " has published a Twitch channel link: ";
 lang_youtube["it"] = " ha pubblicato un link ad un canale Youtube: ";
 lang_youtube["en"] = " has published a Youtube channel link: ";
+lang_noparam["it"] = "Questo comando può essere utilizzato solo salvando i dati del tuo giocatore, usa il comando /botconfig per continuare";
+lang_noparam["en"] = "This command must be used only saving player's data, use /botconfig command to continue";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2936,7 +2939,7 @@ bot.onText(/^\/stats(?:@\w+)? (.+),(.+)|^\/stats(?:@\w+)? (.+)|^\/stats(?:@\w+)?
 	});
 });
 
-bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullstats(?:@\w+)?|^\/!fullstats(?:@\w+)?/i, function (message, match) {
+bot.onText(/^\/fullstats(?:@\w+)? (.+)|^\/fullstats(?:@\w+)?|^\/!fullstats(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
 	connection.query("SELECT lang, region, default_username, default_platform, force_update, undefined_track FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
@@ -2965,7 +2968,12 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+),(.+)|^\/fullstats(?:@\w+)? (.+)|^\/fullst
 
 		var lang = rows[0].lang;
 		var region = rows[0].region;
-
+		
+		if (match[1] != undefined) {
+			bot.sendMessage(message.chat.id, lang_noparam[lang], opt);
+			return;
+		}
+		
 		if (rows[0].default_username == null){
 			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
 			return;
