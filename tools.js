@@ -78,7 +78,7 @@ var html = {
 };
 
 bot.onText(/^\/start/i, function (message) {
-	bot.sendMessage(message.chat.id, "Questo è il bot personale di @fenix45!");
+	bot.sendMessage(message.chat.id, "Questo è il bot personale di @fenix45!\n\nComandi disponibili:\n/rape");
 });
 
 bot.onText(/^\/rape/i, function (message) {
@@ -86,13 +86,35 @@ bot.onText(/^\/rape/i, function (message) {
 		'method': 'POST',
 		'url': 'https://api.turnip.exchange/islands/',
 		'headers': {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
+			'User-Agent': 'Fenix Tools 2'
 		},
-		body: JSON.stringify({"islander":"neither","category":"turnips","fee":1})
+		body: JSON.stringify({
+			"islander": "neither", 
+			"category": "turnips", 
+			"fee": 0
+		})
 	};
 	request(options, function (error, response) { 
 		if (error) throw new Error(error);
-		console.log(response.body);
+		var json = JSON.parse(response.body);
+		var islands = json.islands;
+		var maxValue = 0;
+		var maxIsland = null;
+		for (var i = 0; i < islands.length; i++) {
+			if (islands[i].turnipPrice > maxValue) {
+				maxValue = islands[i].turnipPrice;
+				maxIsland = islands[i];
+			}
+		}
+		
+		if (maxIsland != null) {
+			bot.sendMessage(message.chat.id, "<b>Nome</b>: " + maxIsland.name + "\n" +
+						   					"<b>Prezzo Rape</b>: " + maxIsland.turnipPrice + "\n" +
+											"<b>Descrizione</b>: " + maxIsland.description + "\n" +
+											"<b>Coda</b>: " + maxIsland.queued + "\n" +
+											"<a href='https://turnip.exchange/island/" + maxIsland.turnipCode + "'>Accedi all'isola</a>", html);
+		}
 	});
 });
 
