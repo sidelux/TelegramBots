@@ -102,7 +102,9 @@ bot.onText(/^\/rape/i, function (message) {
 		var maxValue = 0;
 		var maxIsland = null;
 		for (var i = 0; i < islands.length; i++) {
-			if (islands[i].turnipPrice > maxValue) {
+			if ((islands[i].turnipPrice > maxValue) && 
+				(islands[i].queued.split("/")[0] < islands[i].queued.split("/")[1]) &&
+			   	(islands[i].patreonOnly == 0)) {
 				maxValue = islands[i].turnipPrice;
 				maxIsland = islands[i];
 			}
@@ -111,9 +113,10 @@ bot.onText(/^\/rape/i, function (message) {
 		if (maxIsland != null) {
 			bot.sendMessage(message.chat.id, "<b>Nome</b>: " + maxIsland.name + "\n" +
 						   					"<b>Prezzo Rape</b>: " + maxIsland.turnipPrice + "\n" +
-											"<b>Descrizione</b>: " + maxIsland.description + "\n" +
+											"<b>Descrizione</b>: " + maxIsland.description.replace("<", "").replace(">", "") + "\n" +
 											"<b>Coda</b>: " + maxIsland.queued + "\n" +
 											"<a href='https://turnip.exchange/island/" + maxIsland.turnipCode + "'>Accedi all'isola</a>", html);
+			console.log(maxIsland);
 		}
 	});
 });
