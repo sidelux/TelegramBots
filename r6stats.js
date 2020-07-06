@@ -471,6 +471,8 @@ var ability_operatorpvp_goyo_volcandetonate = [];
 var ability_operatorpvp_amaru_distancereeled = [];
 var ability_operatorpvp_kali_gadgetdestroywithexplosivelance = [];
 var ability_operatorpvp_wamai_gadgetdestroybymagnet = [];
+var ability_operatorpvp_ace_selmadetonate = [];
+var ability_operatorpvp_melusi_sloweddown = [];
 
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
@@ -765,6 +767,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"23/06/20 - Aggiornato con il supporto a Steel Wave\n" +
 	"24/03/20 - Aggiunto il comando /distrank\n" +
 	"09/03/20 - Aggiunta la possibilità di cambiare regione\n" +
 	"20/02/20 - Aggiornato con il supporto parziale a Void Edge\n" +
@@ -773,9 +776,9 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"03/02/20 - Aggiunto il comando /maprank per visualizzare il corrispondente rango al mmr specificato\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato\n" +
-	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot\n" +
-	"12/11/19 - Aggiunto il comando /canplay per capire velocemente se due giocatori, valutando la loro differenza di mmr, possano giocare o meno insieme in classificata";
+	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"06/23/20 - Updated with Steel Wave support\n" +
 	"03/24/20 - Added /distrank command\n" +
 	"03/09/20 - Added support for different regions\n" +
 	"02/20/20 - Updated with Void Eddge partial support\n" +
@@ -784,8 +787,7 @@ lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
 	"02/03/20 - Added /maprank command to show relative tank to specified mmr\n" +
 	"01/13/20 - Updated with Shifting Tides complete support\n" +
 	"11/15/19 - Added /avatar command to generate a custom avatar\n" +
-	"11/13/19 - Added /userhistory command to show username changes history saved in bot\n" +
-	"11/12/19 - Added /canplay command to know fast if two player, valutating their mmr, could play together in ranked";
+	"11/13/19 - Added /userhistory command to show username changes history saved in bot";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata per questo gruppo:";
@@ -1116,6 +1118,10 @@ ability_operatorpvp_kali_gadgetdestroywithexplosivelance["it"] = "Gadget distrut
 ability_operatorpvp_kali_gadgetdestroywithexplosivelance["en"] = "Gadget destroyed with explosive lance";
 ability_operatorpvp_wamai_gadgetdestroybymagnet["it"] = "Gadget distrutti con il magnet";
 ability_operatorpvp_wamai_gadgetdestroybymagnet["en"] = "Gadget destroyed with magnet";
+ability_operatorpvp_ace_selmadetonate["it"] = "Cariche SELMA detonate";
+ability_operatorpvp_ace_selmadetonate["en"] = "SELMA charges detonated";
+ability_operatorpvp_melusi_sloweddown["it"] = "Nemici rallentati";
+ability_operatorpvp_melusi_sloweddown["en"] = "Enemies slowed down";
 
 lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
 lang_loadout_intro["en"] = "Recommended loadout for";
