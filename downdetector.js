@@ -109,7 +109,8 @@ bot.onText(/^\/start/i, function (message) {
 			lang = message.from.language_code;
 	}
 					
-	bot.sendMessage(message.chat.id, lang_main[lang], no_preview);
+	// bot.sendMessage(message.chat.id, lang_main[lang], no_preview);
+	bot.sendMessage(message.chat.id, "This bot has become useless cause downdetector has added a captcha on all pages.", no_preview);
 });
 
 bot.onText(/^\/detector (.+)|^\/detector/i, function (message, match) {
