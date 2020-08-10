@@ -351,6 +351,9 @@ var lang_op_losses = [];
 var lang_op_kills = [];
 var lang_op_deaths = [];
 var lang_op_playtime = [];
+var lang_op_meleekills = [];
+var lang_op_headshot = [];
+var lang_op_dbno = [];
 
 var lang_title_ranked = [];
 var lang_title_casual = [];
@@ -885,6 +888,12 @@ lang_op_deaths["it"] = "Più morti";
 lang_op_deaths["en"] = "Most deaths";
 lang_op_playtime["it"] = "Più tempo di gioco";
 lang_op_playtime["en"] = "Most playtime";
+lang_op_meleekills["it"] = "Corpo a corpo";
+lang_op_meleekills["en"] = "Melee kills";
+lang_op_headshot["it"] = "Colpi in testa";
+lang_op_headshot["en"] = "Headshots";
+lang_op_dbno["it"] = "Atterramenti";
+lang_op_dbno["en"] = "DBNOs";
 
 lang_title_ranked["it"] = "Classificate";
 lang_title_ranked["en"] = "Ranked";
@@ -2459,7 +2468,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 		var timeDiff = Math.abs(date2.getTime() - date1.getTime());
 		var diffMin = Math.ceil(timeDiff / (1000 * 60)); 
 
-		if (diffMin < 180){
+		if ((diffMin < 180) && (message.from.id != 20471035)) {
 			bot.sendMessage(message.chat.id, lang_update_err[lang], options);
 			return;
 		}
@@ -2478,18 +2487,18 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 		connection.query("SELECT insert_date FROM player_history WHERE username = '" + default_username + "' AND platform = '" + default_platform + "' ORDER BY id DESC", function (err, rows) {
 			if (err) throw err;
 
-			if (Object.keys(rows).length > 0){
+			if (Object.keys(rows).length > 0) {
 				date1 = new Date(rows[0].insert_date);
 				timeDiff = Math.abs(date2.getTime() - date1.getTime());
 				diffMin = Math.ceil(timeDiff / (1000 * 60)); 
 
-				if (diffMin < 180){
+				if ((diffMin < 180) && (message.from.id != 20471035)) {
 					bot.sendMessage(message.chat.id, lang_update_err_3[lang], options);
 					return;
 				}
 			}
 
-			if (force_update == 1){
+			if (force_update == 1) {
 				bot.sendMessage(message.chat.id, lang_update_err_2[lang], options);
 				return;
 			}
@@ -3041,9 +3050,15 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+)|^\/fullstats(?:@\w+)?|^\/!fullstats(?:@\w
 					var most_kd_name = rows[0].operator_max_kd_name;
 					var most_wl = rows[0].operator_max_wl;
 					var most_wl_name = rows[0].operator_max_wl_name;
+					var most_meleekills = rows[0].operator_max_meleekills;
+					var most_meleekills_name = rows[0].operator_max_meleekills_name;
+					var most_headshot = rows[0].operator_max_headshot;
+					var most_headshot_name = rows[0].operator_max_headshot_name;
+					var most_dbno = rows[0].operator_max_dbno;
+					var most_dbno_name = rows[0].operator_max_dbno_name;
 
 					var text = getData(response, lang);
-					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang);
+					text += getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, most_meleekills, most_meleekills_name, most_headshot, most_headshot_name, most_dbno, most_dbno_name, lang);
 					
 					bot.sendMessage(message.chat.id, text + insert_date + extra_info, options);
 					console.log(getNow("it") + " Cached user data served for " + username + " on " + platform);
@@ -3073,7 +3088,7 @@ bot.onText(/^\/fullstats(?:@\w+)? (.+)|^\/fullstats(?:@\w+)?|^\/!fullstats(?:@\w
 							var responseOps = response;
 
 							var ops = getOperators(responseOps);							
-							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], ops[14], ops[15], lang);
+							text += getOperatorsText(ops[0], ops[1], ops[2], ops[3], ops[4], ops[5], ops[6], ops[7], ops[8], ops[9], ops[10], ops[11], ops[12], ops[13], ops[14], ops[15], ops[16], ops[17], ops[18], ops[19], ops[20], ops[21], lang);
 
 							if (undefined_track == 1){
 								connection.query("UPDATE user SET undefined_track = 0 WHERE account_id = " + message.from.id, function (err, rows) {
@@ -3881,7 +3896,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 			return;
 		}
 
-		var orderList = ["match", "win", "lose", "kill", "death", "time"];
+		var orderList = ["match", "win", "lose", "kill", "death", "time", "melee", "headshot", "dbno"];
 		var orderMethod = "";
 		if (match[1] != undefined) {
 			match[1] = match[1].toLowerCase();
@@ -3899,7 +3914,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 		console.log(getNow("it") + " Request operators data for " + default_username + " on " + default_platform);
 		bot.sendChatAction(message.chat.id, "typing").then(function () {
 			r6.stats(default_username, default_platform, -1, region, 1).then(response => {
-				header = [lang_operator_title[lang], lang_operator_plays[lang], lang_operator_wins[lang], lang_operator_losses[lang], lang_operator_kills[lang], lang_operator_deaths[lang], lang_operator_playtime[lang], lang_operator_specials[lang]];
+				header = [lang_operator_title[lang], lang_operator_plays[lang], lang_operator_wins[lang], lang_operator_losses[lang], lang_operator_kills[lang], lang_operator_deaths[lang], lang_operator_playtime[lang], lang_op_meleekills[lang], lang_op_headshot[lang], lang_op_dbno[lang], lang_operator_specials[lang]];
 
 				var operators = response;
 
@@ -3951,6 +3966,24 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 						}).forEach(function(key) {
 							ordered[key] = response[key];
 						});
+					} else if (orderMethod == "melee") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_meleekills - response[keyA].operatorpvp_meleekills;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					} else if (orderMethod == "headshot") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_headshot - response[keyA].operatorpvp_headshot;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
+					} else if (orderMethod == "dbno") {
+						Object.keys(response).sort(function(keyA, keyB) {
+							return response[keyB].operatorpvp_dbno - response[keyA].operatorpvp_dbno;
+						}).forEach(function(key) {
+							ordered[key] = response[key];
+						});
 					}
 
 					operators = ordered;
@@ -3959,7 +3992,7 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 				var operators_name = Object.keys(operators);
 
 				for (i = 0; i < Object.keys(operators).length; i++){
-					content[i] = [jsUcfirst(operators_name[i]), formatNumber(response[operators_name[i]].operatorpvp_roundwon+response[operators_name[i]].operatorpvp_roundlost, lang), formatNumber(response[operators_name[i]].operatorpvp_roundwon, lang), formatNumber(response[operators_name[i]].operatorpvp_roundlost, lang), formatNumber(response[operators_name[i]].operatorpvp_kills, lang), formatNumber(response[operators_name[i]].operatorpvp_death, lang), toTime(response[operators_name[i]].operatorpvp_timeplayed, lang, true)];
+					content[i] = [jsUcfirst(operators_name[i]), formatNumber(response[operators_name[i]].operatorpvp_roundwon+response[operators_name[i]].operatorpvp_roundlost, lang), formatNumber(response[operators_name[i]].operatorpvp_roundwon, lang), formatNumber(response[operators_name[i]].operatorpvp_roundlost, lang), formatNumber(response[operators_name[i]].operatorpvp_kills, lang), formatNumber(response[operators_name[i]].operatorpvp_death, lang), toTime(response[operators_name[i]].operatorpvp_timeplayed, lang, true), formatNumber(response[operators_name[i]].operatorpvp_meleekills, lang), formatNumber(response[operators_name[i]].operatorpvp_headshot, lang), formatNumber(response[operators_name[i]].operatorpvp_dbno, lang)];
 
 					var specials = Object.keys(operators[operators_name[i]]);
 
@@ -3969,11 +4002,17 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 					delete operators[operators_name[i]].operatorpvp_roundwon;
 					delete operators[operators_name[i]].operatorpvp_kills;
 					delete operators[operators_name[i]].operatorpvp_timeplayed;
-					specials.splice(0,1);
-					specials.splice(0,1);
-					specials.splice(0,1);
-					specials.splice(0,1);
-					specials.splice(0,1);
+					delete operators[operators_name[i]].operatorpvp_meleekills;
+					delete operators[operators_name[i]].operatorpvp_headshot;
+					delete operators[operators_name[i]].operatorpvp_dbno;
+					specials.splice(0, 1);
+					specials.splice(0, 1);
+					specials.splice(0, 1);
+					specials.splice(0, 1);
+					specials.splice(0, 1);
+					specials.splice(0, 1);
+					specials.splice(0, 1);
+					specials.splice(0, 1);
 
 					var sum = 0;
 					if (specials.length > 0){
@@ -5866,6 +5905,12 @@ function getOperators(response){
 	var most_kd_name = "";
 	var most_wl = 0;
 	var most_wl_name = "";
+	var most_melee = 0;
+	var most_melee_name = "";
+	var most_headshot = 0;
+	var most_headshot_name = "";
+	var most_dbno = 0;
+	var most_dbno_name = "";
 
 	var operators = Object.keys(response);
 
@@ -5914,6 +5959,18 @@ function getOperators(response){
 			most_wl = wl;
 			most_wl_name = operators[i];
 		}
+		if (response[operators[i]].operatorpvp_meleekills > most_melee){
+			most_melee = response[operators[i]].operatorpvp_meleekills;
+			most_melee_name = operators[i];
+		}
+		if (response[operators[i]].operatorpvp_headshot > most_headshot){
+			most_headshot = response[operators[i]].operatorpvp_headshot;
+			most_headshot_name = operators[i];
+		}
+		if (response[operators[i]].operatorpvp_dbno > most_dbno){
+			most_dbno = response[operators[i]].operatorpvp_dbno;
+			most_dbno_name = operators[i];
+		}
 	}
 
 	most_played_name = jsUcfirst(most_played_name);
@@ -5924,11 +5981,14 @@ function getOperators(response){
 	most_playtime_name = jsUcfirst(most_playtime_name);
 	most_kd_name = jsUcfirst(most_kd_name);
 	most_wl_name = jsUcfirst(most_wl_name);
+	most_melee_name = jsUcfirst(most_melee_name);
+	most_headshot_name = jsUcfirst(most_headshot_name);
+	most_dbno_name = jsUcfirst(most_dbno_name);
 
-	return [most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name];
+	return [most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, most_melee, most_melee_name, most_headshot, most_headshot_name, most_dbno, most_dbno_name];
 }
 
-function getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, lang){
+function getOperatorsText(most_played, most_played_name, most_wins, most_wins_name, most_losses, most_losses_name, most_kills, most_kills_name, most_deaths, most_deaths_name, most_playtime, most_playtime_name, most_kd, most_kd_name, most_wl, most_wl_name, most_meleekills, most_meleekills_name, most_headshot, most_headshot_name, most_dbno, most_dbno_name, lang){
 	return "\n<b>" + lang_title_operators[lang] + "</b>:\n" +
 		"<b>" + lang_op_kd[lang] + "</b>: " + most_kd_name + " (" + formatDecimal(most_kd, lang) + ")\n" +
 		"<b>" + lang_op_wl[lang] + "</b>: " + most_wl_name + " (" + formatDecimal(most_wl, lang) + ")\n" +
@@ -5937,7 +5997,10 @@ function getOperatorsText(most_played, most_played_name, most_wins, most_wins_na
 		"<b>" + lang_op_losses[lang] + "</b>: " + most_losses_name + " (" + formatNumber(most_losses, lang) + ")\n" +
 		"<b>" + lang_op_kills[lang] + "</b>: " + most_kills_name + " (" + formatNumber(most_kills, lang) + ")\n" +
 		"<b>" + lang_op_deaths[lang] + "</b>: " + most_deaths_name + " (" + formatNumber(most_deaths, lang) + ")\n" +
-		"<b>" + lang_op_playtime[lang] + "</b>: " + most_playtime_name + " (" + toTime(most_playtime, lang, true) + ")";
+		"<b>" + lang_op_playtime[lang] + "</b>: " + most_playtime_name + " (" + toTime(most_playtime, lang, true) + ")\n" +
+		"<b>" + lang_op_meleekills[lang] + "</b>: " + most_meleekills_name + " (" + formatNumber(most_meleekills, lang) + ")\n" +
+		"<b>" + lang_op_headshot[lang] + "</b>: " + most_headshot + " (" + formatNumber(most_headshot, lang) + ")\n" +
+		"<b>" + lang_op_dbno[lang] + "</b>: " + most_dbno + " (" + formatNumber(most_dbno, lang) + ")";
 }
 
 function printInline(query_id, response, lang){
@@ -5967,6 +6030,8 @@ function shortStats(response, lang) {
 
 function saveData(responseStats, responseOps, activeLog){
 	var ops = getOperators(responseOps);
+	
+	console.log(ops);
 
 	if (responseStats.profile_id == undefined){
 		console.log(getNow("it") + " Data undefined for " + responseStats.username + ", flagged with undefined_track (user not exists)");
@@ -6032,7 +6097,13 @@ function saveData(responseStats, responseOps, activeLog){
 						 ops[9] + '",' +
 						 ops[8] + ',"' +
 						 ops[11] + '",' +
-						 ops[10] + ',' +
+						 ops[10] + ',"' +
+						 ops[17] + '",' +
+						 ops[16] + ',"' +
+						 ops[19] + '",' +
+						 ops[18] + ',"' +
+						 ops[21] + '",' +
+						 ops[20] + ',' +
 						 'NOW())', function (err, rows) {
 			if (err) throw err;
 			if (activeLog == 1)
@@ -6383,19 +6454,15 @@ function setAutoTrack(element, index, array) {
 			if (err) throw err;
 
 			var toSave = 0;
-			if (Object.keys(rows).length == 0){
+			if (Object.keys(rows).length == 0) {
 				toSave = 1;
 				console.log(getNow("it") + " " + username + " on " + platform + " created");
-			}else if ((rows[0].ranked_playtime < responseStats.ranked_playtime) || (rows[0].casual_playtime < responseStats.casual_playtime)){
+			} else if ((rows[0].ranked_playtime < responseStats.ranked_playtime) || (rows[0].casual_playtime < responseStats.casual_playtime)) {
 				toSave = 1;
 				console.log(getNow("it") + " " + username + " on " + platform + " updated");
 			}
-			/*
-			else
-				console.log(getNow("it") + " " + username + " on " + platform + " skipped");
-			*/
 
-			if (toSave == 1){
+			if (toSave == 1) {
 				r6.stats(username, platform, -1, region, 1).then(response => {
 					var responseOps = response;
 					if (toSave == 1)
@@ -6409,7 +6476,7 @@ function setAutoTrack(element, index, array) {
 	});
 };
 
-function stripContent(text){
+function stripContent(text) {
 	text = striptags(text, ["b","i","br","li"]);
 	text = text.replaceAll("(<br>)","\n");
 	text = text.replaceAll("(<li>)","\n- ");
@@ -6428,7 +6495,7 @@ String.prototype.replaceAll = function (search, replacement) {
 	return target.replace(new RegExp(search, 'g'), replacement);
 };
 
-function compare(val1, val2, format = "", lang = defaultLang, inverted = 0){
+function compare(val1, val2, format = "", lang = defaultLang, inverted = 0) {
 	var res = "";
 	var formattedVal1 = val1;
 	var formattedVal2 = val2;
