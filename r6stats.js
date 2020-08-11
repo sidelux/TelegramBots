@@ -1518,8 +1518,8 @@ lang_weapon_lightmachine["it"] = "Mitragliatrice Leggera";
 lang_weapon_lightmachine["en"] = "Light Machine Gun";
 lang_weapon_machinepistol["it"] = "Pistola Mitragliatrice";
 lang_weapon_machinepistol["en"] = "Machine Pistol";
-lang_weapon_precision["it"] = "Precisione";
-lang_weapon_precision["en"] = "Precision";
+lang_weapon_precision["it"] = "Precisione colpi in testa";
+lang_weapon_precision["en"] = "Precision headshots";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -4208,45 +4208,45 @@ bot.onText(/^\/weapons(?:@\w+)?/i, function (message, match) {
 							"<b>" + lang_weapon_assault[lang] + "</b>\n" +
 							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_1, lang) + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_1, lang) + "\n" +
-							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_1, lang) + "\n" +
+							// "<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_1, lang) + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_1, lang) + "\n" +
-							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_1/responseStats.bullethit_1).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatDecimal((responseStats.headshot_1/responseStats.bullethit_1), lang) + "%\n\n" +
 							"<b>" + lang_weapon_submachine[lang] + "</b>\n" +
 							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_2, lang) + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_2, lang) + "\n" +
-							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_2, lang) + "\n" +
+							// "<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_2, lang) + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_2, lang) + "\n" +
-							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_2/responseStats.bullethit_2).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatDecimal((responseStats.headshot_2/responseStats.bullethit_2), lang) + "%\n\n" +
 							"<b>" + lang_weapon_marksman[lang] + "</b>\n" +
 							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_3, lang) + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_3, lang) + "\n" +
-							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_3, lang) + "\n" +
+							// "<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_3, lang) + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_3, lang) + "\n" +
-							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_3/responseStats.bullethit_3).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatDecimal((responseStats.headshot_3/responseStats.bullethit_3), lang) + "%\n\n" +
 							"<b>" + lang_weapon_shotgun[lang] + "</b>\n" +
 							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_4, lang) + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_4, lang) + "\n" +
-							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_4, lang) + "\n" +
+							// "<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_4, lang) + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_4, lang) + "\n" +
-							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_4/responseStats.bullethit_4).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatDecimal((responseStats.headshot_4/responseStats.bullethit_4), lang) + "%\n\n" +
 							"<b>" + lang_weapon_handgun[lang] + "</b>\n" +
 							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_5, lang) + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_5, lang) + "\n" +
-							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_5, lang) + "\n" +
+							// "<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_5, lang) + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_5, lang) + "\n" +
-							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_5/responseStats.bullethit_5).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatDecimal((responseStats.headshot_5/responseStats.bullethit_5), lang) + "%\n\n" +
 							"<b>" + lang_weapon_lightmachine[lang] + "</b>\n" +
 							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_6, lang) + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_6, lang) + "\n" +
-							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_6, lang) + "\n" +
+							// "<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_6, lang) + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_6, lang) + "\n" +
-							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_6/responseStats.bullethit_6).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatDecimal((responseStats.headshot_6/responseStats.bullethit_6), lang) + "%\n\n" +
 							"<b>" + lang_weapon_machinepistol[lang] + "</b>\n" +
 							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_7, lang) + "\n" +
 							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_7, lang) + "\n" +
-							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_7, lang) + "\n" +
+							// "<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_7, lang) + "\n" +
 							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_7, lang) + "\n" +
-							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_7/responseStats.bullethit_7).toFixed(3), lang);
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatDecimal((responseStats.headshot_7/responseStats.bullethit_7), lang) + "%";
 
 				bot.sendMessage(message.chat.id, text, options);
 			}).catch(error => {
