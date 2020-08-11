@@ -132,18 +132,23 @@ class RainbowSixApi {
 								if (objResp.players[ubi_id] == undefined)
 									return reject("User stats empty - " + username);
 
+								// Ranked
 								objStats.ranked_plays = objResp.players[ubi_id].rankedpvp_matchplayed;
 								objStats.ranked_wins = objResp.players[ubi_id].rankedpvp_matchwon;
 								objStats.ranked_losses = objResp.players[ubi_id].rankedpvp_matchlost;
 								objStats.ranked_kills = objResp.players[ubi_id].rankedpvp_kills;
 								objStats.ranked_deaths = objResp.players[ubi_id].rankedpvp_death;
 								objStats.ranked_playtime = objResp.players[ubi_id].rankedpvp_timeplayed;
+								
+								// Casual
 								objStats.casual_plays = objResp.players[ubi_id].casualpvp_matchplayed;
 								objStats.casual_wins = objResp.players[ubi_id].casualpvp_matchwon;
 								objStats.casual_losses = objResp.players[ubi_id].casualpvp_matchlost;
 								objStats.casual_kills = objResp.players[ubi_id].casualpvp_kills;
 								objStats.casual_deaths = objResp.players[ubi_id].casualpvp_death;
 								objStats.casual_playtime = objResp.players[ubi_id].casualpvp_timeplayed;
+								
+								// Other
 								objStats.revives = objResp.players[ubi_id].generalpvp_revive;
 								objStats.suicides = objResp.players[ubi_id].generalpvp_suicide;
 								objStats.reinforcements_deployed = objResp.players[ubi_id].generalpvp_reinforcementdeploy;
@@ -153,9 +158,41 @@ class RainbowSixApi {
 								objStats.melee_kills = objResp.players[ubi_id].generalpvp_meleekills;
 								objStats.penetration_kills = objResp.players[ubi_id].generalpvp_penetrationkills;
 								objStats.assists = objResp.players[ubi_id].generalpvp_killassists;
+								
+								// Modes
 								objStats.mode_secure = objResp.players[ubi_id].secureareapvp_bestscore;
 								objStats.mode_hostage = objResp.players[ubi_id].rescuehostagepvp_bestscore;
 								objStats.mode_bomb = objResp.players[ubi_id].plantbombpvp_bestscore;
+								
+								// Weapons
+								objStats.bulletfired_1 = objResp.players[ubi_id]["weapontypepvp_bulletfired:1"];
+								objStats.bullethit_1 = objResp.players[ubi_id]["weapontypepvp_bullethit:1"];
+								objStats.kills_1 = objResp.players[ubi_id]["weapontypepvp_kills:1"];
+								objStats.headshot_1 = objResp.players[ubi_id]["weapontypepvp_headshot:1"];
+								objStats.bulletfired_2 = objResp.players[ubi_id]["weapontypepvp_bulletfired:2"];
+								objStats.bullethit_2 = objResp.players[ubi_id]["weapontypepvp_bullethit:2"];
+								objStats.kills_2 = objResp.players[ubi_id]["weapontypepvp_kills:2"];
+								objStats.headshot_2 = objResp.players[ubi_id]["weapontypepvp_headshot:2"];
+								objStats.bulletfired_3 = objResp.players[ubi_id]["weapontypepvp_bulletfired:3"];
+								objStats.bullethit_3 = objResp.players[ubi_id]["weapontypepvp_bullethit:3"];
+								objStats.kills_3 = objResp.players[ubi_id]["weapontypepvp_kills:3"];
+								objStats.headshot_3 = objResp.players[ubi_id]["weapontypepvp_headshot:3"];
+								objStats.bulletfired_4 = objResp.players[ubi_id]["weapontypepvp_bulletfired:4"];
+								objStats.bullethit_4 = objResp.players[ubi_id]["weapontypepvp_bullethit:4"];
+								objStats.kills_4 = objResp.players[ubi_id]["weapontypepvp_kills:4"];
+								objStats.headshot_4 = objResp.players[ubi_id]["weapontypepvp_headshot:4"];
+								objStats.bulletfired_5 = objResp.players[ubi_id]["weapontypepvp_bulletfired:5"];
+								objStats.bullethit_5 = objResp.players[ubi_id]["weapontypepvp_bullethit:5"];
+								objStats.kills_5 = objResp.players[ubi_id]["weapontypepvp_kills:5"];
+								objStats.headshot_5 = objResp.players[ubi_id]["weapontypepvp_headshot:5"];
+								objStats.bulletfired_6 = objResp.players[ubi_id]["weapontypepvp_bulletfired:6"];
+								objStats.bullethit_6 = objResp.players[ubi_id]["weapontypepvp_bullethit:6"];
+								objStats.kills_6 = objResp.players[ubi_id]["weapontypepvp_kills:6"];
+								objStats.headshot_6 = objResp.players[ubi_id]["weapontypepvp_headshot:6"];
+								objStats.bulletfired_7 = objResp.players[ubi_id]["weapontypepvp_bulletfired:7"];
+								objStats.bullethit_7 = objResp.players[ubi_id]["weapontypepvp_bullethit:7"];
+								objStats.kills_7 = objResp.players[ubi_id]["weapontypepvp_kills:7"];
+								objStats.headshot_7 = objResp.players[ubi_id]["weapontypepvp_headshot:7"];
 
 								if (objStats.ranked_plays == undefined) objStats.ranked_plays = 0;
 								if (objStats.ranked_wins == undefined) objStats.ranked_wins = 0;
@@ -181,6 +218,34 @@ class RainbowSixApi {
 								if (objStats.mode_secure == undefined) objStats.mode_secure = 0;
 								if (objStats.mode_hostage == undefined) objStats.mode_hostage = 0;
 								if (objStats.mode_bomb == undefined) objStats.mode_bomb = 0;
+								if (objStats.bulletfired_1 == undefined) objStats.bulletfired_1 = 0;
+								if (objStats.bullethit_1 == undefined) objStats.bullethit_1 = 0;
+								if (objStats.kills_1 == undefined) objStats.kills_1 = 0;
+								if (objStats.headshot_1 == undefined) objStats.headshot_1 = 0;
+								if (objStats.bulletfired_2 == undefined) objStats.bulletfired_2 = 0;
+								if (objStats.bullethit_2 == undefined) objStats.bullethit_2 = 0;
+								if (objStats.kills_2 == undefined) objStats.kills_2 = 0;
+								if (objStats.headshot_2 == undefined) objStats.headshot_2 = 0;
+								if (objStats.bulletfired_3 == undefined) objStats.bulletfired_3 = 0;
+								if (objStats.bullethit_3 == undefined) objStats.bullethit_3 = 0;
+								if (objStats.kills_3 == undefined) objStats.kills_3 = 0;
+								if (objStats.headshot_3 == undefined) objStats.headshot_3 = 0;
+								if (objStats.bulletfired_4 == undefined) objStats.bulletfired_4 = 0;
+								if (objStats.bullethit_4 == undefined) objStats.bullethit_4 = 0;
+								if (objStats.kills_4 == undefined) objStats.kills_4 = 0;
+								if (objStats.headshot_4 == undefined) objStats.headshot_4 = 0;
+								if (objStats.bulletfired_5 == undefined) objStats.bulletfired_5 = 0;
+								if (objStats.bullethit_5 == undefined) objStats.bullethit_5 = 0;
+								if (objStats.kills_5 == undefined) objStats.kills_5 = 0;
+								if (objStats.headshot_5 == undefined) objStats.headshot_5 = 0;
+								if (objStats.bulletfired_6 == undefined) objStats.bulletfired_6 = 0;
+								if (objStats.bullethit_6 == undefined) objStats.bullethit_6 = 0;
+								if (objStats.kills_6 == undefined) objStats.kills_6 = 0;
+								if (objStats.headshot_6 == undefined) objStats.headshot_6 = 0;
+								if (objStats.bulletfired_7 == undefined) objStats.bulletfired_7 = 0;
+								if (objStats.bullethit_7 == undefined) objStats.bullethit_7 = 0;
+								if (objStats.kills_7 == undefined) objStats.kills_7 = 0;
+								if (objStats.headshot_7 == undefined) objStats.headshot_7 = 0;
 
 								objStats.ranked_wl = (objStats.ranked_wins/objStats.ranked_losses).toFixed(3);
 								if (!isFinite(objStats.ranked_wl)) objStats.ranked_wl = objStats.ranked_wins;
@@ -337,6 +402,7 @@ var lang_revives = [];
 var lang_suicides = [];
 var lang_reinforcements = [];
 var lang_barricades = [];
+var lang_bullets_fired = [];
 var lang_bullets_hit = [];
 var lang_headshots = [];
 var lang_melee_kills = [];
@@ -640,6 +706,16 @@ var lang_reddit = [];
 var lang_twitch = [];
 var lang_youtube = [];
 var lang_noparam = [];
+				
+var lang_weapon_title = [];
+var lang_weapon_assault = [];
+var lang_weapon_submachine = [];
+var lang_weapon_marksman = [];
+var lang_weapon_shotgun = [];
+var lang_weapon_handgun = [];
+var lang_weapon_lightmachine = [];
+var lang_weapon_machinepistol = [];
+var lang_weapon_precision = [];
 
 lang_main["it"] = "Benvenuto in <b>Rainbow Six Siege Stats</b>! [Available also in english! 🇺🇸]\n\nUsa '/stats username,piattaforma' per visualizzare le informazioni del giocatore, per gli altri comandi digita '/' e visualizza i suggerimenti. Funziona anche inline!";
 lang_main["en"] = "Welcome to <b>Rainbow Six Siege Stats</b>! [Disponibile anche in italiano! 🇮🇹]\n\nUse '/stats username,platform' to print player infos, to other commands write '/' and show hints. It works also inline!";
@@ -770,6 +846,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"11/08/20 - Aggiunto il comando /weapons\n" +
 	"23/06/20 - Aggiornato con il supporto a Steel Wave\n" +
 	"24/03/20 - Aggiunto il comando /distrank\n" +
 	"09/03/20 - Aggiunta la possibilità di cambiare regione\n" +
@@ -778,9 +855,9 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"10/02/20 - Migliorato il report settimanale e mensile dei giocatori nel gruppo\n" +
 	"03/02/20 - Aggiunto il comando /maprank per visualizzare il corrispondente rango al mmr specificato\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
-	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato\n" +
-	"13/11/19 - Aggiunto il comando /userhistory per visualizzare la lista degli username memorizzati nel bot";
+	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"08/11/20 - Added /weapons command\n" +
 	"06/23/20 - Updated with Steel Wave support\n" +
 	"03/24/20 - Added /distrank command\n" +
 	"03/09/20 - Added support for different regions\n" +
@@ -789,8 +866,7 @@ lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
 	"02/10/20 - Improved weekly and monthly report for players in group\n" +
 	"02/03/20 - Added /maprank command to show relative tank to specified mmr\n" +
 	"01/13/20 - Updated with Shifting Tides complete support\n" +
-	"11/15/19 - Added /avatar command to generate a custom avatar\n" +
-	"11/13/19 - Added /userhistory command to show username changes history saved in bot";
+	"11/15/19 - Added /avatar command to generate a custom avatar";
 lang_groups["it"] = "<b>Gruppi affiliati</b>\n\nGruppo italiano: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nGruppo inglese: non disponibile";
 lang_groups["en"] = "<b>Affiliates groups</b>\n\nItalian group: <a href='https://t.me/Rainbow6SItaly'>Rainbow Six Siege Italy</a>\nEnglish group: not available";
 lang_rank["it"] = "Classifica per rapporto U/M in Classificata per questo gruppo:";
@@ -861,6 +937,8 @@ lang_reinforcements["it"] = "Rinforzi";
 lang_reinforcements["en"] = "Reinforcements";
 lang_barricades["it"] = "Barricate";
 lang_barricades["en"] = "Barricades";
+lang_bullets_fired["it"] = "Colpi sparati";
+lang_bullets_fired["en"] = "Bullets fired";
 lang_bullets_hit["it"] = "Colpi a segno";
 lang_bullets_hit["en"] = "Bullets hit";
 lang_headshots["it"] = "Colpi in testa";
@@ -1423,6 +1501,25 @@ lang_youtube["it"] = " ha pubblicato un link ad un canale Youtube: ";
 lang_youtube["en"] = " has published a Youtube channel link: ";
 lang_noparam["it"] = "Questo comando può essere utilizzato solo salvando i dati del tuo giocatore, usa il comando /botconfig per continuare";
 lang_noparam["en"] = "This command must be used only saving player's data, use /botconfig command to continue";
+				
+lang_weapon_title["it"] = "Statistiche armi";
+lang_weapon_title["en"] = "Weapon stats";
+lang_weapon_assault["it"] = "Fucile d'Assalto";
+lang_weapon_assault["en"] = "Assault Rifle";
+lang_weapon_submachine["it"] = "Mitraglietta";
+lang_weapon_submachine["en"] = "Submachine Gun";
+lang_weapon_marksman["it"] = "Fucile da Cecchino";
+lang_weapon_marksman["en"] = "Marksman Rifle";
+lang_weapon_shotgun["it"] = "Fucile a pompa";
+lang_weapon_shotgun["en"] = "Shotgun";
+lang_weapon_handgun["it"] = "Pistola";
+lang_weapon_handgun["en"] = "Handgun";
+lang_weapon_lightmachine["it"] = "Mitragliatrice Leggera";
+lang_weapon_lightmachine["en"] = "Light Machine Gun";
+lang_weapon_machinepistol["it"] = "Pistola Mitragliatrice";
+lang_weapon_machinepistol["en"] = "Machine Pistol";
+lang_weapon_precision["it"] = "Precisione";
+lang_weapon_precision["en"] = "Precision";
 
 var j = Schedule.scheduleJob('0 * * * *', function () {
 	console.log(getNow("it") + " Hourly autotrack called from job");
@@ -2513,7 +2610,7 @@ bot.onText(/^\/update(?:@\w+)?/i, function (message, match) {
 
 bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, match) {
 	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
-	connection.query("SELECT lang, region, default_username, default_platform, force_update FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0){
 			var lang = defaultLang;
@@ -2555,7 +2652,7 @@ bot.onText(/^\/mstats(?:@\w+)? (.+)|^\/mstats(?:@\w+)?/i, function (message, mat
 
 		console.log(getNow("it") + " Request multiple stats for " + players.length + " players from " + message.from.username);
 
-		multipleStats (message, players, platform, options, lang, region);
+		multipleStats(message, players, platform, options, lang, region);
 	});
 });
 
@@ -2616,8 +2713,6 @@ bot.onText(/^\/scan(?:@\w+)?/i, function (message, match) {
 						bot.sendMessage(message.chat.id, lang_scan_limit[lang], options);
 						return;
 					}
-
-					// console.log(players);
 
 					multipleStats(message, players, "uplay", options, lang, region);
 				})
@@ -4032,6 +4127,132 @@ bot.onText(/^\/operators(?:@\w+)? (.+)|^\/operators(?:@\w+)?/i, function (messag
 				console.log(default_username, default_platform, error);
 				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options_reply);
 				console.log(getNow("it") + " Operators data not found for " + default_username + " on " + default_platform);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/weapons(?:@\w+)?/i, function (message, match) {
+	var options = {parse_mode: "HTML", reply_to_message_id: message.message_id};
+	connection.query("SELECT lang, region, default_username, default_platform FROM user WHERE account_id = " + message.from.id, function (err, rows) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0){
+			var lang = defaultLang;
+			if (message.from.language_code != undefined){
+				if (validLang.indexOf(message.from.language_code) != -1)
+					lang = message.from.language_code;
+			}
+			var iKeys = [];
+			iKeys.push([{
+				text: lang_config_inline[lang] + " ⚙️",
+				url: "https://t.me/r6siegestatsbot?start=config"
+			}]);
+			var opt =	{
+				parse_mode: 'HTML',
+				reply_markup: {
+					inline_keyboard: iKeys
+				},
+				reply_to_message_id: message.message_id
+			};
+			bot.sendMessage(message.chat.id, lang_startme[lang] + " /weapons", opt);
+			return;
+		}
+
+		var lang = rows[0].lang;
+		var region = rows[0].region;
+
+		if (rows[0].default_username == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultuser[lang], options);
+			return;
+		}
+
+		var username = rows[0].default_username;
+
+		if (rows[0].default_platform == null){
+			bot.sendMessage(message.chat.id, lang_no_defaultplatform[lang], options);
+			return;
+		}
+
+		var platform = rows[0].default_platform;
+
+		console.log(getNow("it") + " Request weapons data for " + username + " on " + platform);
+			
+		if (api_disabled == 1) {
+			bot.sendMessage(message.chat.id, lang_unavailable[lang], options);
+			return;
+		}
+
+		bot.sendChatAction(message.chat.id, "typing").then(function () {
+			r6.stats(username, platform, -1, region, 0).then(response => {
+				var responseStats = response;
+
+				if (responseStats.platform == undefined){
+					bot.sendMessage(message.chat.id, lang_user_wrong_platform[lang] + " (" + username + ", " + platform + ")", options);
+					console.log(getNow("it") + " User data undefined for " + username + " on " + platform);
+					return;
+				}
+				
+				/*
+				
+				1 Assault Rifle
+				2 Submachine Gun
+				3 Marksman Rifle
+				4 Shotgun
+				5 Handgun
+				6 Light Machine Gun
+				7 Machine Pistol
+				
+				*/
+				
+				var text = 	"<b>" + lang_weapon_title[lang] + "</b>:\n\n" +
+							"<b>" + lang_weapon_assault[lang] + "</b>\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_1, lang) + "\n" +
+							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_1, lang) + "\n" +
+							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_1, lang) + "\n" +
+							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_1, lang) + "\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_1/responseStats.bullethit_1).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_submachine[lang] + "</b>\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_2, lang) + "\n" +
+							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_2, lang) + "\n" +
+							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_2, lang) + "\n" +
+							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_2, lang) + "\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_2/responseStats.bullethit_2).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_marksman[lang] + "</b>\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_3, lang) + "\n" +
+							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_3, lang) + "\n" +
+							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_3, lang) + "\n" +
+							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_3, lang) + "\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_3/responseStats.bullethit_3).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_shotgun[lang] + "</b>\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_4, lang) + "\n" +
+							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_4, lang) + "\n" +
+							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_4, lang) + "\n" +
+							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_4, lang) + "\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_4/responseStats.bullethit_4).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_handgun[lang] + "</b>\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_5, lang) + "\n" +
+							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_5, lang) + "\n" +
+							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_5, lang) + "\n" +
+							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_5, lang) + "\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_5/responseStats.bullethit_5).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_lightmachine[lang] + "</b>\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_6, lang) + "\n" +
+							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_6, lang) + "\n" +
+							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_6, lang) + "\n" +
+							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_6, lang) + "\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_6/responseStats.bullethit_6).toFixed(3), lang) + "\n\n" +
+							"<b>" + lang_weapon_machinepistol[lang] + "</b>\n" +
+							"<b>" + lang_operator_kills[lang] + "</b>: " + formatNumber(responseStats.kills_7, lang) + "\n" +
+							"<b>" + lang_headshots[lang] + "</b>: " + formatNumber(responseStats.headshot_7, lang) + "\n" +
+							"<b>" + lang_bullets_fired[lang] + "</b>: " + formatNumber(responseStats.bulletfired_7, lang) + "\n" +
+							"<b>" + lang_bullets_hit[lang] + "</b>: " + formatNumber(responseStats.bullethit_7, lang) + "\n" +
+							"<b>" + lang_weapon_precision[lang] + "</b>: " + formatNumber((responseStats.bulletfired_7/responseStats.bullethit_7).toFixed(3), lang);
+
+				bot.sendMessage(message.chat.id, text, options);
+			}).catch(error => {
+				console.log(username, platform, error);
+				bot.sendMessage(message.chat.id, lang_user_not_found[lang] + " (" + error + ")", options);
+				console.log(getNow("it") + " User data not found for " + username + " on " + platform);
 			});
 		});
 	});
@@ -6030,8 +6251,6 @@ function shortStats(response, lang) {
 
 function saveData(responseStats, responseOps, activeLog){
 	var ops = getOperators(responseOps);
-	
-	console.log(ops);
 
 	if (responseStats.profile_id == undefined){
 		console.log(getNow("it") + " Data undefined for " + responseStats.username + ", flagged with undefined_track (user not exists)");
