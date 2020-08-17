@@ -37,6 +37,7 @@ var PDFDocument = require('./pdfkit-tables.js');
 
 var r6italy_chatid = -1001246584843;
 var api_disabled = 0;
+var api_overloaded = 0;
 
 class RainbowSixApi {
 	constructor() {}
@@ -6649,6 +6650,7 @@ function autoTrack(){
 		console.log("Autotrack skipped cause api disabled");
 		return;
 	}
+	api_overloaded = 0;
 	connection.query("SELECT region, default_username, default_platform FROM user WHERE default_username IS NOT NULL AND default_platform IS NOT NULL AND undefined_track = 0 ORDER BY last_force_update DESC, last_update ASC", function (err, rows, fields) {
 		if (err) throw err;
 
@@ -6664,6 +6666,11 @@ function setAutoTrack(element, index, array) {
 	var region = element.region;
 	var username = element.default_username;
 	var platform = element.default_platform;
+	
+	if (api_overloaded == 1) {
+		console.log(getNow("it") + " " + username + " on " + platform + " skipped cause overload");
+		return;
+	}
 
 	r6.stats(username, platform, -1, region, 0).then(response => {
 
@@ -6690,6 +6697,8 @@ function setAutoTrack(element, index, array) {
 			}
 		});
 	}).catch(error => {
+		if (error.indexOf("overloaded") != -1)
+			api_overloaded = 1;
 		console.log(error);
 		console.log(getNow("it") + " Autotrack for " + username + " on " + platform + " not found");
 	});
