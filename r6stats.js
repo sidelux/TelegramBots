@@ -6221,8 +6221,8 @@ function getOperatorsText(most_played, most_played_name, most_wins, most_wins_na
 		"<b>" + lang_op_deaths[lang] + "</b>: " + most_deaths_name + " (" + formatNumber(most_deaths, lang) + ")\n" +
 		"<b>" + lang_op_playtime[lang] + "</b>: " + most_playtime_name + " (" + toTime(most_playtime, lang, true) + ")\n" +
 		"<b>" + lang_op_meleekills[lang] + "</b>: " + most_meleekills_name + " (" + formatNumber(most_meleekills, lang) + ")\n" +
-		"<b>" + lang_op_headshot[lang] + "</b>: " + most_headshot + " (" + formatNumber(most_headshot, lang) + ")\n" +
-		"<b>" + lang_op_dbno[lang] + "</b>: " + most_dbno + " (" + formatNumber(most_dbno, lang) + ")";
+		"<b>" + lang_op_headshot[lang] + "</b>: " + most_headshot_name + " (" + formatNumber(most_headshot, lang) + ")\n" +
+		"<b>" + lang_op_dbno[lang] + "</b>: " + most_dbno_name + " (" + formatNumber(most_dbno, lang) + ")";
 }
 
 function printInline(query_id, response, lang){
