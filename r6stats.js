@@ -6,7 +6,7 @@ process.on('uncaughtException', function (error) {
 });
 
 process.on('unhandledRejection', function (error, p) {
-	if (error.message.indexOf("ECONNRESET") == -1)
+	if ((error.message != undefined) && (error.message.indexOf("ECONNRESET") == -1))
 		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");	
 });
 
@@ -57,6 +57,9 @@ class RainbowSixApi {
 						
 						if (objResp.error != undefined)
 							return reject(mapError(objResp.error.errorCode, objResp.error.message));
+						
+						if (objResp.players == undefined)
+							return reject("Operators data not found - " + username);
 						
 						var keys = Object.keys(objResp.players);
 						var ubi_id = keys[0];
