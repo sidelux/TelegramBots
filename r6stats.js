@@ -31,6 +31,7 @@ var stringSimilarity = require('string-similarity');
 var im = require('imagemagick');
 var tesseract = require('node-tesseract-ocr');
 var ffmpeg = require('fluent-ffmpeg');
+var fetch = require('node-fetch');
 var PDFDocument = require('./pdfkit-tables.js');
 
 // require('longjohn');		// enable to detailed error log
@@ -708,6 +709,8 @@ var lang_status_degraded = [];
 var lang_maprank_error = [];
 var lang_reddit = [];
 var lang_twitch = [];
+var lang_twitch_live = [];
+var lang_twitch_view = [];
 var lang_youtube = [];
 var lang_noparam = [];
 				
@@ -1501,6 +1504,10 @@ lang_reddit["it"] = "Pubblicato da ";
 lang_reddit["en"] = "Published by ";
 lang_twitch["it"] = " ha pubblicato un link ad un canale Twitch: ";
 lang_twitch["en"] = " has published a Twitch channel link: ";
+lang_twitch_live["it"] = " è in LIVE";
+lang_twitch_live["en"] = " is LIVE";
+lang_twitch_view["it"] = "Guarda su Twitch";
+lang_twitch_view["en"] = "View on Twitch";
 lang_youtube["it"] = " ha pubblicato un link ad un canale Youtube: ";
 lang_youtube["en"] = " has published a Youtube channel link: ";
 lang_noparam["it"] = "Questo comando può essere utilizzato solo salvando i dati del tuo giocatore, usa il comando /botconfig per continuare";
@@ -5633,7 +5640,41 @@ function capture_url(message) {
 		if (twitch != null) {
 			bot.deleteMessage(message.chat.id, message.message_id);
 			
-			bot.sendMessage(message.chat.id, nick + lang_twitch[lang] + twitch[0], options);
+			var default_text = nick + lang_twitch[lang] + twitch[0];
+			
+			var username = text.match(/twitch\.tv\/([a-z-_.]+)/gi);
+			if (username != null) {
+				var url = 'https://api.twitch.tv/kraken/users?login=shroud';
+				var headers = {
+				  "Accept": "application/vnd.twitchtv.v5+json",
+				  "Client-ID": config.twitchtoken
+				}
+
+				fetch(url, {method: 'GET', headers: headers}).then((res) => { return res.json() }).then((json) => {
+					var user_id = json.users[0]._id;
+					var display_name = json.users[0].display_name;
+					var user_name = json.users[0].name;
+					
+					if (user_id == undefined) {
+						bot.sendMessage(message.chat.id, default_text, options);
+						return;
+					}
+					
+					url = 'https://api.twitch.tv/kraken/streams/' + user_id;
+
+					fetch(url, {method: 'GET', headers: headers}).then((res) => { return res.json() }).then((json) => {
+						var stream_title = json.stream.channel.status;
+						
+						if (stream_title == undefined) {
+							bot.sendMessage(message.chat.id, default_text, options);
+							return;
+						}
+						
+						bot.sendMessage(message.chat.id, display_name + " " + lang_twitch_live[lang] + "!\n" + stream_title + "\n\n<a href='http://www.twitch.tv/" + user_name.toLowerCase() + "'>" + lang_twitch_view[lang] + "</a>", options);
+					});
+				});
+			} else
+				bot.sendMessage(message.chat.id, default_text, options);
 		}
 
 		var youtube = text.match(/youtube\.com(\/channel|\/user)\/([a-zA-Z0-9-]+)/gi);
