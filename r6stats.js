@@ -5642,9 +5642,10 @@ function capture_url(message) {
 			
 			var default_text = nick + lang_twitch[lang] + twitch[0];
 			
-			var username = text.match(/twitch\.tv\/([a-z-_.]+)/gi);
+			var reg = /twitch\.tv\/([a-z]+)/gi;
+			var username = reg.exec(text);
 			if (username != null) {
-				var url = 'https://api.twitch.tv/kraken/users?login=shroud';
+				var url = 'https://api.twitch.tv/kraken/users?login=' + username[1];
 				var headers = {
 				  "Accept": "application/vnd.twitchtv.v5+json",
 				  "Client-ID": config.twitchtoken
@@ -5663,14 +5664,12 @@ function capture_url(message) {
 					url = 'https://api.twitch.tv/kraken/streams/' + user_id;
 
 					fetch(url, {method: 'GET', headers: headers}).then((res) => { return res.json() }).then((json) => {
-						var stream_title = json.stream.channel.status;
-						
-						if (stream_title == undefined) {
+						if (json.stream == undefined) {
 							bot.sendMessage(message.chat.id, default_text, options);
 							return;
 						}
-						
-						bot.sendMessage(message.chat.id, display_name + " " + lang_twitch_live[lang] + "!\n" + stream_title + "\n\n<a href='http://www.twitch.tv/" + user_name.toLowerCase() + "'>" + lang_twitch_view[lang] + "</a>", options);
+						var stream_title = json.stream.channel.status;						
+						bot.sendMessage(message.chat.id, display_name + lang_twitch_live[lang] + "!\n" + stream_title + "\n\n<a href='http://www.twitch.tv/" + user_name.toLowerCase() + "'>" + lang_twitch_view[lang] + "</a>", options);
 					});
 				});
 			} else
@@ -5708,6 +5707,10 @@ function capture_reddit(message) {
 	request({
 		uri: url + ".json",
 	}, function(error, response, body) {
+		if (body == undefined) {
+			console.log(url + ".json with undefined body");
+			return;
+		}
 		var resp = JSON.parse(body);
 		
 		var data = resp[0]["data"]["children"][0]["data"];
