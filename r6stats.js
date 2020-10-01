@@ -5644,6 +5644,7 @@ function capture_url(message) {
 			
 			var reg = /twitch\.tv\/([a-z]+)/gi;
 			var username = reg.exec(text);
+            console.log("Username not found (url " + text + ")");
 			if (username != null) {
 				var url = 'https://api.twitch.tv/kraken/users?login=' + username[1];
 				var headers = {
@@ -5657,6 +5658,7 @@ function capture_url(message) {
 					var user_name = json.users[0].name;
 					
 					if (user_id == undefined) {
+                        console.log("User_id value not found (username " + username[1] + ")");
 						bot.sendMessage(message.chat.id, default_text, options);
 						return;
 					}
@@ -5665,6 +5667,7 @@ function capture_url(message) {
 
 					fetch(url, {method: 'GET', headers: headers}).then((res) => { return res.json() }).then((json) => {
 						if (json.stream == undefined) {
+                            console.log("Stream object not found (user_id " + user_id + ")");
 							bot.sendMessage(message.chat.id, default_text, options);
 							return;
 						}
