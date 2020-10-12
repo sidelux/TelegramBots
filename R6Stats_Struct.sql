@@ -239,6 +239,7 @@ CREATE TABLE `user` (
   `last_graph` varchar(64) DEFAULT NULL,
   `report` tinyint(4) NOT NULL DEFAULT '1',
   `daily_report` tinyint(1) NOT NULL DEFAULT '0',
+  `daily_report_sent` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -6310,7 +6310,11 @@ function saveData(responseStats, responseOps, activeLog){
 			if (err) throw err;
 		});
 	} else {
-		connection.query('INSERT INTO player_history VALUES (DEFAULT, "' + responseStats.profile_id + '", "' +
+        connection.query('UPDATE user SET daily_report_sent = 0 WHERE default_username = "' + responseStats.username + '"', function (err, rows) {
+			if (err) throw err;
+		});
+		connection.query('INSERT INTO player_history VALUES (DEFAULT, "' + 
+                         responseStats.profile_id + '", "' +
 						 responseStats.platform + '","' +
 						 responseStats.username + '",' +
 						 responseStats.level + ',' +
@@ -6434,7 +6438,7 @@ function updateUsername(from_id, username) {
 }
 
 function reportDailyProgress() {
-	var query = "SELECT account_id, default_username, default_platform, lang FROM user WHERE daily_report = 1 AND default_username IS NOT NULL AND default_platform IS NOT NULL";
+	var query = "SELECT account_id, default_username, default_platform, lang FROM user WHERE daily_report = 1 AND daily_report_sent = 0 AND default_username IS NOT NULL AND default_platform IS NOT NULL";
 	connection.query(query, function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
@@ -6467,6 +6471,10 @@ function generateDailyReport(element, index, array) {
 		if (report_line != "") {
 			console.log("Daily report sent for user " + username + " on " + platform);
 			bot.sendMessage(account_id, report + report_head + report_line, html);
+            
+            connection.query("UPDATE user SET daily_report_sent = 1 WHERE account_id = '" + account_id + "'", function (err, rows, fields) {
+                if (err) throw err;
+            });
 		}
 	}
 }
