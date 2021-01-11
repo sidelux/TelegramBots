@@ -82,6 +82,7 @@ var lang_uploaded_at = [];
 var lang_by = [];
 var lang_show_count = [];
 var lang_show_count_2 = [];
+var lang_resolution = [];
 
 lang_main["en"] = "<b>Welcome to Dxdiag Reader Bot!</b>\n\nSend me the dxdiag.txt file and share with others with inline functions!";
 lang_main["it"] = "<b>Benvenuto nel Dxdiag Reader Bot!</b>\n\nInviami il file dxdiag.txt e condividilo con altri con le funzioni inline!";
@@ -105,6 +106,8 @@ lang_show_count["en"] = "showed ";
 lang_show_count["it"] = "visualizzato ";
 lang_show_count_2["en"] = " times";
 lang_show_count_2["it"] = " volte";
+lang_resolution["en"] = "Resolution"
+lang_resolution["it"] = "Risoluzione";
 
 bot.onText(/^\/start/i, function (message) {
 	if (message.chat.id < 0)
@@ -125,7 +128,6 @@ bot.onText(/^\/start/i, function (message) {
 });
 
 bot.on('message', function (message, match) {
-	// console.log(message);
 	if (message.document == undefined)
 		return;
 	
@@ -175,6 +177,8 @@ bot.on('message', function (message, match) {
 							inline_keyboard: iKeys
 						}
 					});
+					
+					console.log("Added new from " + message.from.id);
 				
 					fs.unlink(fname,function(err) {
 						if (err) return console.log(err);
@@ -194,7 +198,7 @@ bot.on("inline_query", function (message) {
 				lang = message.from.language_code;
 		}
 		
-		connection.query("SELECT * FROM files WHERE query_id = '" + connection.escape(query) + "'", function (err, rows) {
+		connection.query("SELECT * FROM files WHERE query_id = " + connection.escape(query), function (err, rows) {
 			if (err) throw err;
 			
 			const file_id = rows[0].id;
@@ -202,7 +206,9 @@ bot.on("inline_query", function (message) {
 			const file_content = Buffer.from(rows[0].file_content, 'base64').toString('utf8');
 			const upload_time = rows[0].upload_time;
 			const show_count = rows[0].show_count;
-			const message_text = extractInfo(file_content);
+			const message_text = extractInfo(lang, file_content);
+			
+			console.log("Requested " + query + " from " + message.from.id);
 		
 			bot.answerInlineQuery(message.id, [{
 				id: '0',
@@ -222,9 +228,8 @@ bot.on("inline_query", function (message) {
 
 // Functions
 
-function extractInfo(content) {
+function extractInfo(lang, content) {
 	const lines = content.split("\r\n");
-	// console.log(lines);
 	
 	const system_line = lines.indexOf("System Information");
 	const operating_system = lines[system_line+5].match(/: (.+)\(/)[1];
@@ -235,7 +240,7 @@ function extractInfo(content) {
 	const gpu = lines[display_line+2].match(/: (.+)/)[1] + " (" + Math.round(lines[display_line+12].match(/: (\d+)/)[1]/1024) + " GB)";
 	const resolution = lines[display_line+14].match(/: (.+)/)[1];
 	
-	const result = "<b>OS</b>: " + operating_system + "\n<b>CPU</b>: " + cpu + "\n<b>RAM</b>: " + ram + "\n<b>GPU</b>: " + gpu + "\n<b>Resolution</b>: " + resolution;
+	const result = "<b>OS</b>: " + operating_system + "\n<b>CPU</b>: " + cpu + "\n<b>RAM</b>: " + ram + "\n<b>GPU</b>: " + gpu + "\n<b>" + lang_resolution[lang] + "</b>: " + resolution;
 	
 	return result;
 }
