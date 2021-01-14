@@ -12,6 +12,7 @@ A bot archive created by Edoardo Cortese.
 * [@ManPinnerbot](http://telegram.me/manpinnerbot) - Allow normal users to pin messages to your group chat!
 * [@ExpellerBot](http://telegram.me/expellerbot) - Auto ban users with specific language in their first name!
 * [@DowndetectorBot](http://telegram.me/downdetectorbot) - Check service status using downdetector website!
+* [@AmazonTrackerStockBot](http://telegram.me/amazontrackerstockbot) - Monitor an amazon product stock on all bigger european marketplaces!
 
 ## Authors
 
