@@ -4,6 +4,7 @@
   "description": "Telegram bots by Edoardo Cortese",
   "main": "",
   "dependencies": {
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "captchapng": "0.0.1",
     "express": "^4.17.1",
