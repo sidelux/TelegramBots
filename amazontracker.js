@@ -61,8 +61,10 @@ setInterval(function () {
 }, 60000);
 
 checkItems();
-callNTimes(300, function () { // 5 min
-	checkItems();
+callNTimes(300, function () {
+	var d = new Date();
+	if ((d.getHours() >= 8) && (d.getHours() <= 23))	// skip night time (8-23)
+		checkItems();
 });
 
 process.on('SIGINT', function() {
@@ -274,7 +276,7 @@ bot.on('message', function (message, match) {
 				console.log(getNow("it") + " - Title unavailable");
 			}
 		}, (error) => {
-			console.log(error);
+			console.log(error.response.status + " - " + error.response.statusText);
 		});
 	} else {
 		console.log(getNow("it") + " - Title already loaded");
@@ -296,89 +298,91 @@ function checkItem(element, index, array) {
 	const item_code = element.code;
 	const item_title = element.title;
 	
-	checkShop("it", item_id, item_code, item_title);
-	checkShop("es", item_id, item_code, item_title);
-	checkShop("fr", item_id, item_code, item_title);
-	checkShop("co.uk", item_id, item_code, item_title);
-	checkShop("de", item_id, item_code, item_title);
-	
+	checkShop("it", item_id, item_code, item_title, 0);
+	checkShop("es", item_id, item_code, item_title, 5);
+	checkShop("fr", item_id, item_code, item_title, 10);
+	checkShop("co.uk", item_id, item_code, item_title, 15);
+	checkShop("de", item_id, item_code, item_title, 20);
+			
 	connection.query('UPDATE item SET check_date = NOW() WHERE id = "' + item_id + '"', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
 
-function checkShop(amz_lang, item_id, item_code, item_title) {
-	const amz_url = 'https://www.amazon.' + amz_lang + '/dp/' + item_code + '/';
-	axios({
-		method: 'get',
-		url: amz_url,
-		'headers': {
-			'Host': 'www.amazon.' + amz_lang,
-			'Accept': '*/*',
-			'Accept-Encoding': 'gzip, deflate, br',
-			'Connection': 'keep-alive',
-			'Cache-Control': 'no-cache',
-			'Referer': 'https://www.amazon.' + amz_lang + '/',
-			'sec-ch-ua': '"Chromium";v="88", "Google Chrome";v="88", ";Not A Brand";v="99"',
-			'sec-ch-ua-mobile': '?0',
-			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.77 Safari/537.36'
-		}
-	}).then((response) => {
-		const data = response.data;
-		const avabilable_price = data.match(/a-size-base a-color-price">(\d+),(\d+)/);
-		if (avabilable_price != null) {
-			const price = avabilable_price[1] + "," + avabilable_price[2] + " €";
-			console.log(getNow("it") + " - " + item_code + " available with price " + price + " (" + amz_lang + ")");
-			
-			// send notifications
-			connection.query('SELECT id, account_id, lang FROM user WHERE item_id = ' + item_id, function (err, rows, fields) {
-				if (err) throw err;
-				for(i = 0; i < Object.keys(rows).length; i++) {
-					// check if notification sent for specific market
-					var user_id = rows[i].id;
-					var account_id = rows[i].account_id;
-					var lang = rows[i].lang;
-					var marketplace = connection_sync.query('SELECT 1 FROM marketplace WHERE user_id = ' + user_id + ' AND location = "' + amz_lang + '"');
-					if (err) throw err;
-					if (Object.keys(marketplace).length > 0) {
-						console.log(getNow("it") + " - " + item_code + " skipped for user " + account_id + " (" + amz_lang + ")");
-						return;
-					}
-					console.log(getNow("it") + " - " + item_code + " sent for user " + account_id + " (" + amz_lang + ")");
-					connection.query('INSERT INTO marketplace (user_id, location) VALUES (' + user_id + ', "' + amz_lang + '")', function (err, rows, fields) {
-						if (err) throw err;
-					});
+function checkShop(amz_lang, item_id, item_code, item_title, timeout) {
+	setTimeout(function () {
+		const amz_url = 'https://www.amazon.' + amz_lang + '/dp/' + item_code + '/';
+		axios({
+			method: 'get',
+			url: amz_url,
+			'headers': {
+				'Host': 'www.amazon.' + amz_lang,
+				'Accept': '*/*',
+				'Accept-Encoding': 'gzip, deflate, br',
+				'Connection': 'keep-alive',
+				'Cache-Control': 'no-cache',
+				'Referer': 'https://www.amazon.' + amz_lang + '/',
+				'sec-ch-ua': '"Chromium";v="88", "Google Chrome";v="88", ";Not A Brand";v="99"',
+				'sec-ch-ua-mobile': '?0',
+				'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.77 Safari/537.36'
+			}
+		}).then((response) => {
+			const data = response.data;
+			const avabilable_price = data.match(/a-size-base a-color-price">(\d+),(\d+)/);
+			if (avabilable_price != null) {
+				const price = avabilable_price[1] + "," + avabilable_price[2] + " €";
+				console.log(getNow("it") + " - " + item_code + " available with price " + price + " (" + amz_lang + ")");
 
-					var iKeys = [];
-					iKeys.push([{
-						text: lang_open_url[lang],
-						url: amz_url
-					}]);
-					bot.sendMessage(account_id, lang_notification[lang].replace("%s", "<b>" + item_title + "</b>").replace("%p", "<b>" + price + "</b>").replace("%l", "<b>" + amz_lang.toUpperCase() + "</b>"), {
-						parse_mode: 'HTML',
-						disable_web_page_preview: true,
-						reply_markup: {
-							inline_keyboard: iKeys
-						}
-					});
-				}
-			});
-		} else {
-			console.log(getNow("it") + " - " + item_code + " unavailable (" + amz_lang + ")");
-			
-			// prepare for next availability check
-			connection.query('SELECT id FROM user WHERE item_id = ' + item_id, function (err, rows, fields) {
-				if (err) throw err;
-				for(i = 0; i < Object.keys(rows).length; i++) {
-					connection.query('DELETE FROM marketplace WHERE user_id = ' + rows[i].id + ' AND location = "' + amz_lang + '"', function (err, rows, fields) {
+				// send notifications
+				connection.query('SELECT id, account_id, lang FROM user WHERE item_id = ' + item_id, function (err, rows, fields) {
+					if (err) throw err;
+					for(i = 0; i < Object.keys(rows).length; i++) {
+						// check if notification sent for specific market
+						var user_id = rows[i].id;
+						var account_id = rows[i].account_id;
+						var lang = rows[i].lang;
+						var marketplace = connection_sync.query('SELECT 1 FROM marketplace WHERE user_id = ' + user_id + ' AND location = "' + amz_lang + '"');
 						if (err) throw err;
-					});
-				}
-			});
-		}
-	}, (error) => {
-		console.log(error);
-	});
+						if (Object.keys(marketplace).length > 0) {
+							console.log(getNow("it") + " - " + item_code + " skipped for user " + account_id + " (" + amz_lang + ")");
+							return;
+						}
+						console.log(getNow("it") + " - " + item_code + " sent for user " + account_id + " (" + amz_lang + ")");
+						connection.query('INSERT INTO marketplace (user_id, location) VALUES (' + user_id + ', "' + amz_lang + '")', function (err, rows, fields) {
+							if (err) throw err;
+						});
+
+						var iKeys = [];
+						iKeys.push([{
+							text: lang_open_url[lang],
+							url: amz_url
+						}]);
+						bot.sendMessage(account_id, lang_notification[lang].replace("%s", "<b>" + item_title + "</b>").replace("%p", "<b>" + price + "</b>").replace("%l", "<b>" + amz_lang.toUpperCase() + "</b>"), {
+							parse_mode: 'HTML',
+							disable_web_page_preview: true,
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						});
+					}
+				});
+			} else {
+				console.log(getNow("it") + " - " + item_code + " unavailable (" + amz_lang + ")");
+
+				// prepare for next availability check
+				connection.query('SELECT id FROM user WHERE item_id = ' + item_id, function (err, rows, fields) {
+					if (err) throw err;
+					for(i = 0; i < Object.keys(rows).length; i++) {
+						connection.query('DELETE FROM marketplace WHERE user_id = ' + rows[i].id + ' AND location = "' + amz_lang + '"', function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
+				});
+			}
+		}, (error) => {
+			console.log(getNow("it") + " - " + item_code + ": " + error.response.status + " - " + error.response.statusText + " (" + amz_lang + ")");
+		});
+	}, timeout*1000);
 }
 
 // Functions
