@@ -548,6 +548,9 @@ var ability_operatorpvp_wamai_gadgetdestroybymagnet = [];
 var ability_operatorpvp_ace_selmadetonate = [];
 var ability_operatorpvp_melusi_sloweddown = [];
 var ability_operatorpvp_zero_gadgetsdestroyed = [];
+var ability_operatorpvp_headshot = [];
+var ability_operatorpvp_dbno = [];
+var ability_operatorpvp_timeplayed = [];
 
 var lang_loadout_intro = [];
 var lang_loadout_primary = [];
@@ -1221,6 +1224,12 @@ ability_operatorpvp_melusi_sloweddown["it"] = "Nemici rallentati";
 ability_operatorpvp_melusi_sloweddown["en"] = "Enemies slowed down";
 ability_operatorpvp_zero_gadgetsdestroyed["it"] = "Gadget distrutti";
 ability_operatorpvp_zero_gadgetsdestroyed["en"] = "Gadgets destroyed";
+ability_operatorpvp_headshot["it"] = "Colpi in testa";
+ability_operatorpvp_headshot["en"] = "Headshots";
+ability_operatorpvp_dbno["it"] = "Atterramenti";
+ability_operatorpvp_dbno["en"] = "DBNOs";
+ability_operatorpvp_timeplayed["it"] = "Tempo di gioco";
+ability_operatorpvp_timeplayed["en"] = "Time played";
 
 lang_loadout_intro["it"] = "Equipaggiamento consigliato per";
 lang_loadout_intro["en"] = "Recommended loadout for";
