@@ -1,13 +1,13 @@
--- MySQL dump 10.16  Distrib 10.1.47-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.18  Distrib 10.3.27-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: Expeller
 -- ------------------------------------------------------
--- Server version	10.1.47-MariaDB-0+deb9u1
+-- Server version	10.3.27-MariaDB-0+deb10u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -25,10 +25,10 @@ DROP TABLE IF EXISTS `group_config`;
 CREATE TABLE `group_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
-  `expel_japanese` tinyint(1) NOT NULL DEFAULT '0',
-  `expel_chinese` tinyint(1) NOT NULL DEFAULT '0',
-  `expel_arabic` tinyint(1) NOT NULL DEFAULT '0',
-  `whole_word` tinyint(1) NOT NULL DEFAULT '0',
+  `expel_japanese` tinyint(1) NOT NULL DEFAULT 0,
+  `expel_chinese` tinyint(1) NOT NULL DEFAULT 0,
+  `expel_arabic` tinyint(1) NOT NULL DEFAULT 0,
+  `whole_word` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

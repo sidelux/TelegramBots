@@ -1,13 +1,13 @@
--- MySQL dump 10.16  Distrib 10.1.47-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.18  Distrib 10.3.27-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: R6Stats
 -- ------------------------------------------------------
--- Server version	10.1.47-MariaDB-0+deb9u1
+-- Server version	10.3.27-MariaDB-0+deb10u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -42,7 +42,7 @@ CREATE TABLE `contest_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
   `chat_id` varchar(32) NOT NULL,
-  `join_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `join_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -58,7 +58,7 @@ CREATE TABLE `invite_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
   `username` varchar(64) DEFAULT NULL,
-  `send_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `send_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -80,7 +80,7 @@ CREATE TABLE `player_history` (
   `ranked_plays` int(11) NOT NULL,
   `ranked_wins` int(11) NOT NULL,
   `ranked_losses` int(11) NOT NULL,
-  `ranked_wl` decimal(9,3) NOT NULL DEFAULT '0.000',
+  `ranked_wl` decimal(9,3) NOT NULL DEFAULT 0.000,
   `ranked_kills` int(11) NOT NULL,
   `ranked_deaths` int(11) NOT NULL,
   `ranked_kd` decimal(9,3) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE `player_history` (
   `casual_plays` int(11) NOT NULL,
   `casual_wins` int(11) NOT NULL,
   `casual_losses` int(11) NOT NULL,
-  `casual_wl` decimal(9,3) NOT NULL DEFAULT '0.000',
+  `casual_wl` decimal(9,3) NOT NULL DEFAULT 0.000,
   `casual_kills` int(11) NOT NULL,
   `casual_deaths` int(11) NOT NULL,
   `casual_kd` decimal(9,3) NOT NULL,
@@ -106,37 +106,37 @@ CREATE TABLE `player_history` (
   `melee_kills` int(11) NOT NULL,
   `penetration_kills` int(11) NOT NULL,
   `assists` int(11) NOT NULL,
-  `season_id` int(11) NOT NULL DEFAULT '0',
-  `season_rank` int(11) NOT NULL DEFAULT '0',
-  `season_mmr` decimal(12,8) NOT NULL DEFAULT '0.00000000',
-  `season_max_mmr` decimal(12,8) NOT NULL DEFAULT '0.00000000',
+  `season_id` int(11) NOT NULL DEFAULT 0,
+  `season_rank` int(11) NOT NULL DEFAULT 0,
+  `season_mmr` decimal(12,8) NOT NULL DEFAULT 0.00000000,
+  `season_max_mmr` decimal(12,8) NOT NULL DEFAULT 0.00000000,
   `top_rank_position` int(11) NOT NULL,
-  `mode_secure` int(11) NOT NULL DEFAULT '0',
-  `mode_hostage` int(11) NOT NULL DEFAULT '0',
-  `mode_bomb` int(11) NOT NULL DEFAULT '0',
+  `mode_secure` int(11) NOT NULL DEFAULT 0,
+  `mode_hostage` int(11) NOT NULL DEFAULT 0,
+  `mode_bomb` int(11) NOT NULL DEFAULT 0,
   `operator_max_kd_name` varchar(64) DEFAULT NULL,
-  `operator_max_kd` decimal(12,8) NOT NULL DEFAULT '0.00000000',
+  `operator_max_kd` decimal(12,8) NOT NULL DEFAULT 0.00000000,
   `operator_max_wl_name` varchar(64) DEFAULT NULL,
-  `operator_max_wl` decimal(12,8) NOT NULL DEFAULT '0.00000000',
+  `operator_max_wl` decimal(12,8) NOT NULL DEFAULT 0.00000000,
   `operator_max_plays_name` varchar(64) DEFAULT NULL,
-  `operator_max_plays` int(11) NOT NULL DEFAULT '0',
+  `operator_max_plays` int(11) NOT NULL DEFAULT 0,
   `operator_max_wins_name` varchar(64) DEFAULT NULL,
-  `operator_max_wins` int(11) NOT NULL DEFAULT '0',
+  `operator_max_wins` int(11) NOT NULL DEFAULT 0,
   `operator_max_losses_name` varchar(64) DEFAULT NULL,
-  `operator_max_losses` int(11) NOT NULL DEFAULT '0',
+  `operator_max_losses` int(11) NOT NULL DEFAULT 0,
   `operator_max_kills_name` varchar(64) DEFAULT NULL,
-  `operator_max_kills` int(11) NOT NULL DEFAULT '0',
+  `operator_max_kills` int(11) NOT NULL DEFAULT 0,
   `operator_max_deaths_name` varchar(64) DEFAULT NULL,
-  `operator_max_deaths` int(11) NOT NULL DEFAULT '0',
+  `operator_max_deaths` int(11) NOT NULL DEFAULT 0,
   `operator_max_playtime_name` varchar(64) DEFAULT NULL,
-  `operator_max_playtime` int(11) NOT NULL DEFAULT '0',
+  `operator_max_playtime` int(11) NOT NULL DEFAULT 0,
   `operator_max_meleekills_name` varchar(64) DEFAULT NULL,
-  `operator_max_meleekills` int(11) NOT NULL DEFAULT '0',
+  `operator_max_meleekills` int(11) NOT NULL DEFAULT 0,
   `operator_max_headshot_name` varchar(64) DEFAULT NULL,
-  `operator_max_headshot` int(11) NOT NULL DEFAULT '0',
+  `operator_max_headshot` int(11) NOT NULL DEFAULT 0,
   `operator_max_dbno_name` varchar(64) DEFAULT NULL,
-  `operator_max_dbno` int(11) NOT NULL DEFAULT '0',
-  `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `operator_max_dbno` int(11) NOT NULL DEFAULT 0,
+  `insert_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `insert_date` (`insert_date`),
   KEY `platform` (`platform`),
@@ -156,7 +156,7 @@ CREATE TABLE `recruit_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
   `chat_id` varchar(32) NOT NULL,
-  `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `insert_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -190,9 +190,9 @@ CREATE TABLE `team` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `group_id` varchar(64) NOT NULL,
   `name` varchar(64) NOT NULL,
-  `creation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `tag_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `stats_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `creation_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `tag_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `stats_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -208,7 +208,7 @@ CREATE TABLE `team_member` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
   `username` varchar(64) NOT NULL,
-  `role` tinyint(4) NOT NULL DEFAULT '0',
+  `role` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `team_id` (`team_id`),
   CONSTRAINT `team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -231,15 +231,15 @@ CREATE TABLE `user` (
   `region` varchar(8) DEFAULT NULL,
   `default_username` varchar(32) DEFAULT NULL,
   `default_platform` varchar(32) DEFAULT NULL,
-  `force_update` tinyint(4) NOT NULL DEFAULT '0',
-  `last_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `force_update` tinyint(4) NOT NULL DEFAULT 0,
+  `last_update` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_force_update` timestamp NULL DEFAULT NULL,
   `last_stats` timestamp NULL DEFAULT NULL,
-  `undefined_track` tinyint(4) NOT NULL DEFAULT '0',
+  `undefined_track` tinyint(4) NOT NULL DEFAULT 0,
   `last_graph` varchar(64) DEFAULT NULL,
-  `report` tinyint(4) NOT NULL DEFAULT '1',
-  `daily_report` tinyint(1) NOT NULL DEFAULT '0',
-  `daily_report_sent` tinyint(1) NOT NULL DEFAULT '0',
+  `report` tinyint(4) NOT NULL DEFAULT 1,
+  `daily_report` tinyint(1) NOT NULL DEFAULT 0,
+  `daily_report_sent` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

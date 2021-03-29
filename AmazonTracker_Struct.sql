@@ -1,13 +1,13 @@
--- MySQL dump 10.16  Distrib 10.1.47-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.18  Distrib 10.3.27-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: AmazonTracker
 -- ------------------------------------------------------
--- Server version	10.1.47-MariaDB-0+deb9u1
+-- Server version	10.3.27-MariaDB-0+deb10u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -26,8 +26,8 @@ CREATE TABLE `item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `code` varchar(16) NOT NULL,
   `title` varchar(128) DEFAULT NULL,
-  `add_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `check_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `check_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -43,7 +43,7 @@ CREATE TABLE `marketplace` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `location` varchar(8) NOT NULL,
-  `add_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `marketplace_user` (`user_id`),
   CONSTRAINT `marketplace_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -62,7 +62,7 @@ CREATE TABLE `user` (
   `item_id` int(11) NOT NULL,
   `account_id` bigint(16) NOT NULL,
   `lang` varchar(2) NOT NULL DEFAULT 'en',
-  `add_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `item_user` (`item_id`),
   CONSTRAINT `item_user` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
