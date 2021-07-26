@@ -4782,7 +4782,7 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 				bot.sendMessage(message.chat.id, lang_team_notfound[lang], options);
 				return;
 			}
-			connection.query("SELECT U.default_username, U.default_platform FROM team_member T, user U WHERE T.username = U.last_username AND T.team_id = " + team_id, function (err, rows) {
+			connection.query("SELECT P.username, P.platform FROM team_member T, player_history P WHERE T.username = P.username AND T.team_id = " + team_id + " GROUP BY username", function (err, rows) {
 				if (err) throw err;
 				var len = Object.keys(rows).length;
 				if (len == 0){
@@ -4797,7 +4797,7 @@ bot.onText(/^\/tstats(?:@\w+)? (.+)/i, function (message, match) {
 				var text = "<b>" + message.from.username + "</b> " + lang_team_stats[lang] + ":\n";
 				bot.sendChatAction(message.chat.id, "typing").then(function () {
 					for (i = 0; i < len; i++){
-						r6.stats(rows[i].default_username, rows[i].default_platform, -1, region, 0).then(response => {
+						r6.stats(rows[i].username, rows[i].platform, -1, region, 0).then(response => {
 							if (response.level != undefined)
 								text += getDataLine(response, lang) + "\n";
 
