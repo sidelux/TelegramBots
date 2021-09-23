@@ -338,8 +338,8 @@ var validLang = ["en", "it"];
 var validRegion = ["emea", "ncsa", "apac"];
 var defaultLang = "it";
 var validParam = ["casual_kd", "ranked_kd", "season_mmr", "season_max_mmr", "casual_wl", "ranked_wl"];
-var operatorList = ["Alibi", "Maestro", "Finka", "Lion", "Vigil", "Dokkaebi", "Zofia", "Ela", "Ying", "Lesion", "Mira", "Jackal", "Hibana", "Echo", "Caveira", "Capitao", "Blackbeard", "Valkyrie", "Buck", "Frost", "Mute", "Sledge", "Smoke", "Thatcher", "Ash", "Castle", "Pulse", "Thermite", "Montagne", "Twitch", "Doc", "Rook", "Jager", "Bandit", "Blitz", "IQ", "Fuze", "Glaz", "Tachanka", "Kapkan", "Maverick", "Clash", "Nomad", "Kaid", "Mozzie", "Gridlock", "Nokk", "Warden", "Goyo", "Amaru", "Wamai", "Kali", "Oryx", "Iana", "Ace", "Melusi", "Zero", "Aruni", "Flores"];
-var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon", "Phantom Sight", "Ember Rise", "Shifting Tides", "Void Edge", "Steel Wave", "Shadow Legacy", "Neon Dawn", "Crimson Heist"];
+var operatorList = ["Alibi", "Maestro", "Finka", "Lion", "Vigil", "Dokkaebi", "Zofia", "Ela", "Ying", "Lesion", "Mira", "Jackal", "Hibana", "Echo", "Caveira", "Capitao", "Blackbeard", "Valkyrie", "Buck", "Frost", "Mute", "Sledge", "Smoke", "Thatcher", "Ash", "Castle", "Pulse", "Thermite", "Montagne", "Twitch", "Doc", "Rook", "Jager", "Bandit", "Blitz", "IQ", "Fuze", "Glaz", "Tachanka", "Kapkan", "Maverick", "Clash", "Nomad", "Kaid", "Mozzie", "Gridlock", "Nokk", "Warden", "Goyo", "Amaru", "Wamai", "Kali", "Oryx", "Iana", "Ace", "Melusi", "Zero", "Aruni", "Flores", "Thunderbird", "Osa"];
+var seasonList = ["Black Ice", "Dust Line", "Skull Rain", "Red Crow", "Velvet Shell", "Health", "Blood Orchid", "White Noise", "Chimera", "Para Bellum", "Grim Sky", "Wind Bastion", "Burnt Horizon", "Phantom Sight", "Ember Rise", "Shifting Tides", "Void Edge", "Steel Wave", "Shadow Legacy", "Neon Dawn", "Crimson Heist", "North Star", "Crystal Guard"];
 var lang_main = [];
 var lang_stats = [];
 var lang_startme = [];
@@ -857,6 +857,7 @@ lang_config["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\n
 lang_config_private["it"] = "⚙️ Guida alla prima configurazione del bot ⚙️\n\nLe parole scritte in *grassetto* sono comandi, mentre quelle in _corsivo_ sono i campi da inserire\n\n1. Scrivi: '*/setusername*' con a seguire, nello stesso messaggio, il tuo username del gioco (quindi */setusername* _USERNAME_);\n2. '*/setplatform*' con a seguire la piattaforma. Le piattaforme sono: pc, xbox e ps4 (quindi */setplatform* _PIATTAFORMA_);\n3. Dopo aver fatto ciò, il bot avrà salvato il tuo username e la tua piattaforma e basterà inviare '*/stats*' per visualizzare le statistiche.\n\nPer visualizzare le stats di un altro utente senza rifare la procedura, basta inviare un messaggio con questo formato:\n*/stats* _USERNAME_,_PIATTAFORMA_.";
 lang_config_private["en"] = "⚙️ Bot's first configuration - Written guide ⚙️\n\nWords that are written in *bold* are commands and those in _italics_ are the fields to be inserted.\n\n1. Now write: '*/setusername*' and then, in the same message, your game username (*/setusername* _USERNAME_)\n2. Then write: '*/setplatform*' and the platform where you play. There are 3 different platforms: pc, xbox and ps4 (*/setplatform* _PLATFORM_);\n3. After doing this, the bot  will have your username and your platform saved. From now on you will only need to send a '*/stats*' to view your in-game statistics.\n\nTo view the statistics of another player without redoing the procedure, just send a message with this format:\n*/stats* _USERNAME_, _PLATFORM_.";
 lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
+	"23/09/21 - Fix e aggiunta delle ultime stagioni\n" +
 	"02/12/20 - Aggiornato con il supporto a Shadow Legacy e Neon Dawn\n" +
 	"11/08/20 - Aggiunto il comando /weapons\n" +
 	"23/06/20 - Aggiornato con il supporto a Steel Wave\n" +
@@ -869,6 +870,7 @@ lang_last_news["it"] = 	"<b>Ultimi aggiornamenti:</b>\n" +
 	"13/01/20 - Aggiornato con il supporto completo ad Shifting Tides\n" +
 	"15/11/19 - Aggiunto il comando /avatar per generare un avatar personalizzato";
 lang_last_news["en"] = 	"<b>Latest updates:</b>\n" +
+	"09/23/21 - Fix and updates with new seasons\n" +	
 	"12/02/20 - Updated with Shadow Legacy and Neon Dawn support\n" +
 	"08/11/20 - Added /weapons command\n" +
 	"06/23/20 - Updated with Steel Wave support\n" +
