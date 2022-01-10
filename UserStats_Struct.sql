@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `stats`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `stats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` bigint(32) NOT NULL,
   `message_count` int(11) NOT NULL DEFAULT 0,
   `creation_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `update_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -44,7 +44,7 @@ DROP TABLE IF EXISTS `user_group`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` bigint(32) NOT NULL,
   `chat_id` varchar(32) NOT NULL,
   `creation_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
