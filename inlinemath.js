@@ -53,8 +53,12 @@ var html = {
 	parse_mode: "HTML"
 };
 
-bot.onText(/^\/start/i, function (message) {	
-	bot.sendMessage(message.chat.id, "<b>Welcome to Inline Math Bot!</b>\n\nUse this bot inline to solve math problems (see <a href='https://mathjs.org/docs/index.html'>documentation</a>)", html);
+bot.onText(/^\/start/i, function (message) {
+	var no_preview = {
+		parse_mode: "HTML",
+		disable_web_page_preview: true
+	};	
+	bot.sendMessage(message.chat.id, "<b>Welcome to Inline Math Bot!</b>\n\nUse this bot inline to solve math problems (see <a href='https://mathjs.org/docs/index.html'>documentation</a>)", no_preview);
 });
 
 bot.on("inline_query", function (query) {

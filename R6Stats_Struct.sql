@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `contest`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `contest` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` bigint(11) NOT NULL,
   `username` varchar(64) NOT NULL,
   `contest_username` varchar(64) NOT NULL,
   PRIMARY KEY (`id`)
@@ -40,7 +40,7 @@ DROP TABLE IF EXISTS `contest_group`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `contest_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` bigint(11) NOT NULL,
   `chat_id` varchar(32) NOT NULL,
   `join_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
@@ -56,7 +56,7 @@ DROP TABLE IF EXISTS `invite_history`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `invite_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` bigint(11) NOT NULL,
   `username` varchar(64) DEFAULT NULL,
   `send_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
@@ -154,7 +154,7 @@ DROP TABLE IF EXISTS `recruit_history`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `recruit_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` bigint(11) NOT NULL,
   `chat_id` varchar(32) NOT NULL,
   `insert_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
@@ -224,7 +224,7 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` bigint(11) NOT NULL,
   `last_chat_id` varchar(32) DEFAULT NULL,
   `last_username` varchar(64) DEFAULT NULL,
   `lang` varchar(2) DEFAULT NULL,

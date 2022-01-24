@@ -167,7 +167,7 @@ bot.onText(/^\/list/i, function (message) {
 	});
 });
 
-bot.onText(/^\/remove (.+)/i, function (message, match) {
+bot.onText(/^\/remove (.+)|^\/remove/i, function (message, match) {
 	if (message.chat.id < 0)
 		return;
 	
