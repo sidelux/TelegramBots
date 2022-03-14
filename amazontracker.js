@@ -352,6 +352,20 @@ function checkShop(amz_lang, item_id, item_code, item_title, timeout) {
 							if (err) throw err;
 						});
 
+						var item_price_check = connection_sync.query('SELECT last_price FROM item WHERE code = "' + item_code + '"');
+						if (err) throw err;
+						if (Object.keys(item_price_check).length > 0) {
+							var price_db = avabilable_price[1] + "." + avabilable_price[2];
+							if (price_db == item_price_check[0].last_price) {
+								console.log(getNow("it") + " - " + item_code + " price skipped for user " + account_id + " (" + amz_lang + ")");
+								return;
+							} else {
+								connection.query('UPDATE item SET last_price = "' + price_db + '" WHERE code = "' + item_code + '"', function (err, rows, fields) {
+									if (err) throw err;
+								});
+							}
+						}
+
 						var iKeys = [];
 						iKeys.push([{
 							text: lang_open_url[lang],
