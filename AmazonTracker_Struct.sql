@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.31-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.19  Distrib 10.3.34-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: AmazonTracker
 -- ------------------------------------------------------
--- Server version	10.3.31-MariaDB-0+deb10u1
+-- Server version	10.3.34-MariaDB-0+deb10u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,6 +28,7 @@ CREATE TABLE `item` (
   `title` varchar(128) DEFAULT NULL,
   `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `check_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `last_price` decimal(8,2) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
