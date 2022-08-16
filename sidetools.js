@@ -77,6 +77,8 @@ bot.onText(/^\/presenze/i, function (message) {
 		reply_markup: {
 			inline_keyboard: iKeys
 		}
+	}).then(function (data) {
+		// bot.pinChatMessage(data.chat.id, data.message_id);
 	});
 });
 
