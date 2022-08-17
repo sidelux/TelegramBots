@@ -72,13 +72,12 @@ iKeys.push([{
 bot.onText(/^\/presenze/i, function (message) {	
 	if (message.chat.id > 0)
 		return;
+	bot.deleteMessage(message.chat.id, message.message_id);
 	bot.sendMessage(message.chat.id, originalText, {
 		parse_mode: 'HTML',
 		reply_markup: {
 			inline_keyboard: iKeys
 		}
-	}).then(function (data) {
-		// bot.pinChatMessage(data.chat.id, data.message_id);
 	});
 });
 
