@@ -31,7 +31,7 @@ var stringSimilarity = require('string-similarity');
 var im = require('imagemagick');
 var tesseract = require('node-tesseract-ocr');
 var ffmpeg = require('fluent-ffmpeg');
-var fetch = require('node-fetch');
+var fetch = import('node-fetch');
 var PDFDocument = require('./pdfkit-tables.js');
 
 // require('longjohn');		// enable to detailed error log
