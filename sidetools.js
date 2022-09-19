@@ -72,7 +72,7 @@ bot.onText(/^\/start/i, function (message) {
 	if (message.chat.id < 0)
 		return;
 
-	bot.sendMessage(message.chat.id, "Bot realizzato per fornire particolari funzionalità, creato da @fenix45.");
+	bot.sendMessage(message.chat.id, "Bot realizzato per fornire particolari funzionalità nei gruppi, creato da @fenix45.");
 	if (message.text != undefined)
 		console.log(getNow("it") + " " + message.from.username + " - " + message.text);
 });
@@ -228,7 +228,7 @@ function printPartecipations(message, id) {
 				}
 			}
 			if (c > 0)
-				newText += "Forse:\n" + partText;
+				newText += "Forse:\n" + partText + "\n";
 
 			var iKeys = [];
 			iKeys.push([{
@@ -243,7 +243,7 @@ function printPartecipations(message, id) {
 			}]);
 
 			if (total_partecipants != -1)
-				newText += "\nVotanti: " + voted_partecipations + "/" + total_partecipants;
+				newText += "Votanti: " + voted_partecipations + "/" + total_partecipants;
 
 			bot.editMessageText(newText, {chat_id: message.message.chat.id, message_id: message.message.message_id, parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
 			bot.answerCallbackQuery(message.id, {text: "Ok!"});
