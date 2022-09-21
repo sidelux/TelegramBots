@@ -108,7 +108,7 @@ bot.onText(/^\/presenze/i, function (message) {
 			if (err) throw err;
 		});
 		bot.unpinAllChatMessages(msg.chat.id);
-		bot.pinChatMessage(msg.chat.id, msg.reply_to_message.message_id, {disable_notification: true});
+		bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
 	});
 });
 
