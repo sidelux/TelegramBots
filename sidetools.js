@@ -17,6 +17,7 @@ var bodyParser = require('body-parser');
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
 const { exit } = require('process');
+const { Configuration, OpenAIApi } = require("openai");
 
 console.log('Connecting bot...');
 
@@ -107,8 +108,9 @@ bot.onText(/^\/presenze/i, function (message) {
 		connection.query("INSERT INTO partecipation (chat_id, message_id) VALUES (" + msg.chat.id + ", " + msg.message_id + ")", function (err, rows) {
 			if (err) throw err;
 		});
-		bot.unpinAllChatMessages(msg.chat.id);
-		bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
+		bot.unpinAllChatMessages(msg.chat.id).then(function (data) {
+			bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
+		});
 	});
 });
 
@@ -186,6 +188,47 @@ bot.on('callback_query', function (message) {
 	}
 });
 
+bot.onText(/^\/openai (.+)/i, async function (message, match) {
+	if (message.chat.id < 0)
+		return;
+
+	const configuration = new Configuration({
+		apiKey: "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",
+	});
+	const openai = new OpenAIApi(configuration);
+
+	var input =  match[1];
+	console.log("Input: " + input);
+	var output = "";
+	var last_output = "";
+	var times = 0;
+	
+	while (1) {
+		times++;
+		const completion = await openai.createCompletion({
+			model: "text-davinci-003",
+			prompt: input,
+			max_tokens: 512,
+			temperature: 0.7
+		});
+		last_output = completion.data.choices[0].text;
+		output = last_output;
+		if (input == input+output)
+			break;
+		input += output;
+		if ((input+output).length >= 3500) {
+			console.log("Blocco per caratteri tg");
+			break;
+		}
+	}
+
+	if (times == 1)
+		bot.sendMessage(message.chat.id, input+output, {parse_mode: "markdown"});
+	else
+		bot.sendMessage(message.chat.id, input, {parse_mode: "markdown"});
+	console.log("Output dopo " + times + " chiamate");
+});
+
 function printPartecipations(message, id) {
 	connection.query("SELECT partecipants FROM partecipation_chat WHERE chat_id = '" + message.message.chat.id + "'", function (err, rows) {
 		if (err) throw err;
@@ -211,17 +254,6 @@ function printPartecipations(message, id) {
 			var c = 0;
 			var partText = "";
 			for (var i = 0; i < Object.keys(rows).length; i++) {
-				if (rows[i].response == "no") {
-					partText += rows[i].username + "\n";
-					c++;
-				}
-			}
-			if (c > 0)
-				newText += "No:\n" + partText + "\n";
-
-			var c = 0;
-			var partText = "";
-			for (var i = 0; i < Object.keys(rows).length; i++) {
 				if (rows[i].response == "maybe") {
 					partText += rows[i].username + "\n";
 					c++;
@@ -229,6 +261,17 @@ function printPartecipations(message, id) {
 			}
 			if (c > 0)
 				newText += "Forse:\n" + partText + "\n";
+
+			var c = 0;
+			var partText = "";
+			for (var i = 0; i < Object.keys(rows).length; i++) {
+				if (rows[i].response == "no") {
+					partText += rows[i].username + "\n";
+					c++;
+				}
+			}
+			if (c > 0)
+				newText += "No:\n" + partText + "\n";
 
 			var iKeys = [];
 			iKeys.push([{
