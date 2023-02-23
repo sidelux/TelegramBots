@@ -262,7 +262,7 @@ bot.onText(/^\/openai (.+)/i, async function (message, match) {
 		return;
 
 	const configuration = new Configuration({
-		apiKey: "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",
+		apiKey: config.openaitoken,
 	});
 	const openai = new OpenAIApi(configuration);
 
