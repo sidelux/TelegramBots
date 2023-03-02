@@ -147,7 +147,7 @@ bot.onText(/^\/presenze/i, function (message) {
 			connection.query("INSERT INTO partecipation (chat_id, message_id) VALUES (" + msg.chat.id + ", " + msg.message_id + ")", function (err, rows) {
 				if (err) throw err;
 			});
-			bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
+			bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: false});
 		});
 	}
 });
