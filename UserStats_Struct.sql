@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.36-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.19  Distrib 10.3.38-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: UserStats
 -- ------------------------------------------------------
--- Server version	10.3.36-MariaDB-0+deb10u2
+-- Server version	10.3.38-MariaDB-0+deb10u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -32,7 +32,7 @@ CREATE TABLE `stats` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_id` (`account_id`),
   KEY `last_username` (`last_username`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,7 +50,7 @@ CREATE TABLE `user_group` (
   PRIMARY KEY (`id`),
   KEY `user_group_account_id` (`account_id`),
   CONSTRAINT `user_group_account_id` FOREIGN KEY (`account_id`) REFERENCES `stats` (`account_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -124,9 +124,13 @@ bot.onText(/^\/presenze/i, function (message) {
 			connection.query("INSERT INTO partecipation (chat_id, message_id) VALUES (" + msg.chat.id + ", " + msg.message_id + ")", function (err, rows) {
 				if (err) throw err;
 			});
-			bot.unpinAllChatMessages(msg.chat.id).then(function (data) {
-				bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
-			});
+			setTimeout(() => {
+				bot.unpinAllChatMessages(msg.chat.id).then(function (data) {
+					setTimeout(() => {
+						bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
+					}, 1000);
+				});
+			}, 1000);
 		});
 	} else if (message.chat.id == "-1001865921442") {
 		var iKeys = [];
@@ -147,18 +151,29 @@ bot.onText(/^\/presenze/i, function (message) {
 			connection.query("INSERT INTO partecipation (chat_id, message_id) VALUES (" + msg.chat.id + ", " + msg.message_id + ")", function (err, rows) {
 				if (err) throw err;
 			});
-			bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: false});
+			setTimeout(() => {
+				bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: false});
+			}, 1000);
 		});
 	}
 });
 
-bot.onText(/^\/partecipanti (.+)/i, function (message, match) {
-	if ((message.chat.id != "-461536160") || (message.message_id != "-1001865921442"))
+bot.onText(/^\/chatid/i, function (message) {
+	bot.sendMessage(message.chat.id, message.chat.id);
+});
+
+bot.onText(/^\/partecipanti (.+)|^\/partecipanti/i, function (message, match) {
+	if ((message.chat.id != "-461536160") && (message.chat.id != "-1001865921442"))
 		return;
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status != 'creator') && (data.status != 'administrator')) {
 			bot.sendMessage(message.chat.id, "Non hai i permessi per usare questo comando!");
+			return;
+		}
+
+		if (match[1] == undefined) {
+			bot.sendMessage(message.chat.id, "Manca il numero partecipanti!");
 			return;
 		}
 

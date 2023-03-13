@@ -1,6 +1,6 @@
 -- MySQL dump 10.19  Distrib 10.3.38-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: localhost    Database: AmazonTracker
+-- Host: localhost    Database: SideTools
 -- ------------------------------------------------------
 -- Server version	10.3.38-MariaDB-0+deb10u1
 
@@ -16,58 +16,55 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `item`
+-- Table structure for table `partecipation`
 --
 
-DROP TABLE IF EXISTS `item`;
+DROP TABLE IF EXISTS `partecipation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `item` (
+CREATE TABLE `partecipation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `code` varchar(16) NOT NULL,
-  `title` varchar(128) DEFAULT NULL,
+  `chat_id` varchar(128) NOT NULL,
+  `message_id` varchar(128) NOT NULL,
   `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `check_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `last_price` decimal(8,2) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `marketplace`
+-- Table structure for table `partecipation_chat`
 --
 
-DROP TABLE IF EXISTS `marketplace`;
+DROP TABLE IF EXISTS `partecipation_chat`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `marketplace` (
+CREATE TABLE `partecipation_chat` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `chat_id` varchar(128) NOT NULL,
+  `partecipants` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `partecipation_user`
+--
+
+DROP TABLE IF EXISTS `partecipation_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `partecipation_user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `partecipation_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `location` varchar(8) NOT NULL,
+  `username` varchar(128) NOT NULL,
+  `response` varchar(8) NOT NULL,
+  `time` varchar(8) DEFAULT NULL,
   `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `marketplace_user` (`user_id`),
-  CONSTRAINT `marketplace_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `user`
---
-
-DROP TABLE IF EXISTS `user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `item_id` int(11) NOT NULL,
-  `account_id` bigint(16) NOT NULL,
-  `lang` varchar(2) NOT NULL DEFAULT 'en',
-  `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `item_user` (`item_id`),
-  CONSTRAINT `item_user` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  KEY `partecipation_id` (`partecipation_id`),
+  CONSTRAINT `partecipation_partecipation_user` FOREIGN KEY (`partecipation_id`) REFERENCES `partecipation` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
