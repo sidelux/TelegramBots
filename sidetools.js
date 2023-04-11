@@ -140,6 +140,15 @@ bot.onText(/^\/presenze/i, function (message) {
 		},{
 			text: "No",
 			callback_data: partecipation_id + ":partecipation:no"
+		}],[{
+			text: "21:00",
+			callback_data: partecipation_id + ":partecipation:2100"
+		},{
+			text: "21:30",
+			callback_data: partecipation_id + ":partecipation:2130"
+		},{
+			text: "22:00",
+			callback_data: partecipation_id + ":partecipation:2200"
 		}]);
 		bot.deleteMessage(message.chat.id, message.message_id);
 		bot.sendMessage(message.chat.id, originalText2, {
@@ -197,6 +206,53 @@ bot.onText(/^\/partecipanti (.+)|^\/partecipanti/i, function (message, match) {
 					bot.sendMessage(message.chat.id, "Partecipanti totali aggiornati!");
 				});
 			}
+		});
+	});
+});
+
+bot.onText(/^\/stats/i, function (message, match) {
+	var text = "Partecipazioni in questo gruppo:";
+	connection.query("SELECT COUNT(id) As cnt FROM partecipation WHERE chat_id = '" + message.chat.id + "'", function (err, rows) {
+		if (err) throw err;
+
+		var total_group = rows[0].cnt;
+
+		connection.query("SELECT U.response, U.time FROM partecipation_user U, partecipation P WHERE U.partecipation_id = P.id AND U.user_id = '" + message.from.id + "' AND P.chat_id = '" + message.chat.id + "'", function (err, rows) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Nessuna partecipazione alle votazioni in questo gruppo.");
+				return;
+			}
+			var yes = 0;
+			var maybe = 0;
+			var no = 0;
+			var time2030 = 0;
+			var time2100 = 0;
+			var time2130 = 0;
+			var time2200 = 0;
+			var total = 0;
+			var total_h = 0;
+			for (var i = 0; i < Object.keys(rows).length; i++) {
+				if (rows[i].response == "yes")
+					yes++;
+				else if (rows[i].response == "no")
+					no++;
+				else if (rows[i].response == "maybe")
+					maybe++;
+				if (rows[i].time == "2030")
+					time2030++;
+				else if (rows[i].time == "2100")
+					time2100++;
+				else if (rows[i].time == "2130")
+					time2130++;
+				else if (rows[i].time == "2200")
+					time2200++;
+				total++;
+				if (rows[i].time != null)
+					total_h++;
+			}
+			text += "\n\n*Totali*: " + total + " su " + total_group + "\n*Totali con orario*: " + total_h + "\n\n*Sì*: " + yes + " (" +  Math.round((yes/total)*100) + "%)\n*Forse*: " + maybe + " (" + Math.round((maybe/total)*100) + "%)\n*No*: " + no + " (" +  Math.round((no/total)*100) + "%)\n\n*20:30*: " + time2030 + " (" +  Math.round((time2030/total_h)*100) + "%)\n*21:00*: " + time2100 + " (" +  Math.round((time2100/total_h)*100) + "%)\n*21:30*: " + time2200 + " (" +  Math.round((time2130/total_h)*100) + "%)\n*22:00*: " + time2200 + " (" +  Math.round((time2200/total_h)*100) + "%)";
+			bot.sendMessage(message.chat.id, text, {parse_mode: "markdown"});
 		});
 	});
 });
@@ -429,6 +485,15 @@ function printPartecipations(message, id) {
 				},{
 					text: "No",
 					callback_data: id + ":partecipation:no"
+				}],[{
+					text: "21:00",
+					callback_data: id + ":partecipation:2100"
+				},{
+					text: "21:30",
+					callback_data: id + ":partecipation:2130"
+				},{
+					text: "22:00",
+					callback_data: id + ":partecipation:2200"
 				}]);
 			}
 
