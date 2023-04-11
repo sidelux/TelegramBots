@@ -251,7 +251,7 @@ bot.onText(/^\/stats/i, function (message, match) {
 				if (rows[i].time != null)
 					total_h++;
 			}
-			text += "\n\n*Totali*: " + total + " su " + total_group + "\n*Totali con orario*: " + total_h + "\n\n*Sì*: " + yes + " (" +  Math.round((yes/total)*100) + "%)\n*Forse*: " + maybe + " (" + Math.round((maybe/total)*100) + "%)\n*No*: " + no + " (" +  Math.round((no/total)*100) + "%)\n\n*20:30*: " + time2030 + " (" +  Math.round((time2030/total_h)*100) + "%)\n*21:00*: " + time2100 + " (" +  Math.round((time2100/total_h)*100) + "%)\n*21:30*: " + time2200 + " (" +  Math.round((time2130/total_h)*100) + "%)\n*22:00*: " + time2200 + " (" +  Math.round((time2200/total_h)*100) + "%)";
+			text += "\n\n*Totali*: " + total + " su " + total_group + "\n*Totali con orario*: " + total_h + "\n\n*Sì*: " + yes + " (" +  Math.round((yes/total)*100) + "%)\n*Forse*: " + maybe + " (" + Math.round((maybe/total)*100) + "%)\n*No*: " + no + " (" +  Math.round((no/total)*100) + "%)\n\n*20:30*: " + time2030 + " (" +  Math.round((time2030/total_h)*100) + "%)\n*21:00*: " + time2100 + " (" +  Math.round((time2100/total_h)*100) + "%)\n*21:30*: " + time2130 + " (" +  Math.round((time2130/total_h)*100) + "%)\n*22:00*: " + time2200 + " (" +  Math.round((time2200/total_h)*100) + "%)";
 			bot.sendMessage(message.chat.id, text, {parse_mode: "markdown"});
 		});
 	});
