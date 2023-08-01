@@ -17,6 +17,7 @@
     "longjohn": "^0.2.12",
     "mathjs": "^11.2.1",
     "mysql": "^2.18.1",
+    "node-cron": "^3.0.2",
     "node-fetch": "^3.2.10",
     "node-schedule": "^2.1.0",
     "node-telegram-bot-api": "^0.59.0",
