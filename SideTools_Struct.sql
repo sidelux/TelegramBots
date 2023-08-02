@@ -27,6 +27,7 @@ CREATE TABLE `partecipation` (
   `chat_id` varchar(128) NOT NULL,
   `message_id` varchar(128) NOT NULL,
   `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `weekly` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -60,6 +61,7 @@ CREATE TABLE `partecipation_user` (
   `username` varchar(128) NOT NULL,
   `response` varchar(8) NOT NULL,
   `time` varchar(8) DEFAULT NULL,
+  `dayofweek` int(11) DEFAULT NULL,
   `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `partecipation_id` (`partecipation_id`),
