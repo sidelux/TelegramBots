@@ -95,6 +95,26 @@ cron.schedule('0 16 * * 0', () => {
 	});
 });
 
+cron.schedule('50 23 * * *', () => {
+	fillWeeklyPartecipation(nabbiChatId);
+});
+
+function fillWeeklyPartecipation(chat_id) {
+	var dayofweek = new Date().getDay();
+	connection.query("SELECT id FROM partecipation WHERE weekly = 1 AND chat_id = -461536160", function (err, rows) {
+		if (err) throw err;
+		var partecipation_id = rows[0].id;
+		connection.query("SELECT partecipation_id, user_id, username, response FROM partecipation_user WHERE dayofweek = " + dayofweek + " AND partecipation_id = " + partecipation_id, function (err, rows) {
+			if (err) throw err;
+			for (var i = 0; i < Object.keys(rows).length; i++) {
+				connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response) VALUES (" + partecipation_id + ", " + rows[i].user_id + ", '" + rows[i].username + "', '" + rows[i].response + "')", function (err, rows) {
+					if (err) throw err;
+				});
+			}
+		});
+	});
+}
+
 function sendWeeklyPartecipation(chat_id, from_command, message_id) {
 	let now = new Date();
 	let now_day = now.getFullYear() + "-" + addZero(now.getMonth()+1) + "-" + addZero(now.getDate());
@@ -184,9 +204,9 @@ function sendWeeklyPartecipation(chat_id, from_command, message_id) {
 			bot.unpinAllChatMessages(msg.chat.id).then(function (data) {
 				setTimeout(() => {
 					bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
-				}, 1000);
+				}, 2000);
 			});
-		}, 1000);
+		}, 2000);
 	});
 }
 
@@ -243,9 +263,9 @@ function sendPartecipation(chat_id, from_command, message_id) {
 				bot.unpinAllChatMessages(msg.chat.id).then(function (data) {
 					setTimeout(() => {
 						bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: true});
-					}, 1000);
+					}, 2000);
 				});
-			}, 1000);
+			}, 2000);
 		});
 	} else if (chat_id == "-1001865921442") {
 		var iKeys = [];
@@ -278,7 +298,7 @@ function sendPartecipation(chat_id, from_command, message_id) {
 			});
 			setTimeout(() => {
 				bot.pinChatMessage(msg.chat.id, msg.message_id, {disable_notification: false});
-			}, 1000);
+			}, 2000);
 		});
 	}
 }
@@ -566,7 +586,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				for (var i = 0; i < Object.keys(rows_week).length; i++) {
 					if (rows_week[i].response == "yes") {
 						if ((userArray.indexOf(rows_week[i].username) == -1) && (userTotalArray.indexOf(rows_week[i].username) == -1)) {
-							partText += rows_week[i].username + " (da presenze settimanali)\n";
+							partText += rows_week[i].username + " 📆\n";
 							c++;
 						}
 					}
@@ -590,7 +610,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				for (var i = 0; i < Object.keys(rows_week).length; i++) {
 					if (rows_week[i].response == "maybe") {
 						if ((userArray.indexOf(rows_week[i].username) == -1) && (userTotalArray.indexOf(rows_week[i].username) == -1)) {
-							partText += rows_week[i].username + " (da presenze settimanali)\n";
+							partText += rows_week[i].username + " 📆\n";
 							c++;
 						}
 					}
@@ -614,7 +634,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				for (var i = 0; i < Object.keys(rows_week).length; i++) {
 					if (rows_week[i].response == "no") {
 						if ((userArray.indexOf(rows_week[i].username) == -1) && (userTotalArray.indexOf(rows_week[i].username) == -1)) {
-							partText += rows_week[i].username + " (da presenze settimanali)\n";
+							partText += rows_week[i].username + " 📆\n";
 							c++;
 						}
 					}
