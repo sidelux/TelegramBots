@@ -83,12 +83,11 @@ var originalText1 = "Ci sei per giocare oggi? 👀";
 var originalText2 = "Ci sarai all'allenamento di stasera? 🔥";
 var originalText3 = "Ci sarai per giocare questa settimana? 🤔";
 
-cron.schedule('0 16 * * 1-5', () => {
-// cron.schedule('*/5 * * * 1-5', () => {
+cron.schedule('0 17 * * *', () => {
 	sendPartecipation(nabbiChatId, 0, null);
 });
 
-cron.schedule('0 16 * * 0', () => {
+cron.schedule('0 15 * * 0', () => {
 	connection.query("DELETE FROM partecipation WHERE weekly = 1", function (err, rows) {
 		if (err) throw err;
 		sendWeeklyPartecipation(nabbiChatId, 0, null);
@@ -100,15 +99,21 @@ cron.schedule('50 23 * * *', () => {
 });
 
 function fillWeeklyPartecipation(chat_id) {
-	var dayofweek = new Date().getDay();
+	let now = new Date();
+	var dayofweek = now.getDay();
 	connection.query("SELECT id FROM partecipation WHERE weekly = 1 AND chat_id = -461536160", function (err, rows) {
 		if (err) throw err;
 		var partecipation_id = rows[0].id;
 		connection.query("SELECT partecipation_id, user_id, username, response FROM partecipation_user WHERE dayofweek = " + dayofweek + " AND partecipation_id = " + partecipation_id, function (err, rows) {
 			if (err) throw err;
 			for (var i = 0; i < Object.keys(rows).length; i++) {
-				connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response) VALUES (" + partecipation_id + ", " + rows[i].user_id + ", '" + rows[i].username + "', '" + rows[i].response + "')", function (err, rows) {
+				connection.query("SELECT 1 FROM partecipation_user WHERE add_date LIKE '" + now_day + "%' AND user_id = " + rows[i].user_id + " AND partecipation_id = " + partecipation_id, function (err, rows) {
 					if (err) throw err;
+					if (Object.keys(rows).length == 0) {
+						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response) VALUES (" + partecipation_id + ", " + rows[i].user_id + ", '" + rows[i].username + "', '" + rows[i].response + "')", function (err, rows) {
+							if (err) throw err;
+						});
+					}
 				});
 			}
 		});
@@ -188,6 +193,30 @@ function sendWeeklyPartecipation(chat_id, from_command, message_id) {
 	},{
 		text: "❌",
 		callback_data: partecipation_id + ":partecipationw:no:5"
+	}],[{
+		text: "Sab",
+		callback_data: "null"
+	},{
+		text: "✅",
+		callback_data: partecipation_id + ":partecipationw:yes:6"
+	},{
+		text: "🤔",
+		callback_data: partecipation_id + ":partecipationw:maybe:6"
+	},{
+		text: "❌",
+		callback_data: partecipation_id + ":partecipationw:no:6"
+	}],[{
+		text: "Dom",
+		callback_data: "null"
+	},{
+		text: "✅",
+		callback_data: partecipation_id + ":partecipationw:yes:7"
+	},{
+		text: "🤔",
+		callback_data: partecipation_id + ":partecipationw:maybe:7"
+	},{
+		text: "❌",
+		callback_data: partecipation_id + ":partecipationw:no:7"
 	}]);
 
 	if (from_command == 1) bot.deleteMessage(chat_id, message_id);
@@ -456,12 +485,12 @@ bot.on('callback_query', function (message) {
 						bot.answerCallbackQuery(message.id, {text: "Orario rimosso!"});
 					} else {
 						if (isNaN(param)) {
-							connection.query("UPDATE partecipation_user SET response = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
+							connection.query("UPDATE partecipation_user SET response = '" + param + "', time = NULL WHERE id = " + partecipation_user_id, function (err, rows) {
 								if (err) throw err;
 								printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 							});
 						} else {
-							connection.query("UPDATE partecipation_user SET time = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
+							connection.query("UPDATE partecipation_user SET time = '" + param + "', time = NULL WHERE id = " + partecipation_user_id, function (err, rows) {
 								if (err) throw err;
 								printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 							});
@@ -588,6 +617,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 						if ((userArray.indexOf(rows_week[i].username) == -1) && (userTotalArray.indexOf(rows_week[i].username) == -1)) {
 							partText += rows_week[i].username + " 📆\n";
 							c++;
+							voted_partecipations++;
 						}
 					}
 				}
@@ -612,6 +642,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 						if ((userArray.indexOf(rows_week[i].username) == -1) && (userTotalArray.indexOf(rows_week[i].username) == -1)) {
 							partText += rows_week[i].username + " 📆\n";
 							c++;
+							voted_partecipations++;
 						}
 					}
 				}
@@ -636,6 +667,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 						if ((userArray.indexOf(rows_week[i].username) == -1) && (userTotalArray.indexOf(rows_week[i].username) == -1)) {
 							partText += rows_week[i].username + " 📆\n";
 							c++;
+							voted_partecipations++;
 						}
 					}
 				}
@@ -740,7 +772,7 @@ function printPartecipationsWeekly(message, partecipation_id) {
 			var partText = "";
 			for (var i = 0; i < Object.keys(rows).length; i++) {
 				var user_votes = connection_sync.query("SELECT response, dayofweek FROM partecipation_user WHERE partecipation_id = " + partecipation_id + " AND user_id = " + rows[i].user_id + " ORDER BY dayofweek");
-				var days = [1,2,3,4,5];
+				var days = [1,2,3,4,5,6,7];
 				var partVotes = "";
 				for (var j = 0; j < days.length; j++) {
 					var found = 0;
@@ -825,6 +857,30 @@ function printPartecipationsWeekly(message, partecipation_id) {
 			},{
 				text: "❌",
 				callback_data: partecipation_id + ":partecipationw:no:5"
+			}],[{
+				text: "Sab",
+				callback_data: "null"
+			},{
+				text: "✅",
+				callback_data: partecipation_id + ":partecipationw:yes:6"
+			},{
+				text: "🤔",
+				callback_data: partecipation_id + ":partecipationw:maybe:6"
+			},{
+				text: "❌",
+				callback_data: partecipation_id + ":partecipationw:no:6"
+			}],[{
+				text: "Dom",
+				callback_data: "null"
+			},{
+				text: "✅",
+				callback_data: partecipation_id + ":partecipationw:yes:7"
+			},{
+				text: "🤔",
+				callback_data: partecipation_id + ":partecipationw:maybe:7"
+			},{
+				text: "❌",
+				callback_data: partecipation_id + ":partecipationw:no:7"
 			}]);
 
 			if (total_partecipants != -1)
