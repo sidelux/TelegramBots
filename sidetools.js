@@ -404,16 +404,16 @@ bot.on('callback_query', function (message) {
 				bot.answerCallbackQuery(message.id, {text: "Sondaggio scaduto!"});
 				return;
 			}
-			connection.query("SELECT id, user_id, response, time FROM partecipation_user WHERE partecipation_id = " + id + " AND user_id = " + user_id, function (err, rows) {
+			connection.query("SELECT id, user_id, response, time, event FROM partecipation_user WHERE partecipation_id = " + id + " AND user_id = " + user_id, function (err, rows) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
-					if (isNaN(param)) {	// yes/no
-						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response) VALUES (" + id + ", " + user_id + ", '" + username + "', '" + param + "')", function (err, rows) {
+					if ((param == "games") || (param == "talk")) {
+						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response, event) VALUES (" + id + ", " + user_id + ", '" + username + "', 'yes', '" + param + "')", function (err, rows) {
 							if (err) throw err;
 							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 						});
-					} else if ((param == "games") || (param == "talk")) {
-						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response, event) VALUES (" + id + ", " + user_id + ", '" + username + "', 'yes', '" + param + "')", function (err, rows) {
+					} else if (isNaN(param)) {	// yes/no
+						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response) VALUES (" + id + ", " + user_id + ", '" + username + "', '" + param + "')", function (err, rows) {
 							if (err) throw err;
 							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 						});
@@ -428,19 +428,25 @@ bot.on('callback_query', function (message) {
 					let partecipation_user_id = rows[0].id;
 					let response = rows[0].response;
 					let time = rows[0].time;
+					let eventParam = rows[0].event;
 					if (response == param) {
 						bot.answerCallbackQuery(message.id, {text: "Hai già votato questa opzione!"});
+					} else if (param == eventParam) {
+						connection.query("UPDATE partecipation_user SET event = NULL WHERE id = " + partecipation_user_id, function (err, rows) {
+							if (err) throw err;
+							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
+						});
+					} else if ((param == "games") || (param == "talk")) {
+							connection.query("UPDATE partecipation_user SET event = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
+								if (err) throw err;
+								printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
+							});
 					} else if (time == param) {
 						connection.query("UPDATE partecipation_user SET time = NULL WHERE id = " + partecipation_user_id, function (err, rows) {
 							if (err) throw err;
 							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 						});
 						bot.answerCallbackQuery(message.id, {text: "Orario rimosso!"});
-					} else if ((param == "games") || (param == "talk")) {
-						connection.query("UPDATE partecipation_user SET event = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
-							if (err) throw err;
-							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
-						});
 					} else {
 						if (isNaN(param)) {
 							connection.query("UPDATE partecipation_user SET response = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
@@ -599,7 +605,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 							event = " 🎯";
 						else if (rows[i].event == "talk")
 							event = " 🗣️";
-						partText += rows[i].username + time + "\n";
+						partText += rows[i].username + time + event + "\n";
 						userArray.push(rows[i].username);
 						c++;
 					}
@@ -629,7 +635,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 							event = " 🎯";
 						else if (rows[i].event == "talk")
 							event = " 🗣️";
-						partText += rows[i].username + time + "\n";
+						partText += rows[i].username + time + event + "\n";
 						userArray.push(rows[i].username);
 						c++;
 					}
