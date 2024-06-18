@@ -132,92 +132,26 @@ function sendWeeklyPartecipation(chat_id, from_command, message_id) {
 	if (partecipation_id == null)
 		partecipation_id = 1;
 
+
+
 	var iKeys = [];
-	iKeys.push([{
-		text: "Lun",
-		callback_data: "null"
-	},{
-		text: "✅",
-		callback_data: partecipation_id + ":partecipationw:yes:1"
-	},{
-		text: "🤔",
-		callback_data: partecipation_id + ":partecipationw:maybe:1"
-	},{
-		text: "❌",
-		callback_data: partecipation_id + ":partecipationw:no:1"
-	}],[{
-		text: "Mar",
-		callback_data: "null"
-	},{
-		text: "✅",
-		callback_data: partecipation_id + ":partecipationw:yes:2"
-	},{
-		text: "🤔",
-		callback_data: partecipation_id + ":partecipationw:maybe:2"
-	},{
-		text: "❌",
-		callback_data: partecipation_id + ":partecipationw:no:2"
-	}],[{
-		text: "Mer",
-		callback_data: "null"
-	},{
-		text: "✅",
-		callback_data: partecipation_id + ":partecipationw:yes:3"
-	},{
-		text: "🤔",
-		callback_data: partecipation_id + ":partecipationw:maybe:3"
-	},{
-		text: "❌",
-		callback_data: partecipation_id + ":partecipationw:no:3"
-	}],[{
-		text: "Gio",
-		callback_data: "null"
-	},{
-		text: "✅",
-		callback_data: partecipation_id + ":partecipationw:yes:4"
-	},{
-		text: "🤔",
-		callback_data: partecipation_id + ":partecipationw:maybe:4"
-	},{
-		text: "❌",
-		callback_data: partecipation_id + ":partecipationw:no:4"
-	}],[{
-		text: "Ven",
-		callback_data: "null"
-	},{
-		text: "✅",
-		callback_data: partecipation_id + ":partecipationw:yes:5"
-	},{
-		text: "🤔",
-		callback_data: partecipation_id + ":partecipationw:maybe:5"
-	},{
-		text: "❌",
-		callback_data: partecipation_id + ":partecipationw:no:5"
-	}],[{
-		text: "Sab",
-		callback_data: "null"
-	},{
-		text: "✅",
-		callback_data: partecipation_id + ":partecipationw:yes:6"
-	},{
-		text: "🤔",
-		callback_data: partecipation_id + ":partecipationw:maybe:6"
-	},{
-		text: "❌",
-		callback_data: partecipation_id + ":partecipationw:no:6"
-	}],[{
-		text: "Dom",
-		callback_data: "null"
-	},{
-		text: "✅",
-		callback_data: partecipation_id + ":partecipationw:yes:7"
-	},{
-		text: "🤔",
-		callback_data: partecipation_id + ":partecipationw:maybe:7"
-	},{
-		text: "❌",
-		callback_data: partecipation_id + ":partecipationw:no:7"
-	}]);
+	var days = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+
+	for (var i = 0; i < days.length; i++) {
+		iKeys.push([{
+			text: days[i],
+			callback_data: "null"
+		},{
+			text: "✅",
+			callback_data: partecipation_id + ":partecipationw:yes:" + (i + 1)
+		},{
+			text: "🤔",
+			callback_data: partecipation_id + ":partecipationw:maybe:" + (i + 1)
+		},{
+			text: "❌",
+			callback_data: partecipation_id + ":partecipationw:no:" + (i + 1)
+		}]);
+	}
 
 	if (from_command == 1) bot.deleteMessage(chat_id, message_id);
 	bot.sendMessage(chat_id, originalText3, {
@@ -274,7 +208,14 @@ function sendPartecipation(chat_id, from_command, message_id) {
 		},{
 			text: "22:00",
 			callback_data: partecipation_id + ":partecipation:2200"
+		}],[{
+			text: "Solo 🎯",
+			callback_data: partecipation_id + ":partecipation:games"
+		}],[{
+			text: "Solo 🗣️",
+			callback_data: partecipation_id + ":partecipation:talk"
 		}]);
+
 		if (from_command == 1) bot.deleteMessage(chat_id, message_id);
 		bot.sendMessage(chat_id, originalText1, {
 			parse_mode: 'HTML',
@@ -313,7 +254,14 @@ function sendPartecipation(chat_id, from_command, message_id) {
 		},{
 			text: "22:00",
 			callback_data: partecipation_id + ":partecipation:2200"
+		}],[{
+			text: "Solo 🎯",
+			callback_data: partecipation_id + ":partecipation:games"
+		}],[{
+			text: "Solo 🗣️",
+			callback_data: partecipation_id + ":partecipation:talk"
 		}]);
+
 		if (from_command == 1) bot.deleteMessage(chat_id, message_id);
 		bot.sendMessage(chat_id, originalText2, {
 			parse_mode: 'HTML',
@@ -459,12 +407,17 @@ bot.on('callback_query', function (message) {
 			connection.query("SELECT id, user_id, response, time FROM partecipation_user WHERE partecipation_id = " + id + " AND user_id = " + user_id, function (err, rows) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
-					if (isNaN(param)) {
+					if (isNaN(param)) {	// yes/no
 						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response) VALUES (" + id + ", " + user_id + ", '" + username + "', '" + param + "')", function (err, rows) {
 							if (err) throw err;
 							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 						});
-					} else {
+					} else if ((param == "games") || (param == "talk")) {
+						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response, event) VALUES (" + id + ", " + user_id + ", '" + username + "', 'yes', '" + param + "')", function (err, rows) {
+							if (err) throw err;
+							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
+						});
+					} else {	// time
 						connection.query("INSERT INTO partecipation_user (partecipation_id, user_id, username, response, time) VALUES (" + id + ", " + user_id + ", '" + username + "', 'yes', '" + param + "')", function (err, rows) {
 							if (err) throw err;
 							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
@@ -483,14 +436,19 @@ bot.on('callback_query', function (message) {
 							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 						});
 						bot.answerCallbackQuery(message.id, {text: "Orario rimosso!"});
+					} else if ((param == "games") || (param == "talk")) {
+						connection.query("UPDATE partecipation_user SET event = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
+							if (err) throw err;
+							printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
+						});
 					} else {
 						if (isNaN(param)) {
-							connection.query("UPDATE partecipation_user SET response = '" + param + "', time = NULL WHERE id = " + partecipation_user_id, function (err, rows) {
+							connection.query("UPDATE partecipation_user SET response = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
 								if (err) throw err;
 								printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 							});
 						} else {
-							connection.query("UPDATE partecipation_user SET time = '" + param + "', time = NULL WHERE id = " + partecipation_user_id, function (err, rows) {
+							connection.query("UPDATE partecipation_user SET time = '" + param + "' WHERE id = " + partecipation_user_id, function (err, rows) {
 								if (err) throw err;
 								printPartecipations(message.message.chat.id, message.message.message_id, message.id, id);
 							});
@@ -584,7 +542,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 		var total_partecipants = -1;
 		if (Object.keys(rows).length > 0)
 			total_partecipants = rows[0].partecipants;
-		connection.query("SELECT username, response, time FROM partecipation_user WHERE partecipation_id = " + partecipation_id, function (err, rows) {
+		connection.query("SELECT username, response, time, event FROM partecipation_user WHERE partecipation_id = " + partecipation_id, function (err, rows) {
 			if (err) throw err;
 			var voted_partecipations = Object.keys(rows).length;
 			
@@ -595,9 +553,8 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				var rows_week = connection_sync.query("SELECT username, response FROM partecipation_user WHERE dayofweek = " + currentDayOfWeek);
 
 				var userTotalArray = [];
-				for (var i = 0; i < Object.keys(rows).length; i++) {
+				for (var i = 0; i < Object.keys(rows).length; i++)
 					userTotalArray.push(rows[i].username);
-				}
 
 				var c = 0;
 				var partText = "";
@@ -605,9 +562,14 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				for (var i = 0; i < Object.keys(rows).length; i++) {
 					if (rows[i].response == "yes") {
 						var time = "";
+						var event = "";
 						if (rows[i].time != null)
 							time = " (" + rows[i].time.slice(0,2) + ":" + rows[i].time.slice(2) + ")";
-						partText += rows[i].username + time + "\n";
+						if (rows[i].event == "games")
+							event = " 🎯";
+						else if (rows[i].event == "talk")
+							event = " 🗣️";
+						partText += rows[i].username + time + event + "\n";
 						userArray.push(rows[i].username);
 						c++;
 					}
@@ -630,8 +592,13 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				for (var i = 0; i < Object.keys(rows).length; i++) {
 					if (rows[i].response == "maybe") {
 						var time = "";
+						var event = "";
 						if (rows[i].time != null)
 							time = " (" + rows[i].time.slice(0,2) + ":" + rows[i].time.slice(2) + ")";
+						if (rows[i].event == "games")
+							event = " 🎯";
+						else if (rows[i].event == "talk")
+							event = " 🗣️";
 						partText += rows[i].username + time + "\n";
 						userArray.push(rows[i].username);
 						c++;
@@ -655,8 +622,13 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				for (var i = 0; i < Object.keys(rows).length; i++) {
 					if (rows[i].response == "no") {
 						var time = "";
+						var event = "";
 						if (rows[i].time != null)
 							time = " (" + rows[i].time.slice(0,2) + ":" + rows[i].time.slice(2) + ")";
+						if (rows[i].event == "games")
+							event = " 🎯";
+						else if (rows[i].event == "talk")
+							event = " 🗣️";
 						partText += rows[i].username + time + "\n";
 						userArray.push(rows[i].username);
 						c++;
@@ -696,54 +668,12 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				},{
 					text: "22:00",
 					callback_data: partecipation_id + ":partecipation:2200"
-				}]);
-			} else if (chat_id == "-1001865921442") {
-				var newText = originalText2 + "\n\n";
-
-				var c = 0;
-				var partText = "";
-				for (var i = 0; i < Object.keys(rows).length; i++) {
-					if (rows[i].response == "yes") {
-						var time = "";
-						if (rows[i].time != null)
-							time = " (" + rows[i].time.slice(0,2) + ":" + rows[i].time.slice(2) + ")";
-						partText += rows[i].username + time + "\n";
-						c++;
-					}
-				}
-				if (c > 0)
-					newText += "Sì:\n" + partText + "\n";
-
-				var c = 0;
-				var partText = "";
-				for (var i = 0; i < Object.keys(rows).length; i++) {
-					if (rows[i].response == "no") {
-						var time = "";
-						if (rows[i].time != null)
-							time = " (" + rows[i].time.slice(0,2) + ":" + rows[i].time.slice(2) + ")";
-						partText += rows[i].username + time + "\n";
-						c++;
-					}
-				}
-				if (c > 0)
-					newText += "No:\n" + partText + "\n";
-
-				var iKeys = [];
-				iKeys.push([{
-					text: "Sì",
-					callback_data: partecipation_id + ":partecipation:yes"
-				},{
-					text: "No",
-					callback_data: partecipation_id + ":partecipation:no"
 				}],[{
-					text: "21:00",
-					callback_data: partecipation_id + ":partecipation:2100"
-				},{
-					text: "21:30",
-					callback_data: partecipation_id + ":partecipation:2130"
-				},{
-					text: "22:00",
-					callback_data: partecipation_id + ":partecipation:2200"
+					text: "Solo 🎯",
+					callback_data: partecipation_id + ":partecipation:games"
+				}],[{
+					text: "Solo 🗣️",
+					callback_data: partecipation_id + ":partecipation:talk"
 				}]);
 			}
 
@@ -797,91 +727,23 @@ function printPartecipationsWeekly(message, partecipation_id) {
 				newText += "Hanno selezionato:\n" + partText + "\n";
 
 			var iKeys = [];
-			iKeys.push([{
-				text: "Lun",
-				callback_data: "null"
-			},{
-				text: "✅",
-				callback_data: partecipation_id + ":partecipationw:yes:1"
-			},{
-				text: "🤔",
-				callback_data: partecipation_id + ":partecipationw:maybe:1"
-			},{
-				text: "❌",
-				callback_data: partecipation_id + ":partecipationw:no:1"
-			}],[{
-				text: "Mar",
-				callback_data: "null"
-			},{
-				text: "✅",
-				callback_data: partecipation_id + ":partecipationw:yes:2"
-			},{
-				text: "🤔",
-				callback_data: partecipation_id + ":partecipationw:maybe:2"
-			},{
-				text: "❌",
-				callback_data: partecipation_id + ":partecipationw:no:2"
-			}],[{
-				text: "Mer",
-				callback_data: "null"
-			},{
-				text: "✅",
-				callback_data: partecipation_id + ":partecipationw:yes:3"
-			},{
-				text: "🤔",
-				callback_data: partecipation_id + ":partecipationw:maybe:3"
-			},{
-				text: "❌",
-				callback_data: partecipation_id + ":partecipationw:no:3"
-			}],[{
-				text: "Gio",
-				callback_data: "null"
-			},{
-				text: "✅",
-				callback_data: partecipation_id + ":partecipationw:yes:4"
-			},{
-				text: "🤔",
-				callback_data: partecipation_id + ":partecipationw:maybe:4"
-			},{
-				text: "❌",
-				callback_data: partecipation_id + ":partecipationw:no:4"
-			}],[{
-				text: "Ven",
-				callback_data: "null"
-			},{
-				text: "✅",
-				callback_data: partecipation_id + ":partecipationw:yes:5"
-			},{
-				text: "🤔",
-				callback_data: partecipation_id + ":partecipationw:maybe:5"
-			},{
-				text: "❌",
-				callback_data: partecipation_id + ":partecipationw:no:5"
-			}],[{
-				text: "Sab",
-				callback_data: "null"
-			},{
-				text: "✅",
-				callback_data: partecipation_id + ":partecipationw:yes:6"
-			},{
-				text: "🤔",
-				callback_data: partecipation_id + ":partecipationw:maybe:6"
-			},{
-				text: "❌",
-				callback_data: partecipation_id + ":partecipationw:no:6"
-			}],[{
-				text: "Dom",
-				callback_data: "null"
-			},{
-				text: "✅",
-				callback_data: partecipation_id + ":partecipationw:yes:7"
-			},{
-				text: "🤔",
-				callback_data: partecipation_id + ":partecipationw:maybe:7"
-			},{
-				text: "❌",
-				callback_data: partecipation_id + ":partecipationw:no:7"
-			}]);
+			var days = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+
+			for (var i = 0; i < days.length; i++) {
+				iKeys.push([{
+					text: days[i],
+					callback_data: "null"
+				},{
+					text: "✅",
+					callback_data: partecipation_id + ":partecipationw:yes:" + (i + 1)
+				},{
+					text: "🤔",
+					callback_data: partecipation_id + ":partecipationw:maybe:" + (i + 1)
+				},{
+					text: "❌",
+					callback_data: partecipation_id + ":partecipationw:no:" + (i + 1)
+				}]);
+			}
 
 			if (total_partecipants != -1)
 				newText += "Votanti: " + voted_partecipations + "/" + total_partecipants;
