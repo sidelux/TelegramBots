@@ -62,6 +62,7 @@ CREATE TABLE `partecipation_user` (
   `response` varchar(8) NOT NULL,
   `time` varchar(8) DEFAULT NULL,
   `dayofweek` int(11) DEFAULT NULL,
+  `event` varchar(16) DEFAULT NULL,
   `add_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `partecipation_id` (`partecipation_id`),

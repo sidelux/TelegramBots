@@ -211,7 +211,7 @@ function sendPartecipation(chat_id, from_command, message_id) {
 		}],[{
 			text: "Solo 🎯",
 			callback_data: partecipation_id + ":partecipation:games"
-		}],[{
+		},{
 			text: "Solo 🗣️",
 			callback_data: partecipation_id + ":partecipation:talk"
 		}]);
@@ -257,7 +257,7 @@ function sendPartecipation(chat_id, from_command, message_id) {
 		}],[{
 			text: "Solo 🎯",
 			callback_data: partecipation_id + ":partecipation:games"
-		}],[{
+		},{
 			text: "Solo 🗣️",
 			callback_data: partecipation_id + ":partecipation:talk"
 		}]);
@@ -374,7 +374,20 @@ bot.onText(/^\/stats/i, function (message, match) {
 				if (rows[i].time != null)
 					total_h++;
 			}
-			text += "\n\n*Totali*: " + total + " su " + total_group + "\n*Totali con orario*: " + total_h + "\n\n*Sì*: " + yes + " (" +  Math.round((yes/total)*100) + "%)\n*Forse*: " + maybe + " (" + Math.round((maybe/total)*100) + "%)\n*No*: " + no + " (" +  Math.round((no/total)*100) + "%)\n\n*20:30*: " + time2030 + " (" +  Math.round((time2030/total_h)*100) + "%)\n*21:00*: " + time2100 + " (" +  Math.round((time2100/total_h)*100) + "%)\n*21:30*: " + time2130 + " (" +  Math.round((time2130/total_h)*100) + "%)\n*22:00*: " + time2200 + " (" +  Math.round((time2200/total_h)*100) + "%)";
+			var perc2030 = 0;
+			if (total_h > 0)
+				perc2030 = Math.round((time2030/total_h)*100);
+			var perc2100 = 0;
+			if (total_h > 0)
+				perc2100 = Math.round((time2100/total_h)*100);
+			var perc2130 = 0;
+			if (total_h > 0)
+				perc2130 = Math.round((time2130/total_h)*100);
+			var perc2200 = 0;
+			if (total_h > 0)
+				perc2200 = Math.round((time2200/total_h)*100);
+
+			text += "\n\n*Totali*: " + total + " su " + total_group + "\n*Totali con orario*: " + total_h + "\n\n*Sì*: " + yes + " (" +  Math.round((yes/total)*100) + "%)\n*Forse*: " + maybe + " (" + Math.round((maybe/total)*100) + "%)\n*No*: " + no + " (" +  Math.round((no/total)*100) + "%)\n\n*20:30*: " + time2030 + " (" +  perc2030 + "%)\n*21:00*: " + time2100 + " (" +  perc2100 + "%)\n*21:30*: " + time2130 + " (" +  perc2130 + "%)\n*22:00*: " + time2200 + " (" +  perc2200 + "%)";
 			bot.sendMessage(message.chat.id, text, {parse_mode: "markdown"});
 		});
 	});
@@ -677,7 +690,7 @@ function printPartecipations(chat_id, message_id, inline_message_id, partecipati
 				}],[{
 					text: "Solo 🎯",
 					callback_data: partecipation_id + ":partecipation:games"
-				}],[{
+				},{
 					text: "Solo 🗣️",
 					callback_data: partecipation_id + ":partecipation:talk"
 				}]);
